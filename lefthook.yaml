@@ -1,0 +1,26 @@
+pre-commit:
+  parallel: true
+  commands:
+    prettier:
+      glob: "*.{json,yaml}"
+      run: |
+        export TARGETS=$(echo "{staged_files}")
+        task lint:prettier
+    markdown:
+      glob: "*.md"
+      run: |
+        export TARGETS=$(echo "{staged_files}")
+        task lint:prettier
+        task lint:markdown
+prepare-commit-msg:
+  commands:
+    commitizen:
+      env:
+        LEFTHOOK: 0
+      interactive: true
+      run: exec < /dev/tty && pnpm cz --hook || true
+
+commit-msg:
+  commands:
+    commitlint:
+      run: pnpm commitlint --edit {1}

@@ -5,10 +5,19 @@ tasks:
   # install
   install:
     deps:
+      - install:go
       - install:pnpm
     desc: run install tasks
     aliases:
       - default
+
+  install:go:
+    cmds:
+      - go install github.com/evilmartians/lefthook@latest
+      - lefthook install
+    desc: run go install
+    preconditions:
+      - which go
 
   install:pnpm:
     cmds:
@@ -20,8 +29,18 @@ tasks:
   # clean
   clean:
     deps:
+      - clean:go
       - clean:pnpm
     desc: run clean tasks
+
+  clean:go:
+    cmds:
+      - lefthook uninstall
+      - rm -f $(go env GOPATH)/bin/lefthook
+      - go clean -modcache
+    desc: clean go
+    preconditions:
+      - which go
 
   clean:pnpm:
     cmds:
