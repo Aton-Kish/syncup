@@ -1,0 +1,114 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: "3"
+
+tasks:
+  # install
+  install:
+    deps:
+      - install:go
+      - install:pnpm
+    desc: run install tasks
+    aliases:
+      - default
+
+  install:go:
+    cmds:
+      - go install github.com/evilmartians/lefthook@latest
+      - lefthook install
+      - go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+    desc: run go install
+    preconditions:
+      - which go
+
+  install:pnpm:
+    cmds:
+      - pnpm install
+    desc: run pnpm install
+    preconditions:
+      - which pnpm
+
+  # clean
+  clean:
+    deps:
+      - clean:go
+      - clean:pnpm
+    desc: run clean tasks
+
+  clean:go:
+    cmds:
+      - lefthook uninstall
+      - rm -f $(go env GOPATH)/bin/lefthook
+      - rm -f $(go env GOPATH)/bin/golangci-lint
+      - go clean -modcache
+    desc: clean go
+    preconditions:
+      - which go
+
+  clean:pnpm:
+    cmds:
+      - rm -rf node_modules .pnpm-store
+    desc: clean node modules
+
+  # lint
+  lint:
+    deps:
+      - lint:go
+      - lint:prettier
+      - lint:markdown
+    desc: run lint tasks
+
+  lint:go:
+    cmds:
+      - golangci-lint run {{ .OPTIONS }} ${TARGETS}
+    desc: run go linter
+    preconditions:
+      - which golangci-lint
+    env:
+      TARGETS: ./...
+
+  lint:prettier:
+    cmds:
+      - pnpm prettier --check --ignore-path .gitignore {{ .OPTIONS }} ${TARGETS}
+    desc: run prettier linter
+    preconditions:
+      - which pnpm
+    env:
+      TARGETS: . !pnpm-lock.yaml
+
+  lint:markdown:
+    cmds:
+      - pnpm {{ or .COMMAND "markdownlint-cli2" }} ${TARGETS}
+    desc: run markdown linter
+    preconditions:
+      - which pnpm
+    env:
+      TARGETS: "**/*.md #node_modules"
+
+  # format
+  format:
+    cmds:
+      - task: format:go
+      - task: format:prettier
+      - task: format:markdown
+    desc: run format tasks
+
+  format:go:
+    cmds:
+      - task: lint:go
+        vars:
+          OPTIONS: --fix
+    desc: run go formatter
+
+  format:prettier:
+    cmds:
+      - task: lint:prettier
+        vars:
+          OPTIONS: --write
+    desc: run prettier formatter
+
+  format:markdown:
+    cmds:
+      - task: lint:markdown
+        vars:
+          COMMAND: markdownlint-cli2-fix
+    desc: run markdown formatter

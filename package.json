@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "scripts": {
+    "preinstall": "npx -y only-allow pnpm"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^17.7.1",
+    "@commitlint/config-conventional": "^17.7.0",
+    "commitizen": "^4.3.0",
+    "cz-conventional-changelog": "^3.3.0",
+    "markdownlint-cli2": "^0.9.0",
+    "prettier": "^3.0.1"
+  }
+}
