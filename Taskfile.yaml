@@ -15,6 +15,7 @@ tasks:
     cmds:
       - go install github.com/evilmartians/lefthook@latest
       - lefthook install
+      - go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
     desc: run go install
     preconditions:
       - which go
@@ -37,6 +38,7 @@ tasks:
     cmds:
       - lefthook uninstall
       - rm -f $(go env GOPATH)/bin/lefthook
+      - rm -f $(go env GOPATH)/bin/golangci-lint
       - go clean -modcache
     desc: clean go
     preconditions:
@@ -50,9 +52,19 @@ tasks:
   # lint
   lint:
     deps:
+      - lint:go
       - lint:prettier
       - lint:markdown
     desc: run lint tasks
+
+  lint:go:
+    cmds:
+      - golangci-lint run {{ .OPTIONS }} ${TARGETS}
+    desc: run go linter
+    preconditions:
+      - which golangci-lint
+    env:
+      TARGETS: ./...
 
   lint:prettier:
     cmds:
@@ -75,9 +87,17 @@ tasks:
   # format
   format:
     cmds:
+      - task: format:go
       - task: format:prettier
       - task: format:markdown
     desc: run format tasks
+
+  format:go:
+    cmds:
+      - task: lint:go
+        vars:
+          OPTIONS: --fix
+    desc: run go formatter
 
   format:prettier:
     cmds:

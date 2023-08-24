@@ -1,6 +1,11 @@
 pre-commit:
   parallel: true
   commands:
+    go:
+      glob: "*.go"
+      run: |
+        export TARGETS=$(echo "{staged_files}")
+        task lint:go
     prettier:
       glob: "*.{json,yaml}"
       run: |
