@@ -1,0 +1,75 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: "3"
+
+tasks:
+  # install
+  install:
+    deps:
+      - install:pnpm
+    desc: run install tasks
+    aliases:
+      - default
+
+  install:pnpm:
+    cmds:
+      - pnpm install
+    desc: run pnpm install
+    preconditions:
+      - which pnpm
+
+  # clean
+  clean:
+    deps:
+      - clean:pnpm
+    desc: run clean tasks
+
+  clean:pnpm:
+    cmds:
+      - rm -rf node_modules .pnpm-store
+    desc: clean node modules
+
+  # lint
+  lint:
+    deps:
+      - lint:prettier
+      - lint:markdown
+    desc: run lint tasks
+
+  lint:prettier:
+    cmds:
+      - pnpm prettier --check --ignore-path .gitignore {{ .OPTIONS }} ${TARGETS}
+    desc: run prettier linter
+    preconditions:
+      - which pnpm
+    env:
+      TARGETS: . !pnpm-lock.yaml
+
+  lint:markdown:
+    cmds:
+      - pnpm {{ or .COMMAND "markdownlint-cli2" }} ${TARGETS}
+    desc: run markdown linter
+    preconditions:
+      - which pnpm
+    env:
+      TARGETS: "**/*.md #node_modules"
+
+  # format
+  format:
+    cmds:
+      - task: format:prettier
+      - task: format:markdown
+    desc: run format tasks
+
+  format:prettier:
+    cmds:
+      - task: lint:prettier
+        vars:
+          OPTIONS: --write
+    desc: run prettier formatter
+
+  format:markdown:
+    cmds:
+      - task: lint:markdown
+        vars:
+          COMMAND: markdownlint-cli2-fix
+    desc: run markdown formatter

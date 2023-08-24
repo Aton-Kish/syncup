@@ -17,7 +17,7 @@
   // "forwardPorts": [],
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y bash-completion",
+  "postCreateCommand": "bash ./.devcontainer/postCreateCommand.sh",
 
   // Configure tool-specific properties.
   "customizations": {
@@ -26,8 +26,10 @@
         "DavidAnson.vscode-markdownlint",
         "EditorConfig.EditorConfig",
         "esbenp.prettier-vscode",
+        "redhat.vscode-yaml",
         "shardulm94.trailing-spaces",
-        "streetsidesoftware.code-spell-checker"
+        "streetsidesoftware.code-spell-checker",
+        "task.vscode-task"
       ]
     }
   },
