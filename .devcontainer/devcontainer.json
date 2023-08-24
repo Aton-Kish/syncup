@@ -20,7 +20,16 @@
   "postCreateCommand": "sudo apt-get update && sudo apt-get install -y bash-completion",
 
   // Configure tool-specific properties.
-  // "customizations": {},
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "EditorConfig.EditorConfig",
+        "esbenp.prettier-vscode",
+        "shardulm94.trailing-spaces",
+        "streetsidesoftware.code-spell-checker"
+      ]
+    }
+  },
 
   // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
   "remoteUser": "vscode"

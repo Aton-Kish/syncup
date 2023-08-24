@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "amazonwebservices.aws-toolkit-vscode",
+    "dbaeumer.vscode-eslint",
+    "golang.go",
+
+    "EditorConfig.EditorConfig",
+    "esbenp.prettier-vscode",
+    "shardulm94.trailing-spaces",
+    "streetsidesoftware.code-spell-checker"
+  ],
+  "unwantedRecommendations": []
+}
