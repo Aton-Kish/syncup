@@ -18,41 +18,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package registry
+package model
 
-import (
-	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
-	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
-)
-
-var (
-	version   = "unknown"
-	gitCommit = "unknown"
-	goVersion = "unknown"
-	goOS      = "unknown"
-	goArch    = "unknown"
-	buildTime = "unknown"
-)
-
-type repo struct {
-	version *model.Version
-}
-
-func NewRepository() repository.Repository {
-	version := &model.Version{
-		Version:   version,
-		GitCommit: gitCommit,
-		GoVersion: goVersion,
-		OS:        goOS,
-		Arch:      goArch,
-		BuildTime: buildTime,
-	}
-
-	return &repo{
-		version: version,
-	}
-}
-
-func (r *repo) Version() *model.Version {
-	return r.version
+type Version struct {
+	Version   string
+	GitCommit string
+	GoVersion string
+	OS        string
+	Arch      string
+	BuildTime string
 }

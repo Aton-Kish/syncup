@@ -20,4 +20,10 @@
 
 package repository
 
-type Repository interface{}
+import (
+	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
+)
+
+type Repository interface {
+	Version() *model.Version
+}
