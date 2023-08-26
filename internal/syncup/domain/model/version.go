@@ -18,26 +18,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package main
+package model
 
-import (
-	"context"
-	"os"
-
-	"github.com/Aton-Kish/syncup/internal/syncup/interface/command"
-	"github.com/Aton-Kish/syncup/internal/syncup/registry"
-)
-
-func main() {
-	ctx := context.Background()
-	repo := registry.NewRepository()
-
-	rootCmd := command.NewRootCommand(repo)
-	versionCommand := command.NewVersionCommand(repo)
-
-	rootCmd.RegisterSubCommands(versionCommand)
-
-	if err := rootCmd.Execute(ctx); err != nil {
-		os.Exit(1)
-	}
+type Version struct {
+	Version   string
+	GitCommit string
+	GoVersion string
+	OS        string
+	Arch      string
+	BuildTime string
 }

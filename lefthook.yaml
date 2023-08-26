@@ -4,7 +4,7 @@ pre-commit:
     go:
       glob: "*.go"
       run: |
-        export TARGETS=$(echo "{staged_files}")
+        export TARGETS=$(echo "{staged_files}" | xargs dirname)
         task lint:go
     prettier:
       glob: "*.{json,yaml}"

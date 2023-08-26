@@ -18,26 +18,41 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package main
+package registry
 
 import (
-	"context"
-	"os"
-
-	"github.com/Aton-Kish/syncup/internal/syncup/interface/command"
-	"github.com/Aton-Kish/syncup/internal/syncup/registry"
+	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
+	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
 )
 
-func main() {
-	ctx := context.Background()
-	repo := registry.NewRepository()
+var (
+	version   = "unknown"
+	gitCommit = "unknown"
+	goVersion = "unknown"
+	goOS      = "unknown"
+	goArch    = "unknown"
+	buildTime = "unknown"
+)
 
-	rootCmd := command.NewRootCommand(repo)
-	versionCommand := command.NewVersionCommand(repo)
+type repo struct {
+	version *model.Version
+}
 
-	rootCmd.RegisterSubCommands(versionCommand)
-
-	if err := rootCmd.Execute(ctx); err != nil {
-		os.Exit(1)
+func NewRepository() repository.Repository {
+	version := &model.Version{
+		Version:   version,
+		GitCommit: gitCommit,
+		GoVersion: goVersion,
+		OS:        goOS,
+		Arch:      goArch,
+		BuildTime: buildTime,
 	}
+
+	return &repo{
+		version: version,
+	}
+}
+
+func (r *repo) Version() *model.Version {
+	return r.version
 }

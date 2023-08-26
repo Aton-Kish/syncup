@@ -18,26 +18,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package main
+package command
 
 import (
 	"context"
-	"os"
 
-	"github.com/Aton-Kish/syncup/internal/syncup/interface/command"
-	"github.com/Aton-Kish/syncup/internal/syncup/registry"
+	"github.com/spf13/cobra"
 )
 
-func main() {
-	ctx := context.Background()
-	repo := registry.NewRepository()
+type Command interface {
+	Execute(ctx context.Context, args ...string) error
+	RegisterSubCommands(cmds ...Command)
 
-	rootCmd := command.NewRootCommand(repo)
-	versionCommand := command.NewVersionCommand(repo)
-
-	rootCmd.RegisterSubCommands(versionCommand)
-
-	if err := rootCmd.Execute(ctx); err != nil {
-		os.Exit(1)
-	}
+	command() *cobra.Command
 }
