@@ -56,7 +56,7 @@ func (c *rootCommand) Execute(ctx context.Context, args ...string) error {
 	cmd.SetArgs(args)
 
 	if err := cmd.ExecuteContext(ctx); err != nil {
-		return err
+		return &commandError{Err: err}
 	}
 
 	return nil
