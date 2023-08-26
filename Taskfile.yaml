@@ -112,3 +112,33 @@ tasks:
         vars:
           COMMAND: markdownlint-cli2-fix
     desc: run markdown formatter
+
+  # test
+  test:
+    cmds:
+      - go test ./internal/... {{ .OPTIONS }}
+    desc: run go test
+    preconditions:
+      - which go
+
+  test:verbose:
+    cmds:
+      - task: test
+        vars:
+          OPTIONS: -v
+    desc: run go test (verbose)
+
+  # coverage
+  coverage:
+    cmds:
+      - task: test
+        vars:
+          OPTIONS: -cover
+    desc: run go coverage
+
+  coverage:verbose:
+    cmds:
+      - task: test
+        vars:
+          OPTIONS: -cover -v
+    desc: run go coverage (verbose)
