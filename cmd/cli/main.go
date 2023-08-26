@@ -33,6 +33,9 @@ func main() {
 	repo := registry.NewRepository()
 
 	rootCmd := command.NewRootCommand(repo)
+	versionCommand := command.NewVersionCommand(repo)
+
+	rootCmd.RegisterSubCommands(versionCommand)
 
 	if err := rootCmd.Execute(ctx); err != nil {
 		os.Exit(1)
