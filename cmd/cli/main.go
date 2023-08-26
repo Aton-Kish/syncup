@@ -21,9 +21,20 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	"os"
+
+	"github.com/Aton-Kish/syncup/internal/syncup/interface/command"
+	"github.com/Aton-Kish/syncup/internal/syncup/registry"
 )
 
 func main() {
-	fmt.Println("hello world")
+	ctx := context.Background()
+	repo := registry.NewRepository()
+
+	rootCmd := command.NewRootCommand(repo)
+
+	if err := rootCmd.Execute(ctx); err != nil {
+		os.Exit(1)
+	}
 }
