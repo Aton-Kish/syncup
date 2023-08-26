@@ -22,8 +22,10 @@ package command
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
+	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
 	"github.com/spf13/cobra"
 )
@@ -35,6 +37,8 @@ type RootCommand interface {
 type rootCommand struct {
 	options *options
 
+	version *model.Version
+
 	cmd  *cobra.Command
 	once sync.Once
 }
@@ -42,6 +46,8 @@ type rootCommand struct {
 func NewRootCommand(repo repository.Repository, optFns ...func(o *options)) RootCommand {
 	return &rootCommand{
 		options: newOptions(optFns...),
+
+		version: repo.Version(),
 	}
 }
 
@@ -69,8 +75,9 @@ func (c *rootCommand) RegisterSubCommands(cmds ...Command) {
 func (c *rootCommand) command() *cobra.Command {
 	c.once.Do(func() {
 		c.cmd = &cobra.Command{
-			Use:   "syncup",
-			Short: "Sync up with AWS AppSync",
+			Use:     "syncup",
+			Short:   "Sync up with AWS AppSync",
+			Version: fmt.Sprintf("%s, build %s (%s/%s)", c.version.Version, c.version.GitCommit, c.version.OS, c.version.Arch),
 			RunE: func(cmd *cobra.Command, args []string) error {
 				if err := cmd.Help(); err != nil {
 					return err
