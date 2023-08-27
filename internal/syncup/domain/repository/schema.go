@@ -26,10 +26,7 @@ import (
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 )
 
-type AWSActivator interface {
-	ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptions)) error
-}
-
-type Repository interface {
-	Version() *model.Version
+type SchemaRepository interface {
+	Get(ctx context.Context, apiID string) (*model.Schema, error)
+	Save(ctx context.Context, apiID string, schema *model.Schema) (*model.Schema, error)
 }

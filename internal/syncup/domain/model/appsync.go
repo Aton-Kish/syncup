@@ -18,18 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package repository
+package model
 
-import (
-	"context"
-
-	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
-)
-
-type AWSActivator interface {
-	ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptions)) error
-}
-
-type Repository interface {
-	Version() *model.Version
-}
+type Schema string
