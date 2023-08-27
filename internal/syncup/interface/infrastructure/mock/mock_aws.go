@@ -54,3 +54,43 @@ func (mr *MockappsyncClientMockRecorder) GetIntrospectionSchema(ctx, params inte
 	varargs := append([]interface{}{ctx, params}, optFns...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIntrospectionSchema", reflect.TypeOf((*MockappsyncClient)(nil).GetIntrospectionSchema), varargs...)
 }
+
+// GetSchemaCreationStatus mocks base method.
+func (m *MockappsyncClient) GetSchemaCreationStatus(ctx context.Context, params *appsync.GetSchemaCreationStatusInput, optFns ...func(*appsync.Options)) (*appsync.GetSchemaCreationStatusOutput, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, params}
+	for _, a := range optFns {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetSchemaCreationStatus", varargs...)
+	ret0, _ := ret[0].(*appsync.GetSchemaCreationStatusOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSchemaCreationStatus indicates an expected call of GetSchemaCreationStatus.
+func (mr *MockappsyncClientMockRecorder) GetSchemaCreationStatus(ctx, params interface{}, optFns ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, params}, optFns...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSchemaCreationStatus", reflect.TypeOf((*MockappsyncClient)(nil).GetSchemaCreationStatus), varargs...)
+}
+
+// StartSchemaCreation mocks base method.
+func (m *MockappsyncClient) StartSchemaCreation(ctx context.Context, params *appsync.StartSchemaCreationInput, optFns ...func(*appsync.Options)) (*appsync.StartSchemaCreationOutput, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, params}
+	for _, a := range optFns {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "StartSchemaCreation", varargs...)
+	ret0, _ := ret[0].(*appsync.StartSchemaCreationOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StartSchemaCreation indicates an expected call of StartSchemaCreation.
+func (mr *MockappsyncClientMockRecorder) StartSchemaCreation(ctx, params interface{}, optFns ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, params}, optFns...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartSchemaCreation", reflect.TypeOf((*MockappsyncClient)(nil).StartSchemaCreation), varargs...)
+}
