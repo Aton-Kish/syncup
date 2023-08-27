@@ -36,4 +36,6 @@ type Repository interface {
 	Version() *model.Version
 
 	MFATokenProviderRepository() MFATokenProviderRepository
+
+	SchemaRepositoryForAppSync() SchemaRepository
 }

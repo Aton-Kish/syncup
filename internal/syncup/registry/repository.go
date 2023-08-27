@@ -26,6 +26,7 @@ import (
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
 	"github.com/Aton-Kish/syncup/internal/syncup/interface/console"
+	"github.com/Aton-Kish/syncup/internal/syncup/interface/infrastructure"
 )
 
 var (
@@ -41,6 +42,8 @@ type repo struct {
 	version *model.Version
 
 	mfaTokenProviderRepository repository.MFATokenProviderRepository
+
+	schemaRepositoryForAppSync repository.SchemaRepository
 }
 
 func NewRepository() repository.Repository {
@@ -55,16 +58,22 @@ func NewRepository() repository.Repository {
 
 	mfaTokenProviderRepository := console.NewMFATokenProviderRepository()
 
+	schemaRepositoryForAppSync := infrastructure.NewSchemaRepositoryForAppSync()
+
 	return &repo{
 		version: version,
 
 		mfaTokenProviderRepository: mfaTokenProviderRepository,
+
+		schemaRepositoryForAppSync: schemaRepositoryForAppSync,
 	}
 }
 
 func (r *repo) repositories() []any {
 	return []any{
 		r.MFATokenProviderRepository(),
+
+		r.SchemaRepositoryForAppSync(),
 	}
 }
 
@@ -86,4 +95,8 @@ func (r *repo) Version() *model.Version {
 
 func (r *repo) MFATokenProviderRepository() repository.MFATokenProviderRepository {
 	return r.mfaTokenProviderRepository
+}
+
+func (r *repo) SchemaRepositoryForAppSync() repository.SchemaRepository {
+	return r.schemaRepositoryForAppSync
 }
