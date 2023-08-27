@@ -31,5 +31,9 @@ type AWSActivator interface {
 }
 
 type Repository interface {
+	AWSActivator
+
 	Version() *model.Version
+
+	MFATokenProviderRepository() MFATokenProviderRepository
 }

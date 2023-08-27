@@ -21,8 +21,11 @@
 package registry
 
 import (
+	"context"
+
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
+	"github.com/Aton-Kish/syncup/internal/syncup/interface/console"
 )
 
 var (
@@ -36,6 +39,8 @@ var (
 
 type repo struct {
 	version *model.Version
+
+	mfaTokenProviderRepository repository.MFATokenProviderRepository
 }
 
 func NewRepository() repository.Repository {
@@ -48,11 +53,37 @@ func NewRepository() repository.Repository {
 		BuildTime: buildTime,
 	}
 
+	mfaTokenProviderRepository := console.NewMFATokenProviderRepository()
+
 	return &repo{
 		version: version,
+
+		mfaTokenProviderRepository: mfaTokenProviderRepository,
 	}
+}
+
+func (r *repo) repositories() []any {
+	return []any{
+		r.MFATokenProviderRepository(),
+	}
+}
+
+func (r *repo) ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptions)) error {
+	for _, rr := range r.repositories() {
+		if activator, ok := rr.(repository.AWSActivator); ok {
+			if err := activator.ActivateAWS(ctx, optFns...); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func (r *repo) Version() *model.Version {
 	return r.version
+}
+
+func (r *repo) MFATokenProviderRepository() repository.MFATokenProviderRepository {
+	return r.mfaTokenProviderRepository
 }
