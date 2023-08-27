@@ -43,7 +43,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_schemaAppSyncRepository_Get(t *testing.T) {
+func Test_schemaRepositoryForAppSync_Get(t *testing.T) {
 	testdataBaseDir := "../../../../testdata"
 	schema := model.Schema(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "schema/schema.graphqls")))
 
@@ -144,7 +144,7 @@ func Test_schemaAppSyncRepository_Get(t *testing.T) {
 
 			mockAppSyncClient := appsync.NewFromConfig(cfg)
 
-			r := &schemaAppSyncRepository{
+			r := &schemaRepositoryForAppSync{
 				appsyncClient: mockAppSyncClient,
 			}
 
@@ -171,7 +171,7 @@ func Test_schemaAppSyncRepository_Get(t *testing.T) {
 	}
 }
 
-func Test_schemaAppSyncRepository_Save(t *testing.T) {
+func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 	testdataBaseDir := "../../../../testdata"
 	schema := model.Schema(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "schema/schema.graphqls")))
 	duration := time.Duration(1) * time.Millisecond
@@ -721,7 +721,7 @@ func Test_schemaAppSyncRepository_Save(t *testing.T) {
 
 			mockAppSyncClient := appsync.NewFromConfig(cfg)
 
-			r := &schemaAppSyncRepository{
+			r := &schemaRepositoryForAppSync{
 				appsyncClient: mockAppSyncClient,
 				duration:      tt.fields.duration,
 			}

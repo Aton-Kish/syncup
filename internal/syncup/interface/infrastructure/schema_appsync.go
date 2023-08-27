@@ -36,7 +36,7 @@ const (
 	defaultDuration = time.Duration(1) * time.Second
 )
 
-type schemaAppSyncRepository struct {
+type schemaRepositoryForAppSync struct {
 	appsyncClient appsyncClient
 
 	duration time.Duration
@@ -45,16 +45,16 @@ type schemaAppSyncRepository struct {
 var (
 	_ interface {
 		repository.AWSActivator
-	} = (*schemaAppSyncRepository)(nil)
+	} = (*schemaRepositoryForAppSync)(nil)
 )
 
-func NewSchemaAppSyncRepository() repository.SchemaRepository {
-	return &schemaAppSyncRepository{
+func NewSchemaRepositoryForAppSync() repository.SchemaRepository {
+	return &schemaRepositoryForAppSync{
 		duration: defaultDuration,
 	}
 }
 
-func (r *schemaAppSyncRepository) ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptions)) error {
+func (r *schemaRepositoryForAppSync) ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptions)) error {
 	c, err := activatedAWSClients(ctx, optFns...)
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func (r *schemaAppSyncRepository) ActivateAWS(ctx context.Context, optFns ...fun
 	return nil
 }
 
-func (r *schemaAppSyncRepository) Get(ctx context.Context, apiID string) (*model.Schema, error) {
+func (r *schemaRepositoryForAppSync) Get(ctx context.Context, apiID string) (*model.Schema, error) {
 	out, err := r.appsyncClient.GetIntrospectionSchema(
 		ctx,
 		&appsync.GetIntrospectionSchemaInput{
@@ -81,7 +81,7 @@ func (r *schemaAppSyncRepository) Get(ctx context.Context, apiID string) (*model
 	return &s, nil
 }
 
-func (r *schemaAppSyncRepository) Save(ctx context.Context, apiID string, schema *model.Schema) (*model.Schema, error) {
+func (r *schemaRepositoryForAppSync) Save(ctx context.Context, apiID string, schema *model.Schema) (*model.Schema, error) {
 	if schema == nil {
 		return nil, &model.LibError{Err: model.ErrNilValue}
 	}
@@ -129,7 +129,7 @@ func (r *schemaAppSyncRepository) Save(ctx context.Context, apiID string, schema
 	return s, nil
 }
 
-func (r *schemaAppSyncRepository) startCreation(ctx context.Context, apiID string, definition []byte) error {
+func (r *schemaRepositoryForAppSync) startCreation(ctx context.Context, apiID string, definition []byte) error {
 	if _, err := r.appsyncClient.StartSchemaCreation(
 		ctx,
 		&appsync.StartSchemaCreationInput{
@@ -146,7 +146,7 @@ func (r *schemaAppSyncRepository) startCreation(ctx context.Context, apiID strin
 	return nil
 }
 
-func (r *schemaAppSyncRepository) isCreated(ctx context.Context, apiID string) (bool, error) {
+func (r *schemaRepositoryForAppSync) isCreated(ctx context.Context, apiID string) (bool, error) {
 	out, err := r.appsyncClient.GetSchemaCreationStatus(
 		ctx,
 		&appsync.GetSchemaCreationStatusInput{
