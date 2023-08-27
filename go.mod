@@ -10,6 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/appsync v1.22.5
 	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.4
+	go.uber.org/mock v0.2.0
 )
 
 require (
