@@ -29,7 +29,6 @@ import (
 	"time"
 
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
-	mock_infrastructure "github.com/Aton-Kish/syncup/internal/syncup/interface/infrastructure/mock"
 	"github.com/Aton-Kish/syncup/internal/testhelpers"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
@@ -42,7 +41,6 @@ import (
 	smithymiddleware "github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/mock/gomock"
 )
 
 func Test_schemaAppSyncRepository_Get(t *testing.T) {
@@ -121,22 +119,30 @@ func Test_schemaAppSyncRepository_Get(t *testing.T) {
 			// Arrange
 			ctx := context.Background()
 
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
+			cfg, err := config.LoadDefaultConfig(
+				ctx,
+				config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("key", "secret", "session")),
+				config.WithAPIOptions([]func(stack *smithymiddleware.Stack) error{
+					func(stack *smithymiddleware.Stack) error {
+						return stack.Finalize.Add(
+							smithymiddleware.FinalizeMiddlewareFunc("Mock", func(ctx context.Context, input smithymiddleware.FinalizeInput, next smithymiddleware.FinalizeHandler) (smithymiddleware.FinalizeOutput, smithymiddleware.Metadata, error) {
+								switch awsmiddleware.GetOperationName(ctx) {
+								case "GetIntrospectionSchema":
+									defer func() { tt.mockAppSyncClientGetIntrospectionSchema.calls++ }()
+									r := tt.mockAppSyncClientGetIntrospectionSchema.returns[tt.mockAppSyncClientGetIntrospectionSchema.calls]
+									return smithymiddleware.FinalizeOutput{Result: r.out}, smithymiddleware.Metadata{}, r.err
+								default:
+									t.Fatal("unexpected operation")
+									return smithymiddleware.FinalizeOutput{}, smithymiddleware.Metadata{}, nil
+								}
+							}), smithymiddleware.After,
+						)
+					},
+				}),
+			)
+			assert.NoError(t, err)
 
-			mockAppSyncClient := mock_infrastructure.NewMockappsyncClient(ctrl)
-
-			mockAppSyncClient.
-				EXPECT().
-				GetIntrospectionSchema(ctx, gomock.Any()).
-				DoAndReturn(func(ctx context.Context, params *appsync.GetIntrospectionSchemaInput, optFns ...func(*appsync.Options)) (*appsync.GetIntrospectionSchemaOutput, error) {
-					defer func() { tt.mockAppSyncClientGetIntrospectionSchema.calls++ }()
-
-					r := tt.mockAppSyncClientGetIntrospectionSchema.returns[tt.mockAppSyncClientGetIntrospectionSchema.calls]
-
-					return r.out, r.err
-				}).
-				Times(len(tt.mockAppSyncClientGetIntrospectionSchema.returns))
+			mockAppSyncClient := appsync.NewFromConfig(cfg)
 
 			r := &schemaAppSyncRepository{
 				appsyncClient: mockAppSyncClient,
