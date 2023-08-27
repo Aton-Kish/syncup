@@ -8,7 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	v2 "github.com/AlecAivazis/survey/v2"
+	survey "github.com/AlecAivazis/survey/v2"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -36,7 +36,7 @@ func (m *Mockisurvey) EXPECT() *MockisurveyMockRecorder {
 }
 
 // Confirm mocks base method.
-func (m *Mockisurvey) Confirm(ctx context.Context, prompt *v2.Confirm, opts ...v2.AskOpt) (bool, error) {
+func (m *Mockisurvey) Confirm(ctx context.Context, prompt *survey.Confirm, opts ...survey.AskOpt) (bool, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, prompt}
 	for _, a := range opts {
@@ -56,7 +56,7 @@ func (mr *MockisurveyMockRecorder) Confirm(ctx, prompt interface{}, opts ...inte
 }
 
 // InputInt mocks base method.
-func (m *Mockisurvey) InputInt(ctx context.Context, prompt *v2.Input, opts ...v2.AskOpt) (int, error) {
+func (m *Mockisurvey) InputInt(ctx context.Context, prompt *survey.Input, opts ...survey.AskOpt) (int, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, prompt}
 	for _, a := range opts {
@@ -76,7 +76,7 @@ func (mr *MockisurveyMockRecorder) InputInt(ctx, prompt interface{}, opts ...int
 }
 
 // InputString mocks base method.
-func (m *Mockisurvey) InputString(ctx context.Context, prompt *v2.Input, opts ...v2.AskOpt) (string, error) {
+func (m *Mockisurvey) InputString(ctx context.Context, prompt *survey.Input, opts ...survey.AskOpt) (string, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, prompt}
 	for _, a := range opts {
@@ -96,7 +96,7 @@ func (mr *MockisurveyMockRecorder) InputString(ctx, prompt interface{}, opts ...
 }
 
 // MultiSelect mocks base method.
-func (m *Mockisurvey) MultiSelect(ctx context.Context, prompt *v2.MultiSelect, opts ...v2.AskOpt) ([]string, error) {
+func (m *Mockisurvey) MultiSelect(ctx context.Context, prompt *survey.MultiSelect, opts ...survey.AskOpt) ([]string, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, prompt}
 	for _, a := range opts {
@@ -116,7 +116,7 @@ func (mr *MockisurveyMockRecorder) MultiSelect(ctx, prompt interface{}, opts ...
 }
 
 // Password mocks base method.
-func (m *Mockisurvey) Password(ctx context.Context, prompt *v2.Password, opts ...v2.AskOpt) (string, error) {
+func (m *Mockisurvey) Password(ctx context.Context, prompt *survey.Password, opts ...survey.AskOpt) (string, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, prompt}
 	for _, a := range opts {
@@ -136,7 +136,7 @@ func (mr *MockisurveyMockRecorder) Password(ctx, prompt interface{}, opts ...int
 }
 
 // Select mocks base method.
-func (m *Mockisurvey) Select(ctx context.Context, prompt *v2.Select, opts ...v2.AskOpt) (string, error) {
+func (m *Mockisurvey) Select(ctx context.Context, prompt *survey.Select, opts ...survey.AskOpt) (string, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, prompt}
 	for _, a := range opts {
