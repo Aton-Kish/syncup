@@ -22,15 +22,24 @@ package infrastructure
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
+	"github.com/aws/aws-sdk-go-v2/aws/retry"
 	"github.com/aws/aws-sdk-go-v2/service/appsync"
 	"github.com/aws/aws-sdk-go-v2/service/appsync/types"
 )
 
+const (
+	defaultDuration = time.Duration(1) * time.Second
+)
+
 type schemaAppSyncRepository struct {
 	appsyncClient appsyncClient
+
+	duration time.Duration
 }
 
 var (
@@ -40,7 +49,9 @@ var (
 )
 
 func NewSchemaAppSyncRepository() repository.SchemaRepository {
-	return &schemaAppSyncRepository{}
+	return &schemaAppSyncRepository{
+		duration: defaultDuration,
+	}
 }
 
 func (r *schemaAppSyncRepository) ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptions)) error {
@@ -71,5 +82,89 @@ func (r *schemaAppSyncRepository) Get(ctx context.Context, apiID string) (*model
 }
 
 func (r *schemaAppSyncRepository) Save(ctx context.Context, apiID string, schema *model.Schema) (*model.Schema, error) {
-	panic("unimplemented")
+	if schema == nil {
+		return nil, &model.LibError{Err: model.ErrNilValue}
+	}
+
+	if err := r.startCreation(ctx, apiID, []byte(*schema)); err != nil {
+		return nil, err
+	}
+
+	ticker := time.NewTicker(r.duration)
+	defer ticker.Stop()
+
+	ch := make(chan error)
+	go func() {
+		defer close(ch)
+
+		for {
+			select {
+			case <-ticker.C:
+				isCreated, err := r.isCreated(ctx, apiID)
+				if err != nil {
+					ch <- err
+					return
+				}
+
+				if isCreated {
+					ch <- nil
+					return
+				}
+			case <-ctx.Done():
+				ch <- &model.LibError{Err: ctx.Err()}
+				return
+			}
+		}
+	}()
+
+	if err := <-ch; err != nil {
+		return nil, err
+	}
+
+	s, err := r.Get(ctx, apiID)
+	if err != nil {
+		return nil, err
+	}
+
+	return s, nil
+}
+
+func (r *schemaAppSyncRepository) startCreation(ctx context.Context, apiID string, definition []byte) error {
+	if _, err := r.appsyncClient.StartSchemaCreation(
+		ctx,
+		&appsync.StartSchemaCreationInput{
+			ApiId:      &apiID,
+			Definition: definition,
+		},
+		func(o *appsync.Options) {
+			o.Retryer = retry.AddWithErrorCodes(o.Retryer, (*types.ConcurrentModificationException)(nil).ErrorCode())
+		},
+	); err != nil {
+		return &model.LibError{Err: err}
+	}
+
+	return nil
+}
+
+func (r *schemaAppSyncRepository) isCreated(ctx context.Context, apiID string) (bool, error) {
+	out, err := r.appsyncClient.GetSchemaCreationStatus(
+		ctx,
+		&appsync.GetSchemaCreationStatusInput{
+			ApiId: &apiID,
+		},
+	)
+	if err != nil {
+		return false, &model.LibError{Err: err}
+	}
+
+	switch out.Status {
+	case types.SchemaStatusActive, types.SchemaStatusSuccess:
+		return true, nil
+	case types.SchemaStatusProcessing:
+		return false, nil
+	case types.SchemaStatusFailed:
+		return false, &model.LibError{Err: model.ErrCreateFailed}
+	default:
+		return false, &model.LibError{Err: fmt.Errorf("%w: schema status %s", model.ErrInvalidValue, out.Status)}
+	}
 }

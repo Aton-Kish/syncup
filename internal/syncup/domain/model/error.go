@@ -21,7 +21,15 @@
 package model
 
 import (
+	"errors"
 	"fmt"
+)
+
+var (
+	ErrNilValue     = errors.New("nil value")
+	ErrInvalidValue = errors.New("invalid value")
+
+	ErrCreateFailed = errors.New("failed to create")
 )
 
 type LibError struct {
