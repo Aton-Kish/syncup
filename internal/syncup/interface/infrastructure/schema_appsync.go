@@ -25,6 +25,8 @@ import (
 
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
+	"github.com/aws/aws-sdk-go-v2/service/appsync"
+	"github.com/aws/aws-sdk-go-v2/service/appsync/types"
 )
 
 type schemaAppSyncRepository struct {
@@ -53,7 +55,19 @@ func (r *schemaAppSyncRepository) ActivateAWS(ctx context.Context, optFns ...fun
 }
 
 func (r *schemaAppSyncRepository) Get(ctx context.Context, apiID string) (*model.Schema, error) {
-	panic("unimplemented")
+	out, err := r.appsyncClient.GetIntrospectionSchema(
+		ctx,
+		&appsync.GetIntrospectionSchemaInput{
+			ApiId:  &apiID,
+			Format: types.OutputTypeSdl,
+		},
+	)
+	if err != nil {
+		return nil, &model.LibError{Err: err}
+	}
+
+	s := model.Schema(out.Schema)
+	return &s, nil
 }
 
 func (r *schemaAppSyncRepository) Save(ctx context.Context, apiID string, schema *model.Schema) (*model.Schema, error) {

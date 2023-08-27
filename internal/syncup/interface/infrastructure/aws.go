@@ -34,7 +34,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/appsync"
 )
 
-type appsyncClient interface{}
+type appsyncClient interface {
+	GetIntrospectionSchema(ctx context.Context, params *appsync.GetIntrospectionSchemaInput, optFns ...func(*appsync.Options)) (*appsync.GetIntrospectionSchemaOutput, error)
+}
 
 type awsClients struct {
 	appsyncClient appsyncClient
