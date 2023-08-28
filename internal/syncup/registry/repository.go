@@ -44,6 +44,7 @@ type repo struct {
 	mfaTokenProviderRepository repository.MFATokenProviderRepository
 
 	schemaRepositoryForAppSync repository.SchemaRepository
+	schemaRepositoryForFS      repository.SchemaRepository
 }
 
 func NewRepository() repository.Repository {
@@ -59,6 +60,7 @@ func NewRepository() repository.Repository {
 	mfaTokenProviderRepository := console.NewMFATokenProviderRepository()
 
 	schemaRepositoryForAppSync := infrastructure.NewSchemaRepositoryForAppSync()
+	schemaRepositoryForFS := infrastructure.NewSchemaRepositoryForFS()
 
 	return &repo{
 		version: version,
@@ -66,6 +68,7 @@ func NewRepository() repository.Repository {
 		mfaTokenProviderRepository: mfaTokenProviderRepository,
 
 		schemaRepositoryForAppSync: schemaRepositoryForAppSync,
+		schemaRepositoryForFS:      schemaRepositoryForFS,
 	}
 }
 
@@ -74,6 +77,7 @@ func (r *repo) repositories() []any {
 		r.MFATokenProviderRepository(),
 
 		r.SchemaRepositoryForAppSync(),
+		r.SchemaRepositoryForFS(),
 	}
 }
 
@@ -89,6 +93,24 @@ func (r *repo) ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptio
 	return nil
 }
 
+func (r *repo) BaseDir(ctx context.Context) string {
+	for _, rr := range r.repositories() {
+		if baseDirProvider, ok := rr.(repository.BaseDirProvider); ok {
+			return baseDirProvider.BaseDir(ctx)
+		}
+	}
+
+	return ""
+}
+
+func (r *repo) SetBaseDir(ctx context.Context, dir string) {
+	for _, rr := range r.repositories() {
+		if baseDirProvider, ok := rr.(repository.BaseDirProvider); ok {
+			baseDirProvider.SetBaseDir(ctx, dir)
+		}
+	}
+}
+
 func (r *repo) Version() *model.Version {
 	return r.version
 }
@@ -99,4 +121,8 @@ func (r *repo) MFATokenProviderRepository() repository.MFATokenProviderRepositor
 
 func (r *repo) SchemaRepositoryForAppSync() repository.SchemaRepository {
 	return r.schemaRepositoryForAppSync
+}
+
+func (r *repo) SchemaRepositoryForFS() repository.SchemaRepository {
+	return r.schemaRepositoryForFS
 }

@@ -37,10 +37,12 @@ type BaseDirProvider interface {
 
 type Repository interface {
 	AWSActivator
+	BaseDirProvider
 
 	Version() *model.Version
 
 	MFATokenProviderRepository() MFATokenProviderRepository
 
 	SchemaRepositoryForAppSync() SchemaRepository
+	SchemaRepositoryForFS() SchemaRepository
 }
