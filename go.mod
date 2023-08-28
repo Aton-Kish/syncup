@@ -14,7 +14,10 @@ require (
 	github.com/stretchr/testify v1.8.4
 )
 
-require go.uber.org/mock v0.2.0
+require (
+	github.com/briandowns/spinner v1.23.0
+	go.uber.org/mock v0.2.0
+)
 
 require (
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.13.11 // indirect
@@ -26,6 +29,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.15.5 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.21.5 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/fatih/color v1.7.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/mattn/go-colorable v0.1.2 // indirect
@@ -34,7 +38,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/sys v0.0.0-20211019181941-9d821ace8654 // indirect
-	golang.org/x/term v0.0.0-20210503060354-a79de5458b56 // indirect
+	golang.org/x/term v0.1.0 // indirect
 	golang.org/x/text v0.3.3 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
