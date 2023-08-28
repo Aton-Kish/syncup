@@ -22,6 +22,7 @@ package registry
 
 import (
 	"context"
+	"os"
 
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
@@ -41,6 +42,8 @@ var (
 type repo struct {
 	version *model.Version
 
+	trackerRepository repository.TrackerRepository
+
 	mfaTokenProviderRepository repository.MFATokenProviderRepository
 
 	schemaRepositoryForAppSync repository.SchemaRepository
@@ -57,6 +60,8 @@ func NewRepository() repository.Repository {
 		BuildTime: buildTime,
 	}
 
+	trackerRepository := console.NewTrackerRepositoryForTerminal(os.Stderr)
+
 	mfaTokenProviderRepository := console.NewMFATokenProviderRepository()
 
 	schemaRepositoryForAppSync := infrastructure.NewSchemaRepositoryForAppSync()
@@ -64,6 +69,8 @@ func NewRepository() repository.Repository {
 
 	return &repo{
 		version: version,
+
+		trackerRepository: trackerRepository,
 
 		mfaTokenProviderRepository: mfaTokenProviderRepository,
 
@@ -74,6 +81,8 @@ func NewRepository() repository.Repository {
 
 func (r *repo) repositories() []any {
 	return []any{
+		r.TrackerRepository(),
+
 		r.MFATokenProviderRepository(),
 
 		r.SchemaRepositoryForAppSync(),
@@ -113,6 +122,10 @@ func (r *repo) SetBaseDir(ctx context.Context, dir string) {
 
 func (r *repo) Version() *model.Version {
 	return r.version
+}
+
+func (r *repo) TrackerRepository() repository.TrackerRepository {
+	return r.trackerRepository
 }
 
 func (r *repo) MFATokenProviderRepository() repository.MFATokenProviderRepository {
