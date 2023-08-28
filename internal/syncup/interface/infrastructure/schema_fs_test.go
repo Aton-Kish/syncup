@@ -171,6 +171,21 @@ func Test_schemaRepositoryForFS_Save(t *testing.T) {
 				errIs: nil,
 			},
 		},
+		{
+			name: "edge path: nil schema",
+			fields: fields{
+				baseDir: t.TempDir(),
+			},
+			args: args{
+				apiID:  "apiID",
+				schema: nil,
+			},
+			expected: expected{
+				out:   nil,
+				errAs: &model.LibError{},
+				errIs: model.ErrNilValue,
+			},
+		},
 	}
 
 	for _, tt := range tests {

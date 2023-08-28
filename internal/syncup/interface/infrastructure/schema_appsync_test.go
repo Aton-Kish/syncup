@@ -461,7 +461,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			expected: expected{
 				out:   nil,
 				errAs: &model.LibError{},
-				errIs: nil,
+				errIs: model.ErrNilValue,
 			},
 		},
 		{
