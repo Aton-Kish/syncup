@@ -27,6 +27,7 @@ import (
 
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
+	"github.com/Aton-Kish/syncup/internal/xfilepath"
 )
 
 const (
@@ -70,5 +71,16 @@ func (r *schemaRepositoryForFS) Save(ctx context.Context, apiID string, schema *
 		return nil, &model.LibError{Err: model.ErrNilValue}
 	}
 
-	panic("unimplemented")
+	dir := r.BaseDir(ctx)
+	if !xfilepath.Exist(dir) {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return nil, &model.LibError{Err: err}
+		}
+	}
+
+	if err := os.WriteFile(filepath.Join(dir, fileNameSchema), []byte(*schema), 0o644); err != nil {
+		return nil, &model.LibError{Err: err}
+	}
+
+	return schema, nil
 }
