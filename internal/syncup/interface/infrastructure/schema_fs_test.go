@@ -115,3 +115,92 @@ func Test_schemaRepositoryForFS_Get(t *testing.T) {
 		})
 	}
 }
+
+func Test_schemaRepositoryForFS_Save(t *testing.T) {
+	testdataBaseDir := "../../../../testdata"
+	schema := model.Schema(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "schema/schema.graphqls")))
+
+	type fields struct {
+		baseDir string
+	}
+
+	type args struct {
+		apiID  string
+		schema *model.Schema
+	}
+
+	type expected struct {
+		out   *model.Schema
+		errAs error
+		errIs error
+	}
+
+	tests := []struct {
+		name     string
+		fields   fields
+		args     args
+		expected expected
+	}{
+		{
+			name: "happy path: existing dir",
+			fields: fields{
+				baseDir: t.TempDir(),
+			},
+			args: args{
+				apiID:  "apiID",
+				schema: &schema,
+			},
+			expected: expected{
+				out:   &schema,
+				errAs: nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "happy path: non-existing dir",
+			fields: fields{
+				baseDir: filepath.Join(t.TempDir(), "notExist"),
+			},
+			args: args{
+				apiID:  "apiID",
+				schema: &schema,
+			},
+			expected: expected{
+				out:   &schema,
+				errAs: nil,
+				errIs: nil,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange
+			ctx := context.Background()
+
+			r := &schemaRepositoryForFS{
+				baseDir: tt.fields.baseDir,
+			}
+
+			// Act
+			actual, err := r.Save(ctx, tt.args.apiID, tt.args.schema)
+
+			// Assert
+			if tt.expected.errAs == nil && tt.expected.errIs == nil {
+				assert.Equal(t, tt.expected.out, actual)
+
+				assert.NoError(t, err)
+			} else {
+				assert.Nil(t, actual)
+
+				if tt.expected.errAs != nil {
+					assert.ErrorAs(t, err, &tt.expected.errAs)
+				}
+
+				if tt.expected.errIs != nil {
+					assert.ErrorIs(t, err, tt.expected.errIs)
+				}
+			}
+		})
+	}
+}
