@@ -163,8 +163,19 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
+			mockTrackerRepository := mock_repository.NewMockTrackerRepository(ctrl)
 			mockSchemaRepositoryForAppSync := mock_repository.NewMockSchemaRepository(ctrl)
 			mockSchemaRepositoryForFS := mock_repository.NewMockSchemaRepository(ctrl)
+
+			mockTrackerRepository.
+				EXPECT().
+				Doing(ctx, gomock.Any(), gomock.Any()).
+				Times(1)
+
+			mockTrackerRepository.
+				EXPECT().
+				Done(ctx, gomock.Any(), gomock.Any()).
+				Times(1)
 
 			mockSchemaRepositoryForAppSync.
 				EXPECT().
@@ -187,6 +198,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				Times(len(tt.mockSchemaRepositoryForFSSave.returns))
 
 			uc := &pullUseCase{
+				trackerRepository:          mockTrackerRepository,
 				schemaRepositoryForAppSync: mockSchemaRepositoryForAppSync,
 				schemaRepositoryForFS:      mockSchemaRepositoryForFS,
 			}
