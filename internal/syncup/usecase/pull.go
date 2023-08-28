@@ -25,6 +25,7 @@ package usecase
 import (
 	"context"
 
+	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
 )
 
@@ -40,12 +41,14 @@ type PullUseCase interface {
 }
 
 type pullUseCase struct {
+	trackerRepository          repository.TrackerRepository
 	schemaRepositoryForAppSync repository.SchemaRepository
 	schemaRepositoryForFS      repository.SchemaRepository
 }
 
 func NewPullUseCase(repo repository.Repository) PullUseCase {
 	return &pullUseCase{
+		trackerRepository:          repo.TrackerRepository(),
 		schemaRepositoryForAppSync: repo.SchemaRepositoryForAppSync(),
 		schemaRepositoryForFS:      repo.SchemaRepositoryForFS(),
 	}
@@ -54,14 +57,20 @@ func NewPullUseCase(repo repository.Repository) PullUseCase {
 func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (*PullOutput, error) {
 	apiID := params.APIID
 
+	uc.trackerRepository.Doing(ctx, model.TrackerStatusInfo, "fetching schema")
+
 	schema, err := uc.schemaRepositoryForAppSync.Get(ctx, apiID)
 	if err != nil {
+		uc.trackerRepository.Done(ctx, model.TrackerStatusDanger, "failed to fetch schema")
 		return nil, err
 	}
 
 	if _, err := uc.schemaRepositoryForFS.Save(ctx, apiID, schema); err != nil {
+		uc.trackerRepository.Done(ctx, model.TrackerStatusDanger, "failed to save schema")
 		return nil, err
 	}
+
+	uc.trackerRepository.Done(ctx, model.TrackerStatusSuccess, "saved schema")
 
 	return &PullOutput{}, nil
 }
