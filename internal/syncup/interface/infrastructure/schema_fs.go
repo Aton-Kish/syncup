@@ -18,29 +18,45 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package repository
+package infrastructure
 
 import (
 	"context"
 
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
+	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
 )
 
-type AWSActivator interface {
-	ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptions)) error
+type schemaRepositoryForFS struct {
+	baseDir string
 }
 
-type BaseDirProvider interface {
-	BaseDir(ctx context.Context) string
-	SetBaseDir(ctx context.Context, dir string)
+var (
+	_ interface {
+		repository.BaseDirProvider
+	} = (*schemaRepositoryForFS)(nil)
+)
+
+func NewSchemaRepositoryForFS() repository.SchemaRepository {
+	return &schemaRepositoryForFS{}
 }
 
-type Repository interface {
-	AWSActivator
+func (r *schemaRepositoryForFS) BaseDir(ctx context.Context) string {
+	return r.baseDir
+}
 
-	Version() *model.Version
+func (r *schemaRepositoryForFS) SetBaseDir(ctx context.Context, dir string) {
+	r.baseDir = dir
+}
 
-	MFATokenProviderRepository() MFATokenProviderRepository
+func (r *schemaRepositoryForFS) Get(ctx context.Context, apiID string) (*model.Schema, error) {
+	panic("unimplemented")
+}
 
-	SchemaRepositoryForAppSync() SchemaRepository
+func (r *schemaRepositoryForFS) Save(ctx context.Context, apiID string, schema *model.Schema) (*model.Schema, error) {
+	if schema == nil {
+		return nil, &model.LibError{Err: model.ErrNilValue}
+	}
+
+	panic("unimplemented")
 }
