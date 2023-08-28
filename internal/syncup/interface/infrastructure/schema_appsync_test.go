@@ -107,7 +107,7 @@ func Test_schemaRepositoryForAppSync_Get(t *testing.T) {
 				},
 			},
 			expected: expected{
-				out:   &schema,
+				out:   nil,
 				errAs: &model.LibError{},
 				errIs: nil,
 			},
@@ -152,13 +152,11 @@ func Test_schemaRepositoryForAppSync_Get(t *testing.T) {
 			actual, err := r.Get(ctx, tt.args.apiID)
 
 			// Assert
-			if tt.expected.errAs == nil && tt.expected.errIs == nil {
-				assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.out, actual)
 
+			if tt.expected.errAs == nil && tt.expected.errIs == nil {
 				assert.NoError(t, err)
 			} else {
-				assert.Nil(t, actual)
-
 				if tt.expected.errAs != nil {
 					assert.ErrorAs(t, err, &tt.expected.errAs)
 				}
@@ -730,13 +728,11 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			actual, err := r.Save(ctx, tt.args.apiID, tt.args.schema)
 
 			// Assert
-			if tt.expected.errAs == nil && tt.expected.errIs == nil {
-				assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.out, actual)
 
+			if tt.expected.errAs == nil && tt.expected.errIs == nil {
 				assert.NoError(t, err)
 			} else {
-				assert.Nil(t, actual)
-
 				if tt.expected.errAs != nil {
 					assert.ErrorAs(t, err, &tt.expected.errAs)
 				}

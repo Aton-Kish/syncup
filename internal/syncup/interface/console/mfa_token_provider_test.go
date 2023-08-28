@@ -116,13 +116,11 @@ func Test_mfaTokenProviderRepository_Get(t *testing.T) {
 			actual, err := provider()
 
 			// Assert
-			if tt.expected.errAs == nil && tt.expected.errIs == nil {
-				assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.out, actual)
 
+			if tt.expected.errAs == nil && tt.expected.errIs == nil {
 				assert.NoError(t, err)
 			} else {
-				assert.Zero(t, actual)
-
 				if tt.expected.errAs != nil {
 					assert.ErrorAs(t, err, &tt.expected.errAs)
 				}

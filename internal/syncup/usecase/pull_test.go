@@ -197,13 +197,11 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			actual, err := uc.Execute(ctx, tt.args.params)
 
 			// Assert
-			if tt.expected.errAs == nil && tt.expected.errIs == nil {
-				assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.out, actual)
 
+			if tt.expected.errAs == nil && tt.expected.errIs == nil {
 				assert.NoError(t, err)
 			} else {
-				assert.Nil(t, actual)
-
 				if tt.expected.errAs != nil {
 					assert.ErrorAs(t, err, &tt.expected.errAs)
 				}
