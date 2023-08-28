@@ -22,12 +22,14 @@ package console
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"time"
 
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
 	"github.com/briandowns/spinner"
+	"github.com/mgutz/ansi"
 )
 
 type trackerRepositoryForTerminal struct {
@@ -43,9 +45,41 @@ func NewTrackerRepositoryForTerminal(w io.Writer) repository.TrackerRepository {
 }
 
 func (r *trackerRepositoryForTerminal) Doing(ctx context.Context, status model.TrackerStatus, msg string) {
-	panic("unimplemented")
+	r.spinner.SetSuffix(fmt.Sprintf(" %s", msg))
+	r.spinner.Start()
 }
 
 func (r *trackerRepositoryForTerminal) Done(ctx context.Context, status model.TrackerStatus, msg string) {
-	panic("unimplemented")
+	var icon, iconStyle, msgStyle string
+	switch status {
+	case model.TrackerStatusSuccess:
+		icon = "v"
+		iconStyle = "green"
+		msgStyle = "default+hb"
+	case model.TrackerStatusInfo:
+		icon = "i"
+		iconStyle = "cyan"
+		msgStyle = "default+hb"
+	case model.TrackerStatusWarning:
+		icon = "!"
+		iconStyle = "yellow"
+		msgStyle = "yellow"
+	case model.TrackerStatusDanger:
+		icon = "X"
+		iconStyle = "red"
+		msgStyle = "red"
+	default:
+		icon = " "
+		iconStyle = ""
+		msgStyle = ""
+	}
+
+	cmsg := fmt.Sprintln(ansi.Color(icon, iconStyle), ansi.Color(msg, msgStyle))
+
+	if r.spinner.Active() {
+		r.spinner.SetFinalMsg(cmsg)
+		r.spinner.Stop()
+	} else {
+		fmt.Fprint(r.writer, cmsg)
+	}
 }
