@@ -22,9 +22,15 @@ package infrastructure
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
+)
+
+const (
+	fileNameSchema = "schema.graphqls"
 )
 
 type schemaRepositoryForFS struct {
@@ -50,7 +56,13 @@ func (r *schemaRepositoryForFS) SetBaseDir(ctx context.Context, dir string) {
 }
 
 func (r *schemaRepositoryForFS) Get(ctx context.Context, apiID string) (*model.Schema, error) {
-	panic("unimplemented")
+	data, err := os.ReadFile(filepath.Join(r.BaseDir(ctx), fileNameSchema))
+	if err != nil {
+		return nil, &model.LibError{Err: err}
+	}
+
+	s := model.Schema(data)
+	return &s, nil
 }
 
 func (r *schemaRepositoryForFS) Save(ctx context.Context, apiID string, schema *model.Schema) (*model.Schema, error) {
