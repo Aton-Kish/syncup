@@ -23,6 +23,7 @@ package registry
 import (
 	"context"
 	"os"
+	"strconv"
 
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
@@ -60,7 +61,12 @@ func NewRepository() repository.Repository {
 		BuildTime: buildTime,
 	}
 
-	trackerRepository := console.NewTrackerRepositoryForTerminal(os.Stderr)
+	var trackerRepository repository.TrackerRepository
+	if isCI, _ := strconv.ParseBool(os.Getenv("CI")); isCI {
+		trackerRepository = console.NewTrackerRepositoryForLog(os.Stderr)
+	} else {
+		trackerRepository = console.NewTrackerRepositoryForTerminal(os.Stderr)
+	}
 
 	mfaTokenProviderRepository := console.NewMFATokenProviderRepository()
 
