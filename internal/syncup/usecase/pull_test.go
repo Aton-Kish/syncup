@@ -169,13 +169,20 @@ func Test_pullUseCase_Execute(t *testing.T) {
 
 			mockTrackerRepository.
 				EXPECT().
-				Doing(ctx, gomock.Any(), gomock.Any()).
+				InProgress(ctx, gomock.Any()).
 				Times(1)
 
-			mockTrackerRepository.
-				EXPECT().
-				Done(ctx, gomock.Any(), gomock.Any()).
-				Times(1)
+			if tt.expected.errAs == nil && tt.expected.errIs == nil {
+				mockTrackerRepository.
+					EXPECT().
+					Success(ctx, gomock.Any()).
+					Times(1)
+			} else {
+				mockTrackerRepository.
+					EXPECT().
+					Failed(ctx, gomock.Any()).
+					Times(1)
+			}
 
 			mockSchemaRepositoryForAppSync.
 				EXPECT().

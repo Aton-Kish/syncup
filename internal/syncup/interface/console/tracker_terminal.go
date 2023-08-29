@@ -44,30 +44,30 @@ func NewTrackerRepositoryForTerminal(w io.Writer) repository.TrackerRepository {
 	}
 }
 
-func (r *trackerRepositoryForTerminal) Doing(ctx context.Context, status model.TrackerStatus, msg string) {
+func (r *trackerRepositoryForTerminal) InProgress(ctx context.Context, msg string) {
 	r.spinner.SetSuffix(fmt.Sprintf(" %s", msg))
 	r.spinner.Start()
 }
 
-func (r *trackerRepositoryForTerminal) Done(ctx context.Context, status model.TrackerStatus, msg string) {
+func (r *trackerRepositoryForTerminal) Failed(ctx context.Context, msg string) {
+	r.done(ctx, model.TrackerStatusFailed, msg)
+}
+
+func (r *trackerRepositoryForTerminal) Success(ctx context.Context, msg string) {
+	r.done(ctx, model.TrackerStatusSuccess, msg)
+}
+
+func (r *trackerRepositoryForTerminal) done(ctx context.Context, status model.TrackerStatus, msg string) {
 	var icon, iconStyle, msgStyle string
 	switch status {
+	case model.TrackerStatusFailed:
+		icon = "X"
+		iconStyle = "red"
+		msgStyle = "red"
 	case model.TrackerStatusSuccess:
 		icon = "v"
 		iconStyle = "green"
 		msgStyle = "default+hb"
-	case model.TrackerStatusInfo:
-		icon = "i"
-		iconStyle = "cyan"
-		msgStyle = "default+hb"
-	case model.TrackerStatusWarning:
-		icon = "!"
-		iconStyle = "yellow"
-		msgStyle = "yellow"
-	case model.TrackerStatusDanger:
-		icon = "X"
-		iconStyle = "red"
-		msgStyle = "red"
 	default:
 		icon = " "
 		iconStyle = ""

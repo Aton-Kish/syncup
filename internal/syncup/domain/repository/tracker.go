@@ -24,11 +24,10 @@ package repository
 
 import (
 	"context"
-
-	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 )
 
 type TrackerRepository interface {
-	Doing(ctx context.Context, status model.TrackerStatus, msg string)
-	Done(ctx context.Context, status model.TrackerStatus, msg string)
+	InProgress(ctx context.Context, msg string)
+	Failed(ctx context.Context, msg string)
+	Success(ctx context.Context, msg string)
 }

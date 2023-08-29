@@ -214,6 +214,20 @@ func (mr *MockRepositoryMockRecorder) SetBaseDir(ctx, dir interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetBaseDir", reflect.TypeOf((*MockRepository)(nil).SetBaseDir), ctx, dir)
 }
 
+// TrackerRepository mocks base method.
+func (m *MockRepository) TrackerRepository() repository.TrackerRepository {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TrackerRepository")
+	ret0, _ := ret[0].(repository.TrackerRepository)
+	return ret0
+}
+
+// TrackerRepository indicates an expected call of TrackerRepository.
+func (mr *MockRepositoryMockRecorder) TrackerRepository() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrackerRepository", reflect.TypeOf((*MockRepository)(nil).TrackerRepository))
+}
+
 // Version mocks base method.
 func (m *MockRepository) Version() *model.Version {
 	m.ctrl.T.Helper()

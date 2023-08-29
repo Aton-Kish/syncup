@@ -8,7 +8,6 @@ import (
 	context "context"
 	reflect "reflect"
 
-	model "github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -35,26 +34,38 @@ func (m *MockTrackerRepository) EXPECT() *MockTrackerRepositoryMockRecorder {
 	return m.recorder
 }
 
-// Doing mocks base method.
-func (m *MockTrackerRepository) Doing(ctx context.Context, status model.TrackerStatus, msg string) {
+// Failed mocks base method.
+func (m *MockTrackerRepository) Failed(ctx context.Context, msg string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Doing", ctx, status, msg)
+	m.ctrl.Call(m, "Failed", ctx, msg)
 }
 
-// Doing indicates an expected call of Doing.
-func (mr *MockTrackerRepositoryMockRecorder) Doing(ctx, status, msg interface{}) *gomock.Call {
+// Failed indicates an expected call of Failed.
+func (mr *MockTrackerRepositoryMockRecorder) Failed(ctx, msg interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Doing", reflect.TypeOf((*MockTrackerRepository)(nil).Doing), ctx, status, msg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Failed", reflect.TypeOf((*MockTrackerRepository)(nil).Failed), ctx, msg)
 }
 
-// Done mocks base method.
-func (m *MockTrackerRepository) Done(ctx context.Context, status model.TrackerStatus, msg string) {
+// InProgress mocks base method.
+func (m *MockTrackerRepository) InProgress(ctx context.Context, msg string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Done", ctx, status, msg)
+	m.ctrl.Call(m, "InProgress", ctx, msg)
 }
 
-// Done indicates an expected call of Done.
-func (mr *MockTrackerRepositoryMockRecorder) Done(ctx, status, msg interface{}) *gomock.Call {
+// InProgress indicates an expected call of InProgress.
+func (mr *MockTrackerRepositoryMockRecorder) InProgress(ctx, msg interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Done", reflect.TypeOf((*MockTrackerRepository)(nil).Done), ctx, status, msg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InProgress", reflect.TypeOf((*MockTrackerRepository)(nil).InProgress), ctx, msg)
+}
+
+// Success mocks base method.
+func (m *MockTrackerRepository) Success(ctx context.Context, msg string) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Success", ctx, msg)
+}
+
+// Success indicates an expected call of Success.
+func (mr *MockTrackerRepositoryMockRecorder) Success(ctx, msg interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Success", reflect.TypeOf((*MockTrackerRepository)(nil).Success), ctx, msg)
 }

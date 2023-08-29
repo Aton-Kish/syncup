@@ -23,8 +23,7 @@ package model
 type TrackerStatus string
 
 const (
-	TrackerStatusSuccess TrackerStatus = "success"
-	TrackerStatusInfo    TrackerStatus = "info"
-	TrackerStatusWarning TrackerStatus = "warning"
-	TrackerStatusDanger  TrackerStatus = "danger"
+	TrackerStatusInProgress TrackerStatus = "in progress"
+	TrackerStatusFailed     TrackerStatus = "failed"
+	TrackerStatusSuccess    TrackerStatus = "success"
 )

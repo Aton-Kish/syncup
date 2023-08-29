@@ -26,16 +26,14 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	mock_console "github.com/Aton-Kish/syncup/internal/syncup/interface/console/mock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
 
-func Test_trackerRepositoryForTerminal_Doing(t *testing.T) {
+func Test_trackerRepositoryForTerminal_InProgress(t *testing.T) {
 	type args struct {
-		status model.TrackerStatus
-		msg    string
+		msg string
 	}
 
 	type mockSpinnerSetSuffixReturn struct {
@@ -61,8 +59,7 @@ func Test_trackerRepositoryForTerminal_Doing(t *testing.T) {
 		{
 			name: "happy path",
 			args: args{
-				status: model.TrackerStatusSuccess,
-				msg:    "hello",
+				msg: "hello",
 			},
 			mockSpinnerSetSuffix: mockSpinnerSetSuffix{
 				returns: []mockSpinnerSetSuffixReturn{
@@ -112,7 +109,7 @@ func Test_trackerRepositoryForTerminal_Doing(t *testing.T) {
 			}
 
 			// Act
-			r.Doing(ctx, tt.args.status, tt.args.msg)
+			r.InProgress(ctx, tt.args.msg)
 
 			// Assert
 			assert.Greater(t, w.Len(), 0)
@@ -120,10 +117,9 @@ func Test_trackerRepositoryForTerminal_Doing(t *testing.T) {
 	}
 }
 
-func Test_trackerRepositoryForTerminal_Done(t *testing.T) {
+func Test_trackerRepositoryForTerminal_Failed(t *testing.T) {
 	type args struct {
-		status model.TrackerStatus
-		msg    string
+		msg string
 	}
 
 	type mockSpinnerActiveReturn struct {
@@ -158,8 +154,7 @@ func Test_trackerRepositoryForTerminal_Done(t *testing.T) {
 		{
 			name: "happy path: active spinner",
 			args: args{
-				status: model.TrackerStatusSuccess,
-				msg:    "hello",
+				msg: "hello",
 			},
 			mockSpinnerActive: mockSpinnerActive{
 				returns: []mockSpinnerActiveReturn{
@@ -182,8 +177,7 @@ func Test_trackerRepositoryForTerminal_Done(t *testing.T) {
 		{
 			name: "happy path: inactive spinner",
 			args: args{
-				status: model.TrackerStatusSuccess,
-				msg:    "hello",
+				msg: "hello",
 			},
 			mockSpinnerActive: mockSpinnerActive{
 				returns: []mockSpinnerActiveReturn{
@@ -246,7 +240,138 @@ func Test_trackerRepositoryForTerminal_Done(t *testing.T) {
 			}
 
 			// Act
-			r.Done(ctx, tt.args.status, tt.args.msg)
+			r.Failed(ctx, tt.args.msg)
+
+			// Assert
+			assert.Greater(t, w.Len(), 0)
+		})
+	}
+}
+
+func Test_trackerRepositoryForTerminal_Success(t *testing.T) {
+	type args struct {
+		msg string
+	}
+
+	type mockSpinnerActiveReturn struct {
+		out bool
+	}
+	type mockSpinnerActive struct {
+		calls   int
+		returns []mockSpinnerActiveReturn
+	}
+
+	type mockSpinnerSetFinalMsgReturn struct {
+	}
+	type mockSpinnerSetFinalMsg struct {
+		calls   int
+		returns []mockSpinnerSetFinalMsgReturn
+	}
+
+	type mockSpinnerStopReturn struct {
+	}
+	type mockSpinnerStop struct {
+		calls   int
+		returns []mockSpinnerStopReturn
+	}
+
+	tests := []struct {
+		name                   string
+		args                   args
+		mockSpinnerActive      mockSpinnerActive
+		mockSpinnerSetFinalMsg mockSpinnerSetFinalMsg
+		mockSpinnerStop        mockSpinnerStop
+	}{
+		{
+			name: "happy path: active spinner",
+			args: args{
+				msg: "hello",
+			},
+			mockSpinnerActive: mockSpinnerActive{
+				returns: []mockSpinnerActiveReturn{
+					{
+						out: true,
+					},
+				},
+			},
+			mockSpinnerSetFinalMsg: mockSpinnerSetFinalMsg{
+				returns: []mockSpinnerSetFinalMsgReturn{
+					{},
+				},
+			},
+			mockSpinnerStop: mockSpinnerStop{
+				returns: []mockSpinnerStopReturn{
+					{},
+				},
+			},
+		},
+		{
+			name: "happy path: inactive spinner",
+			args: args{
+				msg: "hello",
+			},
+			mockSpinnerActive: mockSpinnerActive{
+				returns: []mockSpinnerActiveReturn{
+					{
+						out: false,
+					},
+				},
+			},
+			mockSpinnerSetFinalMsg: mockSpinnerSetFinalMsg{
+				returns: []mockSpinnerSetFinalMsgReturn{},
+			},
+			mockSpinnerStop: mockSpinnerStop{
+				returns: []mockSpinnerStopReturn{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange
+			ctx := context.Background()
+
+			w := new(bytes.Buffer)
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockSpinner := mock_console.NewMockispinner(ctrl)
+
+			mockSpinner.
+				EXPECT().
+				Active().
+				DoAndReturn(func() bool {
+					defer func() { tt.mockSpinnerActive.calls++ }()
+					r := tt.mockSpinnerActive.returns[tt.mockSpinnerActive.calls]
+					return r.out
+				}).
+				Times(len(tt.mockSpinnerActive.returns))
+
+			mockSpinner.
+				EXPECT().
+				SetFinalMsg(gomock.Any()).
+				DoAndReturn(func(suffix string) {
+					defer func() { tt.mockSpinnerSetFinalMsg.calls++ }()
+				}).
+				Times(len(tt.mockSpinnerSetFinalMsg.returns))
+
+			mockSpinner.
+				EXPECT().
+				Stop().
+				DoAndReturn(func() {
+					defer func() { tt.mockSpinnerStop.calls++ }()
+					fmt.Fprint(w, fmt.Sprintln("spinner", tt.args.msg))
+				}).
+				Times(len(tt.mockSpinnerStop.returns))
+
+			r := &trackerRepositoryForTerminal{
+				writer:  w,
+				spinner: mockSpinner,
+			}
+
+			// Act
+			r.Success(ctx, tt.args.msg)
 
 			// Assert
 			assert.Greater(t, w.Len(), 0)
