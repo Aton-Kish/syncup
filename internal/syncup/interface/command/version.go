@@ -31,6 +31,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
+type versionOutput struct {
+	Version   string `json:"version"`
+	GitCommit string `json:"commit"`
+	GoVersion string `json:"go"`
+	OS        string `json:"os"`
+	Arch      string `json:"arch"`
+	BuildTime string `json:"built"`
+}
+
 type VersionCommand interface {
 	Command
 }
@@ -42,15 +51,6 @@ type versionCommand struct {
 
 	cmd  *cobra.Command
 	once sync.Once
-}
-
-type versionOutput struct {
-	Version   string `json:"version"`
-	GitCommit string `json:"commit"`
-	GoVersion string `json:"go"`
-	OS        string `json:"os"`
-	Arch      string `json:"arch"`
-	BuildTime string `json:"built"`
 }
 
 func NewVersionCommand(repo repository.Repository, optFns ...func(o *options)) VersionCommand {

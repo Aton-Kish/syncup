@@ -18,35 +18,47 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-//go:generate mockgen -source=$GOFILE -destination=./mock/mock_$GOFILE
-
-package repository
+package console
 
 import (
 	"context"
+	"io"
+	"log/slog"
 
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
+	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
 )
 
-type AWSActivator interface {
-	ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptions)) error
+type trackerRepositoryForLog struct {
+	logger *slog.Logger
 }
 
-type BaseDirProvider interface {
-	BaseDir(ctx context.Context) string
-	SetBaseDir(ctx context.Context, dir string)
+func NewTrackerRepositoryForLog(w io.Writer) repository.TrackerRepository {
+	return &trackerRepositoryForLog{
+		logger: slog.New(slog.NewJSONHandler(w, nil)).With(slog.String("app", "syncup"), slog.String("category", "tracker")),
+	}
 }
 
-type Repository interface {
-	AWSActivator
-	BaseDirProvider
+func (r *trackerRepositoryForLog) InProgress(ctx context.Context, msg string) {
+	r.logContext(ctx, model.TrackerStatusInProgress, msg)
+}
 
-	Version() *model.Version
+func (r *trackerRepositoryForLog) Failed(ctx context.Context, msg string) {
+	r.logContext(ctx, model.TrackerStatusFailed, msg)
+}
 
-	TrackerRepository() TrackerRepository
+func (r *trackerRepositoryForLog) Success(ctx context.Context, msg string) {
+	r.logContext(ctx, model.TrackerStatusSuccess, msg)
+}
 
-	MFATokenProviderRepository() MFATokenProviderRepository
-
-	SchemaRepositoryForAppSync() SchemaRepository
-	SchemaRepositoryForFS() SchemaRepository
+func (r *trackerRepositoryForLog) logContext(ctx context.Context, status model.TrackerStatus, msg string) {
+	l := r.logger.With(slog.String("status", string(status)))
+	switch status {
+	case model.TrackerStatusInProgress, model.TrackerStatusSuccess:
+		l.InfoContext(ctx, msg)
+	case model.TrackerStatusFailed:
+		l.ErrorContext(ctx, msg)
+	default:
+		l.DebugContext(ctx, msg)
+	}
 }

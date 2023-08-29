@@ -20,33 +20,47 @@
 
 //go:generate mockgen -source=$GOFILE -destination=./mock/mock_$GOFILE
 
-package repository
+package console
 
 import (
-	"context"
+	"time"
 
-	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
+	"github.com/briandowns/spinner"
 )
 
-type AWSActivator interface {
-	ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptions)) error
+type ispinner interface {
+	Active() bool
+	Color(colors ...string) error
+	Disable()
+	Enable()
+	Enabled() bool
+	Lock()
+	Restart()
+	Reverse()
+	Start()
+	Stop()
+	Unlock()
+	UpdateCharSet(cs []string)
+	UpdateSpeed(d time.Duration)
+
+	SetSuffix(suffix string)
+	SetFinalMsg(msg string)
 }
 
-type BaseDirProvider interface {
-	BaseDir(ctx context.Context) string
-	SetBaseDir(ctx context.Context, dir string)
+type xspinner struct {
+	*spinner.Spinner
 }
 
-type Repository interface {
-	AWSActivator
-	BaseDirProvider
+func newSpinner(cs []string, d time.Duration, options ...spinner.Option) ispinner {
+	return &xspinner{
+		spinner.New(cs, d, options...),
+	}
+}
 
-	Version() *model.Version
+func (s *xspinner) SetSuffix(suffix string) {
+	s.Suffix = suffix
+}
 
-	TrackerRepository() TrackerRepository
-
-	MFATokenProviderRepository() MFATokenProviderRepository
-
-	SchemaRepositoryForAppSync() SchemaRepository
-	SchemaRepositoryForFS() SchemaRepository
+func (s *xspinner) SetFinalMsg(msg string) {
+	s.FinalMSG = msg
 }

@@ -21,8 +21,14 @@
 package registry
 
 import (
+	"context"
+	"os"
+	"strconv"
+
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
+	"github.com/Aton-Kish/syncup/internal/syncup/interface/console"
+	"github.com/Aton-Kish/syncup/internal/syncup/interface/infrastructure"
 )
 
 var (
@@ -36,6 +42,13 @@ var (
 
 type repo struct {
 	version *model.Version
+
+	trackerRepository repository.TrackerRepository
+
+	mfaTokenProviderRepository repository.MFATokenProviderRepository
+
+	schemaRepositoryForAppSync repository.SchemaRepository
+	schemaRepositoryForFS      repository.SchemaRepository
 }
 
 func NewRepository() repository.Repository {
@@ -48,11 +61,87 @@ func NewRepository() repository.Repository {
 		BuildTime: buildTime,
 	}
 
+	var trackerRepository repository.TrackerRepository
+	if isCI, _ := strconv.ParseBool(os.Getenv("CI")); isCI {
+		trackerRepository = console.NewTrackerRepositoryForLog(os.Stderr)
+	} else {
+		trackerRepository = console.NewTrackerRepositoryForTerminal(os.Stderr)
+	}
+
+	mfaTokenProviderRepository := console.NewMFATokenProviderRepository()
+
+	schemaRepositoryForAppSync := infrastructure.NewSchemaRepositoryForAppSync()
+	schemaRepositoryForFS := infrastructure.NewSchemaRepositoryForFS()
+
 	return &repo{
 		version: version,
+
+		trackerRepository: trackerRepository,
+
+		mfaTokenProviderRepository: mfaTokenProviderRepository,
+
+		schemaRepositoryForAppSync: schemaRepositoryForAppSync,
+		schemaRepositoryForFS:      schemaRepositoryForFS,
+	}
+}
+
+func (r *repo) repositories() []any {
+	return []any{
+		r.TrackerRepository(),
+
+		r.MFATokenProviderRepository(),
+
+		r.SchemaRepositoryForAppSync(),
+		r.SchemaRepositoryForFS(),
+	}
+}
+
+func (r *repo) ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptions)) error {
+	for _, rr := range r.repositories() {
+		if activator, ok := rr.(repository.AWSActivator); ok {
+			if err := activator.ActivateAWS(ctx, optFns...); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (r *repo) BaseDir(ctx context.Context) string {
+	for _, rr := range r.repositories() {
+		if baseDirProvider, ok := rr.(repository.BaseDirProvider); ok {
+			return baseDirProvider.BaseDir(ctx)
+		}
+	}
+
+	return ""
+}
+
+func (r *repo) SetBaseDir(ctx context.Context, dir string) {
+	for _, rr := range r.repositories() {
+		if baseDirProvider, ok := rr.(repository.BaseDirProvider); ok {
+			baseDirProvider.SetBaseDir(ctx, dir)
+		}
 	}
 }
 
 func (r *repo) Version() *model.Version {
 	return r.version
+}
+
+func (r *repo) TrackerRepository() repository.TrackerRepository {
+	return r.trackerRepository
+}
+
+func (r *repo) MFATokenProviderRepository() repository.MFATokenProviderRepository {
+	return r.mfaTokenProviderRepository
+}
+
+func (r *repo) SchemaRepositoryForAppSync() repository.SchemaRepository {
+	return r.schemaRepositoryForAppSync
+}
+
+func (r *repo) SchemaRepositoryForFS() repository.SchemaRepository {
+	return r.schemaRepositoryForFS
 }

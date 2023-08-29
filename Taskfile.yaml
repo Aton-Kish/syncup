@@ -16,6 +16,7 @@ tasks:
       - go install github.com/evilmartians/lefthook@latest
       - lefthook install
       - go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+      - go install go.uber.org/mock/mockgen@latest
     desc: run go install
     preconditions:
       - which go
@@ -39,6 +40,7 @@ tasks:
       - lefthook uninstall
       - rm -f $(go env GOPATH)/bin/lefthook
       - rm -f $(go env GOPATH)/bin/golangci-lint
+      - rm -f $(go env GOPATH)/bin/mockgen
       - go clean -modcache
     desc: clean go
     preconditions:
@@ -112,6 +114,17 @@ tasks:
         vars:
           COMMAND: markdownlint-cli2-fix
     desc: run markdown formatter
+
+  # generate
+  generate:
+    cmds:
+      - find ./internal/ -name "mock" -type d | xargs rm -rf
+      - go generate ./internal/...
+      - go mod tidy
+    desc: run go generate
+    preconditions:
+      - which go
+      - which mockgen
 
   # test
   test:

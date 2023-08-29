@@ -34,8 +34,9 @@ func main() {
 
 	rootCmd := command.NewRootCommand(repo)
 	versionCommand := command.NewVersionCommand(repo)
+	pullCommand := command.NewPullCommand(repo)
 
-	rootCmd.RegisterSubCommands(versionCommand)
+	rootCmd.RegisterSubCommands(versionCommand, pullCommand)
 
 	if err := rootCmd.Execute(ctx); err != nil {
 		os.Exit(1)

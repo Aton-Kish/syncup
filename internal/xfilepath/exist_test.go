@@ -18,35 +18,56 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-//go:generate mockgen -source=$GOFILE -destination=./mock/mock_$GOFILE
-
-package repository
+package xfilepath
 
 import (
-	"context"
+	"path/filepath"
+	"testing"
 
-	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
+	"github.com/stretchr/testify/assert"
 )
 
-type AWSActivator interface {
-	ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptions)) error
-}
+func TestExist(t *testing.T) {
+	type args struct {
+		name string
+	}
 
-type BaseDirProvider interface {
-	BaseDir(ctx context.Context) string
-	SetBaseDir(ctx context.Context, dir string)
-}
+	type expected struct {
+		out bool
+	}
 
-type Repository interface {
-	AWSActivator
-	BaseDirProvider
+	tests := []struct {
+		name     string
+		args     args
+		expected expected
+	}{
+		{
+			name: "happy path: exist",
+			args: args{
+				name: t.TempDir(),
+			},
+			expected: expected{
+				out: true,
+			},
+		},
+		{
+			name: "happy path: not exist",
+			args: args{
+				name: filepath.Join(t.TempDir(), "notExist"),
+			},
+			expected: expected{
+				out: false,
+			},
+		},
+	}
 
-	Version() *model.Version
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Act
+			actual := Exist(tt.args.name)
 
-	TrackerRepository() TrackerRepository
-
-	MFATokenProviderRepository() MFATokenProviderRepository
-
-	SchemaRepositoryForAppSync() SchemaRepository
-	SchemaRepositoryForFS() SchemaRepository
+			// Assert
+			assert.Equal(t, tt.expected.out, actual)
+		})
+	}
 }

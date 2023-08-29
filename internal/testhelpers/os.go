@@ -18,35 +18,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-//go:generate mockgen -source=$GOFILE -destination=./mock/mock_$GOFILE
-
-package repository
+package testhelpers
 
 import (
-	"context"
-
-	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
+	"os"
+	"testing"
 )
 
-type AWSActivator interface {
-	ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptions)) error
-}
+func MustReadFile(t *testing.T, name string) []byte {
+	t.Helper()
 
-type BaseDirProvider interface {
-	BaseDir(ctx context.Context) string
-	SetBaseDir(ctx context.Context, dir string)
-}
+	data, err := os.ReadFile(name)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-type Repository interface {
-	AWSActivator
-	BaseDirProvider
-
-	Version() *model.Version
-
-	TrackerRepository() TrackerRepository
-
-	MFATokenProviderRepository() MFATokenProviderRepository
-
-	SchemaRepositoryForAppSync() SchemaRepository
-	SchemaRepositoryForFS() SchemaRepository
+	return data
 }

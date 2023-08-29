@@ -24,29 +24,10 @@ package repository
 
 import (
 	"context"
-
-	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 )
 
-type AWSActivator interface {
-	ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptions)) error
-}
-
-type BaseDirProvider interface {
-	BaseDir(ctx context.Context) string
-	SetBaseDir(ctx context.Context, dir string)
-}
-
-type Repository interface {
-	AWSActivator
-	BaseDirProvider
-
-	Version() *model.Version
-
-	TrackerRepository() TrackerRepository
-
-	MFATokenProviderRepository() MFATokenProviderRepository
-
-	SchemaRepositoryForAppSync() SchemaRepository
-	SchemaRepositoryForFS() SchemaRepository
+type TrackerRepository interface {
+	InProgress(ctx context.Context, msg string)
+	Failed(ctx context.Context, msg string)
+	Success(ctx context.Context, msg string)
 }

@@ -18,35 +18,40 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-//go:generate mockgen -source=$GOFILE -destination=./mock/mock_$GOFILE
+package model
 
-package repository
+type MFATokenProvider func() (string, error)
 
-import (
-	"context"
-
-	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
-)
-
-type AWSActivator interface {
-	ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptions)) error
+type AWSOptions struct {
+	Region           string
+	Profile          string
+	MFATokenProvider MFATokenProvider
 }
 
-type BaseDirProvider interface {
-	BaseDir(ctx context.Context) string
-	SetBaseDir(ctx context.Context, dir string)
+func NewAWSOptions(optFns ...func(o *AWSOptions)) *AWSOptions {
+	o := new(AWSOptions)
+
+	for _, fn := range optFns {
+		fn(o)
+	}
+
+	return o
 }
 
-type Repository interface {
-	AWSActivator
-	BaseDirProvider
+func AWSOptionsWithRegion(region string) func(o *AWSOptions) {
+	return func(o *AWSOptions) {
+		o.Region = region
+	}
+}
 
-	Version() *model.Version
+func AWSOptionsWithProfile(profile string) func(o *AWSOptions) {
+	return func(o *AWSOptions) {
+		o.Profile = profile
+	}
+}
 
-	TrackerRepository() TrackerRepository
-
-	MFATokenProviderRepository() MFATokenProviderRepository
-
-	SchemaRepositoryForAppSync() SchemaRepository
-	SchemaRepositoryForFS() SchemaRepository
+func AWSOptionsWithMFATokenProvider(provider MFATokenProvider) func(o *AWSOptions) {
+	return func(o *AWSOptions) {
+		o.MFATokenProvider = provider
+	}
 }

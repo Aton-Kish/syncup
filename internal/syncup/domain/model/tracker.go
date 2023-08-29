@@ -18,35 +18,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-//go:generate mockgen -source=$GOFILE -destination=./mock/mock_$GOFILE
+package model
 
-package repository
+type TrackerStatus string
 
-import (
-	"context"
-
-	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
+const (
+	TrackerStatusInProgress TrackerStatus = "in progress"
+	TrackerStatusFailed     TrackerStatus = "failed"
+	TrackerStatusSuccess    TrackerStatus = "success"
 )
-
-type AWSActivator interface {
-	ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptions)) error
-}
-
-type BaseDirProvider interface {
-	BaseDir(ctx context.Context) string
-	SetBaseDir(ctx context.Context, dir string)
-}
-
-type Repository interface {
-	AWSActivator
-	BaseDirProvider
-
-	Version() *model.Version
-
-	TrackerRepository() TrackerRepository
-
-	MFATokenProviderRepository() MFATokenProviderRepository
-
-	SchemaRepositoryForAppSync() SchemaRepository
-	SchemaRepositoryForFS() SchemaRepository
-}
