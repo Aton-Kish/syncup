@@ -21,3 +21,39 @@
 package model
 
 type Schema string
+
+type Function struct {
+	FunctionId              *string     `json:"functionId,omitempty"`
+	FunctionArn             *string     `json:"-"`
+	Name                    *string     `json:"name,omitempty"`
+	Description             *string     `json:"description,omitempty"`
+	DataSourceName          *string     `json:"dataSourceName,omitempty"`
+	RequestMappingTemplate  *string     `json:"-"`
+	ResponseMappingTemplate *string     `json:"-"`
+	FunctionVersion         *string     `json:"functionVersion,omitempty"`
+	SyncConfig              *SyncConfig `json:"syncConfig,omitempty"`
+	MaxBatchSize            int32       `json:"maxBatchSize"`
+	Runtime                 *Runtime    `json:"runtime,omitempty"`
+	Code                    *string     `json:"-"`
+}
+
+type SyncConfig struct {
+	ConflictHandler             ConflictHandlerType          `json:"conflictHandler,omitempty"`
+	ConflictDetection           ConflictDetectionType        `json:"conflictDetection,omitempty"`
+	LambdaConflictHandlerConfig *LambdaConflictHandlerConfig `json:"lambdaConflictHandlerConfig,omitempty"`
+}
+
+type ConflictDetectionType string
+
+type ConflictHandlerType string
+
+type LambdaConflictHandlerConfig struct {
+	LambdaConflictHandlerArn *string `json:"lambdaConflictHandlerArn,omitempty"`
+}
+
+type Runtime struct {
+	Name           RuntimeName `json:"name,omitempty"`
+	RuntimeVersion *string     `json:"runtimeVersion,omitempty"`
+}
+
+type RuntimeName string
