@@ -22,9 +22,22 @@ package infrastructure
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
 
+	ptr "github.com/Aton-Kish/goptr"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
+)
+
+const (
+	dirNameFunctions                           = "functions"
+	fileNameFunctionMetadata                   = "metadata.json"
+	fileNameFunctionVTLRequestMappingTemplate  = "request.vtl"
+	fileNameFunctionVTLResponseMappingTemplate = "response.vtl"
+	fileNameFunctionAppSyncJSCode              = "code.js"
 )
 
 type functionRepositoryForFS struct {
@@ -53,8 +66,48 @@ func (*functionRepositoryForFS) List(ctx context.Context, apiID string) ([]model
 	panic("unimplemented")
 }
 
-func (*functionRepositoryForFS) Get(ctx context.Context, apiID string, functionID string) (*model.Function, error) {
-	panic("unimplemented")
+func (r *functionRepositoryForFS) Get(ctx context.Context, apiID string, functionID string) (*model.Function, error) {
+	dir := filepath.Join(r.BaseDir(ctx), dirNameFunctions, functionID)
+	metadata, err := os.ReadFile(filepath.Join(dir, fileNameFunctionMetadata))
+	if err != nil {
+		return nil, &model.LibError{Err: err}
+	}
+
+	fn := new(model.Function)
+	if err := json.Unmarshal(metadata, fn); err != nil {
+		return nil, &model.LibError{Err: err}
+	}
+
+	switch {
+	case fn.Runtime == nil:
+		// VTL runtime
+		requestMappingTemplate, err := os.ReadFile(filepath.Join(dir, fileNameFunctionVTLRequestMappingTemplate))
+		if err != nil {
+			return nil, &model.LibError{Err: err}
+		}
+
+		fn.RequestMappingTemplate = ptr.Pointer(string(requestMappingTemplate))
+
+		responseMappingTemplate, err := os.ReadFile(filepath.Join(dir, fileNameFunctionVTLResponseMappingTemplate))
+		if err != nil {
+			return nil, &model.LibError{Err: err}
+		}
+
+		fn.ResponseMappingTemplate = ptr.Pointer(string(responseMappingTemplate))
+	case fn.Runtime.Name == model.RuntimeNameAppsyncJs:
+		// AppSync JS runtime
+		code, err := os.ReadFile(filepath.Join(dir, fileNameFunctionAppSyncJSCode))
+		if err != nil {
+			return nil, &model.LibError{Err: err}
+		}
+
+		fn.Code = ptr.Pointer(string(code))
+	default:
+		// invalid runtime
+		return nil, &model.LibError{Err: fmt.Errorf("%w: runtime %s", model.ErrInvalidValue, fn.Runtime.Name)}
+	}
+
+	return fn, nil
 }
 
 func (*functionRepositoryForFS) Save(ctx context.Context, apiID string, function *model.Function) (*model.Function, error) {
