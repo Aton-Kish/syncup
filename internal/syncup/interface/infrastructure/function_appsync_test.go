@@ -110,7 +110,7 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 			},
 		},
 		{
-			name: "edge path",
+			name: "edge path: appsync.ListFunctions() error",
 			args: args{
 				apiID: "apiID",
 			},
@@ -175,6 +175,159 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 
 			// Act
 			actual, err := r.List(ctx, tt.args.apiID)
+
+			// Assert
+			assert.Equal(t, tt.expected.out, actual)
+
+			if tt.expected.errAs == nil && tt.expected.errIs == nil {
+				assert.NoError(t, err)
+			} else {
+				if tt.expected.errAs != nil {
+					assert.ErrorAs(t, err, &tt.expected.errAs)
+				}
+
+				if tt.expected.errIs != nil {
+					assert.ErrorIs(t, err, tt.expected.errIs)
+				}
+			}
+		})
+	}
+}
+
+func Test_functionRepositoryForAppSync_Get(t *testing.T) {
+	testdataBaseDir := "../../../../testdata"
+	functionVTL_2018_05_29 := testhelpers.MustJSONUnmarshal[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/metadata.json")))
+	functionVTL_2018_05_29.RequestMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/request.vtl"))))
+	functionVTL_2018_05_29.ResponseMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/response.vtl"))))
+
+	type args struct {
+		apiID      string
+		functionID string
+	}
+
+	type mockAppSyncClientGetFunctionReturn struct {
+		out *appsync.GetFunctionOutput
+		err error
+	}
+	type mockAppSyncClientGetFunction struct {
+		calls   int
+		returns []mockAppSyncClientGetFunctionReturn
+	}
+
+	type expected struct {
+		out   *model.Function
+		errAs error
+		errIs error
+	}
+
+	tests := []struct {
+		name                         string
+		args                         args
+		mockAppSyncClientGetFunction mockAppSyncClientGetFunction
+		expected                     expected
+	}{
+		{
+			name: "happy path",
+			args: args{
+				apiID:      "apiID",
+				functionID: "functionID",
+			},
+			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
+				returns: []mockAppSyncClientGetFunctionReturn{
+					{
+						out: &appsync.GetFunctionOutput{
+							FunctionConfiguration: mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+						},
+						err: nil,
+					},
+				},
+			},
+			expected: expected{
+				out:   &functionVTL_2018_05_29,
+				errAs: nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "edge path: appsync.GetFunction() error",
+			args: args{
+				apiID:      "apiID",
+				functionID: "functionID",
+			},
+			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
+				returns: []mockAppSyncClientGetFunctionReturn{
+					{
+						out: nil,
+						err: errors.New("error"),
+					},
+				},
+			},
+			expected: expected{
+				out:   nil,
+				errAs: &model.LibError{},
+				errIs: nil,
+			},
+		},
+		{
+			name: "edge path: appsync.GetFunction() returns nil function",
+			args: args{
+				apiID:      "apiID",
+				functionID: "functionID",
+			},
+			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
+				returns: []mockAppSyncClientGetFunctionReturn{
+					{
+						out: &appsync.GetFunctionOutput{
+							FunctionConfiguration: nil,
+						},
+						err: nil,
+					},
+				},
+			},
+			expected: expected{
+				out:   nil,
+				errAs: &model.LibError{},
+				errIs: model.ErrNilValue,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange
+			ctx := context.Background()
+
+			cfg, err := config.LoadDefaultConfig(
+				ctx,
+				config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("key", "secret", "session")),
+				config.WithAPIOptions([]func(stack *smithymiddleware.Stack) error{
+					func(stack *smithymiddleware.Stack) error {
+						return stack.Finalize.Add(
+							smithymiddleware.FinalizeMiddlewareFunc("Mock", func(ctx context.Context, input smithymiddleware.FinalizeInput, next smithymiddleware.FinalizeHandler) (smithymiddleware.FinalizeOutput, smithymiddleware.Metadata, error) {
+								switch awsmiddleware.GetOperationName(ctx) {
+								case "GetFunction":
+									defer func() { tt.mockAppSyncClientGetFunction.calls++ }()
+									r := tt.mockAppSyncClientGetFunction.returns[tt.mockAppSyncClientGetFunction.calls]
+									return smithymiddleware.FinalizeOutput{Result: r.out}, smithymiddleware.Metadata{}, r.err
+								default:
+									t.Fatal("unexpected operation")
+									return smithymiddleware.FinalizeOutput{}, smithymiddleware.Metadata{}, nil
+								}
+							}), smithymiddleware.After,
+						)
+					},
+				}),
+			)
+			assert.NoError(t, err)
+
+			mockAppSyncClient := appsync.NewFromConfig(cfg)
+
+			r := &functionRepositoryForAppSync{
+				appsyncClient: mockAppSyncClient,
+			}
+
+			// Act
+			actual, err := r.Get(ctx, tt.args.apiID, tt.args.functionID)
 
 			// Assert
 			assert.Equal(t, tt.expected.out, actual)
