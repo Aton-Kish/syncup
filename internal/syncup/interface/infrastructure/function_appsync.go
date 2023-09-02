@@ -22,6 +22,7 @@ package infrastructure
 
 import (
 	"context"
+	"errors"
 
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
@@ -108,8 +109,102 @@ func (r *functionRepositoryForAppSync) Get(ctx context.Context, apiID string, fu
 	return fn, nil
 }
 
-func (*functionRepositoryForAppSync) Save(ctx context.Context, apiID string, function *model.Function) (*model.Function, error) {
-	panic("unimplemented")
+func (r *functionRepositoryForAppSync) Save(ctx context.Context, apiID string, function *model.Function) (*model.Function, error) {
+	if function == nil {
+		return nil, &model.LibError{Err: model.ErrNilValue}
+	}
+
+	save := r.update
+	if _, err := r.Get(ctx, apiID, *function.FunctionId); err != nil {
+		var nfe *types.NotFoundException
+		if errors.As(err, &nfe) {
+			save = r.create
+		} else {
+			return nil, &model.LibError{Err: err}
+		}
+	}
+
+	fn, err := save(ctx, apiID, function)
+	if err != nil {
+		return nil, err
+	}
+
+	return fn, nil
+}
+
+func (r *functionRepositoryForAppSync) create(ctx context.Context, apiID string, function *model.Function) (*model.Function, error) {
+	if function == nil {
+		return nil, &model.LibError{Err: model.ErrNilValue}
+	}
+
+	f := mapper.NewFunctionMapper().FromModel(ctx, function)
+	out, err := r.appsyncClient.CreateFunction(
+		ctx,
+		&appsync.CreateFunctionInput{
+			ApiId:                   &apiID,
+			Name:                    f.Name,
+			Description:             f.Description,
+			DataSourceName:          f.DataSourceName,
+			RequestMappingTemplate:  f.RequestMappingTemplate,
+			ResponseMappingTemplate: f.ResponseMappingTemplate,
+			FunctionVersion:         f.FunctionVersion,
+			SyncConfig:              f.SyncConfig,
+			MaxBatchSize:            f.MaxBatchSize,
+			Runtime:                 f.Runtime,
+			Code:                    f.Code,
+		},
+		func(o *appsync.Options) {
+			o.Retryer = retry.AddWithErrorCodes(o.Retryer, (*types.ConcurrentModificationException)(nil).ErrorCode())
+		},
+	)
+	if err != nil {
+		return nil, &model.LibError{Err: err}
+	}
+
+	fn := mapper.NewFunctionMapper().ToModel(ctx, out.FunctionConfiguration)
+	if fn == nil {
+		return nil, &model.LibError{Err: model.ErrNilValue}
+	}
+
+	return fn, nil
+}
+
+func (r *functionRepositoryForAppSync) update(ctx context.Context, apiID string, function *model.Function) (*model.Function, error) {
+	if function == nil {
+		return nil, &model.LibError{Err: model.ErrNilValue}
+	}
+
+	f := mapper.NewFunctionMapper().FromModel(ctx, function)
+	out, err := r.appsyncClient.UpdateFunction(
+		ctx,
+		&appsync.UpdateFunctionInput{
+			ApiId:                   &apiID,
+			FunctionId:              f.FunctionId,
+			Name:                    f.Name,
+			Description:             f.Description,
+			DataSourceName:          f.DataSourceName,
+			RequestMappingTemplate:  f.RequestMappingTemplate,
+			ResponseMappingTemplate: f.ResponseMappingTemplate,
+			FunctionVersion:         f.FunctionVersion,
+			SyncConfig:              f.SyncConfig,
+			MaxBatchSize:            f.MaxBatchSize,
+			Runtime:                 f.Runtime,
+			Code:                    f.Code,
+		},
+		func(o *appsync.Options) {
+			o.Retryer = retry.AddWithErrorCodes(o.Retryer, (*types.ConcurrentModificationException)(nil).ErrorCode())
+		},
+	)
+	if err != nil {
+		return nil, &model.LibError{Err: err}
+	}
+
+	fn := mapper.NewFunctionMapper().ToModel(ctx, out.FunctionConfiguration)
+	if fn == nil {
+		return nil, &model.LibError{Err: model.ErrNilValue}
+	}
+
+	return fn, nil
 }
 
 func (*functionRepositoryForAppSync) Delete(ctx context.Context, apiID string, functionID string) error {
