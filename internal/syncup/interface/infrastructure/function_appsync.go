@@ -26,7 +26,9 @@ import (
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
 	"github.com/Aton-Kish/syncup/internal/syncup/interface/infrastructure/mapper"
+	"github.com/aws/aws-sdk-go-v2/aws/retry"
 	"github.com/aws/aws-sdk-go-v2/service/appsync"
+	"github.com/aws/aws-sdk-go-v2/service/appsync/types"
 )
 
 type functionRepositoryForAppSync struct {
@@ -83,8 +85,27 @@ func (r *functionRepositoryForAppSync) List(ctx context.Context, apiID string) (
 	return fns, nil
 }
 
-func (*functionRepositoryForAppSync) Get(ctx context.Context, apiID string, functionID string) (*model.Function, error) {
-	panic("unimplemented")
+func (r *functionRepositoryForAppSync) Get(ctx context.Context, apiID string, functionID string) (*model.Function, error) {
+	out, err := r.appsyncClient.GetFunction(
+		ctx,
+		&appsync.GetFunctionInput{
+			ApiId:      &apiID,
+			FunctionId: &functionID,
+		},
+		func(o *appsync.Options) {
+			o.Retryer = retry.AddWithErrorCodes(o.Retryer, (*types.ConcurrentModificationException)(nil).ErrorCode())
+		},
+	)
+	if err != nil {
+		return nil, &model.LibError{Err: err}
+	}
+
+	fn := mapper.NewFunctionMapper().ToModel(ctx, out.FunctionConfiguration)
+	if fn == nil {
+		return nil, &model.LibError{Err: model.ErrNilValue}
+	}
+
+	return fn, nil
 }
 
 func (*functionRepositoryForAppSync) Save(ctx context.Context, apiID string, function *model.Function) (*model.Function, error) {
