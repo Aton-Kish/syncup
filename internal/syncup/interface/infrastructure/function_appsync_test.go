@@ -728,3 +728,122 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 		})
 	}
 }
+
+func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
+	type args struct {
+		apiID      string
+		functionID string
+	}
+
+	type mockAppSyncClientDeleteFunctionReturn struct {
+		out *appsync.DeleteFunctionOutput
+		err error
+	}
+	type mockAppSyncClientDeleteFunction struct {
+		calls   int
+		returns []mockAppSyncClientDeleteFunctionReturn
+	}
+
+	type expected struct {
+		errAs error
+		errIs error
+	}
+
+	tests := []struct {
+		name                            string
+		args                            args
+		mockAppSyncClientDeleteFunction mockAppSyncClientDeleteFunction
+		expected                        expected
+	}{
+		{
+			name: "happy path",
+			args: args{
+				apiID:      "apiID",
+				functionID: "functionID",
+			},
+			mockAppSyncClientDeleteFunction: mockAppSyncClientDeleteFunction{
+				returns: []mockAppSyncClientDeleteFunctionReturn{
+					{
+						out: &appsync.DeleteFunctionOutput{},
+						err: nil,
+					},
+				},
+			},
+			expected: expected{
+				errAs: nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "edge path: appsync.DeleteFunction() error",
+			args: args{
+				apiID:      "apiID",
+				functionID: "functionID",
+			},
+			mockAppSyncClientDeleteFunction: mockAppSyncClientDeleteFunction{
+				returns: []mockAppSyncClientDeleteFunctionReturn{
+					{
+						out: nil,
+						err: errors.New("error"),
+					},
+				},
+			},
+			expected: expected{
+				errAs: &model.LibError{},
+				errIs: nil,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange
+			ctx := context.Background()
+
+			cfg, err := config.LoadDefaultConfig(
+				ctx,
+				config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("key", "secret", "session")),
+				config.WithAPIOptions([]func(stack *smithymiddleware.Stack) error{
+					func(stack *smithymiddleware.Stack) error {
+						return stack.Finalize.Add(
+							smithymiddleware.FinalizeMiddlewareFunc("Mock", func(ctx context.Context, input smithymiddleware.FinalizeInput, next smithymiddleware.FinalizeHandler) (smithymiddleware.FinalizeOutput, smithymiddleware.Metadata, error) {
+								switch awsmiddleware.GetOperationName(ctx) {
+								case "DeleteFunction":
+									defer func() { tt.mockAppSyncClientDeleteFunction.calls++ }()
+									r := tt.mockAppSyncClientDeleteFunction.returns[tt.mockAppSyncClientDeleteFunction.calls]
+									return smithymiddleware.FinalizeOutput{Result: r.out}, smithymiddleware.Metadata{}, r.err
+								default:
+									t.Fatal("unexpected operation")
+									return smithymiddleware.FinalizeOutput{}, smithymiddleware.Metadata{}, nil
+								}
+							}), smithymiddleware.After,
+						)
+					},
+				}),
+			)
+			assert.NoError(t, err)
+
+			mockAppSyncClient := appsync.NewFromConfig(cfg)
+
+			r := &functionRepositoryForAppSync{
+				appsyncClient: mockAppSyncClient,
+			}
+
+			// Act
+			err = r.Delete(ctx, tt.args.apiID, tt.args.functionID)
+
+			// Assert
+			if tt.expected.errAs == nil && tt.expected.errIs == nil {
+				assert.NoError(t, err)
+			} else {
+				if tt.expected.errAs != nil {
+					assert.ErrorAs(t, err, &tt.expected.errAs)
+				}
+
+				if tt.expected.errIs != nil {
+					assert.ErrorIs(t, err, tt.expected.errIs)
+				}
+			}
+		})
+	}
+}
