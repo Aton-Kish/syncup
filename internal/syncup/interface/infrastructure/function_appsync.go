@@ -25,6 +25,8 @@ import (
 
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
+	"github.com/Aton-Kish/syncup/internal/syncup/interface/infrastructure/mapper"
+	"github.com/aws/aws-sdk-go-v2/service/appsync"
 )
 
 type functionRepositoryForAppSync struct {
@@ -52,8 +54,33 @@ func (r *functionRepositoryForAppSync) ActivateAWS(ctx context.Context, optFns .
 	return nil
 }
 
-func (*functionRepositoryForAppSync) List(ctx context.Context, apiID string) ([]model.Function, error) {
-	panic("unimplemented")
+func (r *functionRepositoryForAppSync) List(ctx context.Context, apiID string) ([]model.Function, error) {
+	fns := make([]model.Function, 0)
+
+	var token *string
+	for {
+		out, err := r.appsyncClient.ListFunctions(
+			ctx,
+			&appsync.ListFunctionsInput{
+				ApiId:     &apiID,
+				NextToken: token,
+			},
+		)
+		if err != nil {
+			return nil, &model.LibError{Err: err}
+		}
+
+		for _, fn := range out.Functions {
+			fns = append(fns, *mapper.NewFunctionMapper().ToModel(ctx, &fn))
+		}
+
+		token = out.NextToken
+		if token == nil {
+			break
+		}
+	}
+
+	return fns, nil
 }
 
 func (*functionRepositoryForAppSync) Get(ctx context.Context, apiID string, functionID string) (*model.Function, error) {
