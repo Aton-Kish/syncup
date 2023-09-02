@@ -23,6 +23,7 @@ package infrastructure
 import (
 	"context"
 	"errors"
+	"net/http"
 	"path/filepath"
 	"testing"
 
@@ -32,11 +33,13 @@ import (
 	"github.com/Aton-Kish/syncup/internal/testhelpers"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
+	awshttp "github.com/aws/aws-sdk-go-v2/aws/transport/http"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/appsync"
 	"github.com/aws/aws-sdk-go-v2/service/appsync/types"
 	smithymiddleware "github.com/aws/smithy-go/middleware"
+	smithyhttp "github.com/aws/smithy-go/transport/http"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -328,6 +331,385 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 
 			// Act
 			actual, err := r.Get(ctx, tt.args.apiID, tt.args.functionID)
+
+			// Assert
+			assert.Equal(t, tt.expected.out, actual)
+
+			if tt.expected.errAs == nil && tt.expected.errIs == nil {
+				assert.NoError(t, err)
+			} else {
+				if tt.expected.errAs != nil {
+					assert.ErrorAs(t, err, &tt.expected.errAs)
+				}
+
+				if tt.expected.errIs != nil {
+					assert.ErrorIs(t, err, tt.expected.errIs)
+				}
+			}
+		})
+	}
+}
+
+func Test_functionRepositoryForAppSync_Save(t *testing.T) {
+	testdataBaseDir := "../../../../testdata"
+	functionVTL_2018_05_29 := testhelpers.MustJSONUnmarshal[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/metadata.json")))
+	functionVTL_2018_05_29.RequestMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/request.vtl"))))
+	functionVTL_2018_05_29.ResponseMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/response.vtl"))))
+
+	type args struct {
+		apiID    string
+		function *model.Function
+	}
+
+	type mockAppSyncClientGetFunctionReturn struct {
+		out *appsync.GetFunctionOutput
+		err error
+	}
+	type mockAppSyncClientGetFunction struct {
+		calls   int
+		returns []mockAppSyncClientGetFunctionReturn
+	}
+
+	type mockAppSyncClientCreateFunctionReturn struct {
+		out *appsync.CreateFunctionOutput
+		err error
+	}
+	type mockAppSyncClientCreateFunction struct {
+		calls   int
+		returns []mockAppSyncClientCreateFunctionReturn
+	}
+
+	type mockAppSyncClientUpdateFunctionReturn struct {
+		out *appsync.UpdateFunctionOutput
+		err error
+	}
+	type mockAppSyncClientUpdateFunction struct {
+		calls   int
+		returns []mockAppSyncClientUpdateFunctionReturn
+	}
+
+	type expected struct {
+		out   *model.Function
+		errAs error
+		errIs error
+	}
+
+	tests := []struct {
+		name                            string
+		args                            args
+		mockAppSyncClientGetFunction    mockAppSyncClientGetFunction
+		mockAppSyncClientCreateFunction mockAppSyncClientCreateFunction
+		mockAppSyncClientUpdateFunction mockAppSyncClientUpdateFunction
+		expected                        expected
+	}{
+		{
+			name: "happy path: create",
+			args: args{
+				apiID:    "apiID",
+				function: &functionVTL_2018_05_29,
+			},
+			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
+				returns: []mockAppSyncClientGetFunctionReturn{
+					{
+						out: nil,
+						err: &awshttp.ResponseError{
+							ResponseError: &smithyhttp.ResponseError{
+								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 404}},
+								Err:      &types.NotFoundException{},
+							},
+						},
+					},
+				},
+			},
+			mockAppSyncClientCreateFunction: mockAppSyncClientCreateFunction{
+				returns: []mockAppSyncClientCreateFunctionReturn{
+					{
+						out: &appsync.CreateFunctionOutput{
+							FunctionConfiguration: mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+						},
+						err: nil,
+					},
+				},
+			},
+			mockAppSyncClientUpdateFunction: mockAppSyncClientUpdateFunction{
+				returns: []mockAppSyncClientUpdateFunctionReturn{},
+			},
+			expected: expected{
+				out:   &functionVTL_2018_05_29,
+				errAs: nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "happy path: update",
+			args: args{
+				apiID:    "apiID",
+				function: &functionVTL_2018_05_29,
+			},
+			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
+				returns: []mockAppSyncClientGetFunctionReturn{
+					{
+						out: &appsync.GetFunctionOutput{
+							FunctionConfiguration: mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+						},
+						err: nil,
+					},
+				},
+			},
+			mockAppSyncClientCreateFunction: mockAppSyncClientCreateFunction{
+				returns: []mockAppSyncClientCreateFunctionReturn{},
+			},
+			mockAppSyncClientUpdateFunction: mockAppSyncClientUpdateFunction{
+				returns: []mockAppSyncClientUpdateFunctionReturn{
+					{
+						out: &appsync.UpdateFunctionOutput{
+							FunctionConfiguration: mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+						},
+						err: nil,
+					},
+				},
+			},
+			expected: expected{
+				out:   &functionVTL_2018_05_29,
+				errAs: nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "edge path: nil function",
+			args: args{
+				apiID:    "apiID",
+				function: nil,
+			},
+			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
+				returns: []mockAppSyncClientGetFunctionReturn{},
+			},
+			mockAppSyncClientCreateFunction: mockAppSyncClientCreateFunction{
+				returns: []mockAppSyncClientCreateFunctionReturn{},
+			},
+			mockAppSyncClientUpdateFunction: mockAppSyncClientUpdateFunction{
+				returns: []mockAppSyncClientUpdateFunctionReturn{},
+			},
+			expected: expected{
+				out:   nil,
+				errAs: &model.LibError{},
+				errIs: model.ErrNilValue,
+			},
+		},
+		{
+			name: "edge path: FunctionRepositoryForAppSync.Get() error",
+			args: args{
+				apiID:    "apiID",
+				function: &functionVTL_2018_05_29,
+			},
+			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
+				returns: []mockAppSyncClientGetFunctionReturn{
+					{
+						out: nil,
+						err: errors.New("error"),
+					},
+				},
+			},
+			mockAppSyncClientCreateFunction: mockAppSyncClientCreateFunction{
+				returns: []mockAppSyncClientCreateFunctionReturn{},
+			},
+			mockAppSyncClientUpdateFunction: mockAppSyncClientUpdateFunction{
+				returns: []mockAppSyncClientUpdateFunctionReturn{},
+			},
+			expected: expected{
+				out:   nil,
+				errAs: &model.LibError{},
+				errIs: nil,
+			},
+		},
+		{
+			name: "edge path: appsync.CreateFunction() error",
+			args: args{
+				apiID:    "apiID",
+				function: &functionVTL_2018_05_29,
+			},
+			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
+				returns: []mockAppSyncClientGetFunctionReturn{
+					{
+						out: nil,
+						err: &awshttp.ResponseError{
+							ResponseError: &smithyhttp.ResponseError{
+								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 404}},
+								Err:      &types.NotFoundException{},
+							},
+						},
+					},
+				},
+			},
+			mockAppSyncClientCreateFunction: mockAppSyncClientCreateFunction{
+				returns: []mockAppSyncClientCreateFunctionReturn{
+					{
+						out: nil,
+						err: errors.New("error"),
+					},
+				},
+			},
+			mockAppSyncClientUpdateFunction: mockAppSyncClientUpdateFunction{
+				returns: []mockAppSyncClientUpdateFunctionReturn{},
+			},
+			expected: expected{
+				out:   nil,
+				errAs: &model.LibError{},
+				errIs: nil,
+			},
+		},
+		{
+			name: "edge path: appsync.CreateFunction() returns nil function",
+			args: args{
+				apiID:    "apiID",
+				function: &functionVTL_2018_05_29,
+			},
+			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
+				returns: []mockAppSyncClientGetFunctionReturn{
+					{
+						out: nil,
+						err: &awshttp.ResponseError{
+							ResponseError: &smithyhttp.ResponseError{
+								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 404}},
+								Err:      &types.NotFoundException{},
+							},
+						},
+					},
+				},
+			},
+			mockAppSyncClientCreateFunction: mockAppSyncClientCreateFunction{
+				returns: []mockAppSyncClientCreateFunctionReturn{
+					{
+						out: &appsync.CreateFunctionOutput{
+							FunctionConfiguration: nil,
+						},
+						err: nil,
+					},
+				},
+			},
+			mockAppSyncClientUpdateFunction: mockAppSyncClientUpdateFunction{
+				returns: []mockAppSyncClientUpdateFunctionReturn{},
+			},
+			expected: expected{
+				out:   nil,
+				errAs: &model.LibError{},
+				errIs: model.ErrNilValue,
+			},
+		},
+		{
+			name: "edge path: appsync.UpdateFunction() error",
+			args: args{
+				apiID:    "apiID",
+				function: &functionVTL_2018_05_29,
+			},
+			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
+				returns: []mockAppSyncClientGetFunctionReturn{
+					{
+						out: &appsync.GetFunctionOutput{
+							FunctionConfiguration: mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+						},
+						err: nil,
+					},
+				},
+			},
+			mockAppSyncClientCreateFunction: mockAppSyncClientCreateFunction{
+				returns: []mockAppSyncClientCreateFunctionReturn{},
+			},
+			mockAppSyncClientUpdateFunction: mockAppSyncClientUpdateFunction{
+				returns: []mockAppSyncClientUpdateFunctionReturn{
+					{
+						out: nil,
+						err: errors.New("error"),
+					},
+				},
+			},
+			expected: expected{
+				out:   nil,
+				errAs: &model.LibError{},
+				errIs: nil,
+			},
+		},
+		{
+			name: "edge path: appsync.UpdateFunction() returns nil function",
+			args: args{
+				apiID:    "apiID",
+				function: &functionVTL_2018_05_29,
+			},
+			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
+				returns: []mockAppSyncClientGetFunctionReturn{
+					{
+						out: &appsync.GetFunctionOutput{
+							FunctionConfiguration: mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+						},
+						err: nil,
+					},
+				},
+			},
+			mockAppSyncClientCreateFunction: mockAppSyncClientCreateFunction{
+				returns: []mockAppSyncClientCreateFunctionReturn{},
+			},
+			mockAppSyncClientUpdateFunction: mockAppSyncClientUpdateFunction{
+				returns: []mockAppSyncClientUpdateFunctionReturn{
+					{
+						out: &appsync.UpdateFunctionOutput{
+							FunctionConfiguration: nil,
+						},
+						err: nil,
+					},
+				},
+			},
+			expected: expected{
+				out:   nil,
+				errAs: &model.LibError{},
+				errIs: model.ErrNilValue,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange
+			ctx := context.Background()
+
+			cfg, err := config.LoadDefaultConfig(
+				ctx,
+				config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("key", "secret", "session")),
+				config.WithAPIOptions([]func(stack *smithymiddleware.Stack) error{
+					func(stack *smithymiddleware.Stack) error {
+						return stack.Finalize.Add(
+							smithymiddleware.FinalizeMiddlewareFunc("Mock", func(ctx context.Context, input smithymiddleware.FinalizeInput, next smithymiddleware.FinalizeHandler) (smithymiddleware.FinalizeOutput, smithymiddleware.Metadata, error) {
+								switch awsmiddleware.GetOperationName(ctx) {
+								case "GetFunction":
+									defer func() { tt.mockAppSyncClientGetFunction.calls++ }()
+									r := tt.mockAppSyncClientGetFunction.returns[tt.mockAppSyncClientGetFunction.calls]
+									return smithymiddleware.FinalizeOutput{Result: r.out}, smithymiddleware.Metadata{}, r.err
+								case "CreateFunction":
+									defer func() { tt.mockAppSyncClientCreateFunction.calls++ }()
+									r := tt.mockAppSyncClientCreateFunction.returns[tt.mockAppSyncClientCreateFunction.calls]
+									return smithymiddleware.FinalizeOutput{Result: r.out}, smithymiddleware.Metadata{}, r.err
+								case "UpdateFunction":
+									defer func() { tt.mockAppSyncClientUpdateFunction.calls++ }()
+									r := tt.mockAppSyncClientUpdateFunction.returns[tt.mockAppSyncClientUpdateFunction.calls]
+									return smithymiddleware.FinalizeOutput{Result: r.out}, smithymiddleware.Metadata{}, r.err
+								default:
+									t.Fatal("unexpected operation")
+									return smithymiddleware.FinalizeOutput{}, smithymiddleware.Metadata{}, nil
+								}
+							}), smithymiddleware.After,
+						)
+					},
+				}),
+			)
+			assert.NoError(t, err)
+
+			mockAppSyncClient := appsync.NewFromConfig(cfg)
+
+			r := &functionRepositoryForAppSync{
+				appsyncClient: mockAppSyncClient,
+			}
+
+			// Act
+			actual, err := r.Save(ctx, tt.args.apiID, tt.args.function)
 
 			// Assert
 			assert.Equal(t, tt.expected.out, actual)
