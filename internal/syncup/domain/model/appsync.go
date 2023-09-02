@@ -57,3 +57,7 @@ type Runtime struct {
 }
 
 type RuntimeName string
+
+const (
+	RuntimeNameAppsyncJs RuntimeName = "APPSYNC_JS"
+)
