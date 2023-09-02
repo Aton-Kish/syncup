@@ -26,6 +26,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"testing"
+	"time"
 
 	ptr "github.com/Aton-Kish/goptr"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
@@ -33,6 +34,7 @@ import (
 	"github.com/Aton-Kish/syncup/internal/testhelpers"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
+	"github.com/aws/aws-sdk-go-v2/aws/retry"
 	awshttp "github.com/aws/aws-sdk-go-v2/aws/transport/http"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
@@ -50,6 +52,7 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 	functionVTL_2018_05_29.ResponseMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/response.vtl"))))
 	functionAPPSYNC_JS_1_0_0 := testhelpers.MustJSONUnmarshal[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/APPSYNC_JS_1.0.0/metadata.json")))
 	functionAPPSYNC_JS_1_0_0.Code = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/APPSYNC_JS_1.0.0/code.js"))))
+	duration := time.Duration(1) * time.Millisecond
 
 	type args struct {
 		apiID string
@@ -167,6 +170,9 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 						)
 					},
 				}),
+				config.WithRetryer(func() aws.Retryer {
+					return retry.AddWithMaxBackoffDelay(retry.NewStandard(), duration)
+				}),
 			)
 			assert.NoError(t, err)
 
@@ -202,6 +208,7 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 	functionVTL_2018_05_29 := testhelpers.MustJSONUnmarshal[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/metadata.json")))
 	functionVTL_2018_05_29.RequestMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/request.vtl"))))
 	functionVTL_2018_05_29.ResponseMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/response.vtl"))))
+	duration := time.Duration(1) * time.Millisecond
 
 	type args struct {
 		apiID      string
@@ -230,7 +237,7 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 		expected                     expected
 	}{
 		{
-			name: "happy path",
+			name: "happy path: default",
 			args: args{
 				apiID:      "apiID",
 				functionID: "functionID",
@@ -248,6 +255,80 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 			expected: expected{
 				out:   &functionVTL_2018_05_29,
 				errAs: nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "happy path: retries on ConcurrentModificationException",
+			args: args{
+				apiID:      "apiID",
+				functionID: "functionID",
+			},
+			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
+				returns: []mockAppSyncClientGetFunctionReturn{
+					{
+						out: nil,
+						err: &awshttp.ResponseError{
+							ResponseError: &smithyhttp.ResponseError{
+								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
+								Err:      &types.ConcurrentModificationException{},
+							},
+						},
+					},
+					{
+						out: &appsync.GetFunctionOutput{
+							FunctionConfiguration: mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+						},
+						err: nil,
+					},
+				},
+			},
+			expected: expected{
+				out:   &functionVTL_2018_05_29,
+				errAs: nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "edge path: exceeds max retry count",
+			args: args{
+				apiID:      "apiID",
+				functionID: "functionID",
+			},
+			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
+				returns: []mockAppSyncClientGetFunctionReturn{
+					{
+						out: nil,
+						err: &awshttp.ResponseError{
+							ResponseError: &smithyhttp.ResponseError{
+								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
+								Err:      &types.ConcurrentModificationException{},
+							},
+						},
+					},
+					{
+						out: nil,
+						err: &awshttp.ResponseError{
+							ResponseError: &smithyhttp.ResponseError{
+								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
+								Err:      &types.ConcurrentModificationException{},
+							},
+						},
+					},
+					{
+						out: nil,
+						err: &awshttp.ResponseError{
+							ResponseError: &smithyhttp.ResponseError{
+								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
+								Err:      &types.ConcurrentModificationException{},
+							},
+						},
+					},
+				},
+			},
+			expected: expected{
+				out:   nil,
+				errAs: &model.LibError{},
 				errIs: nil,
 			},
 		},
@@ -320,6 +401,9 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 						)
 					},
 				}),
+				config.WithRetryer(func() aws.Retryer {
+					return retry.AddWithMaxBackoffDelay(retry.NewStandard(), duration)
+				}),
 			)
 			assert.NoError(t, err)
 
@@ -355,6 +439,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 	functionVTL_2018_05_29 := testhelpers.MustJSONUnmarshal[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/metadata.json")))
 	functionVTL_2018_05_29.RequestMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/request.vtl"))))
 	functionVTL_2018_05_29.ResponseMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/response.vtl"))))
+	duration := time.Duration(1) * time.Millisecond
 
 	type args struct {
 		apiID    string
@@ -472,6 +557,212 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			expected: expected{
 				out:   &functionVTL_2018_05_29,
 				errAs: nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "happy path: create - retries on ConcurrentModificationException",
+			args: args{
+				apiID:    "apiID",
+				function: &functionVTL_2018_05_29,
+			},
+			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
+				returns: []mockAppSyncClientGetFunctionReturn{
+					{
+						out: nil,
+						err: &awshttp.ResponseError{
+							ResponseError: &smithyhttp.ResponseError{
+								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 404}},
+								Err:      &types.NotFoundException{},
+							},
+						},
+					},
+				},
+			},
+			mockAppSyncClientCreateFunction: mockAppSyncClientCreateFunction{
+				returns: []mockAppSyncClientCreateFunctionReturn{
+					{
+						out: nil,
+						err: &awshttp.ResponseError{
+							ResponseError: &smithyhttp.ResponseError{
+								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
+								Err:      &types.ConcurrentModificationException{},
+							},
+						},
+					},
+					{
+						out: &appsync.CreateFunctionOutput{
+							FunctionConfiguration: mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+						},
+						err: nil,
+					},
+				},
+			},
+			mockAppSyncClientUpdateFunction: mockAppSyncClientUpdateFunction{
+				returns: []mockAppSyncClientUpdateFunctionReturn{},
+			},
+			expected: expected{
+				out:   &functionVTL_2018_05_29,
+				errAs: nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "happy path: update - retries on ConcurrentModificationException",
+			args: args{
+				apiID:    "apiID",
+				function: &functionVTL_2018_05_29,
+			},
+			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
+				returns: []mockAppSyncClientGetFunctionReturn{
+					{
+						out: &appsync.GetFunctionOutput{
+							FunctionConfiguration: mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+						},
+						err: nil,
+					},
+				},
+			},
+			mockAppSyncClientCreateFunction: mockAppSyncClientCreateFunction{
+				returns: []mockAppSyncClientCreateFunctionReturn{},
+			},
+			mockAppSyncClientUpdateFunction: mockAppSyncClientUpdateFunction{
+				returns: []mockAppSyncClientUpdateFunctionReturn{
+					{
+						out: nil,
+						err: &awshttp.ResponseError{
+							ResponseError: &smithyhttp.ResponseError{
+								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
+								Err:      &types.ConcurrentModificationException{},
+							},
+						},
+					},
+					{
+						out: &appsync.UpdateFunctionOutput{
+							FunctionConfiguration: mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+						},
+						err: nil,
+					},
+				},
+			},
+			expected: expected{
+				out:   &functionVTL_2018_05_29,
+				errAs: nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "edge path: create - exceeds max retry count",
+			args: args{
+				apiID:    "apiID",
+				function: &functionVTL_2018_05_29,
+			},
+			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
+				returns: []mockAppSyncClientGetFunctionReturn{
+					{
+						out: nil,
+						err: &awshttp.ResponseError{
+							ResponseError: &smithyhttp.ResponseError{
+								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 404}},
+								Err:      &types.NotFoundException{},
+							},
+						},
+					},
+				},
+			},
+			mockAppSyncClientCreateFunction: mockAppSyncClientCreateFunction{
+				returns: []mockAppSyncClientCreateFunctionReturn{
+					{
+						out: nil,
+						err: &awshttp.ResponseError{
+							ResponseError: &smithyhttp.ResponseError{
+								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
+								Err:      &types.ConcurrentModificationException{},
+							},
+						},
+					},
+					{
+						out: nil,
+						err: &awshttp.ResponseError{
+							ResponseError: &smithyhttp.ResponseError{
+								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
+								Err:      &types.ConcurrentModificationException{},
+							},
+						},
+					},
+					{
+						out: nil,
+						err: &awshttp.ResponseError{
+							ResponseError: &smithyhttp.ResponseError{
+								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
+								Err:      &types.ConcurrentModificationException{},
+							},
+						},
+					},
+				},
+			},
+			mockAppSyncClientUpdateFunction: mockAppSyncClientUpdateFunction{
+				returns: []mockAppSyncClientUpdateFunctionReturn{},
+			},
+			expected: expected{
+				out:   nil,
+				errAs: &model.LibError{},
+				errIs: nil,
+			},
+		},
+		{
+			name: "edge path: update - exceeds max retry count",
+			args: args{
+				apiID:    "apiID",
+				function: &functionVTL_2018_05_29,
+			},
+			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
+				returns: []mockAppSyncClientGetFunctionReturn{
+					{
+						out: &appsync.GetFunctionOutput{
+							FunctionConfiguration: mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+						},
+						err: nil,
+					},
+				},
+			},
+			mockAppSyncClientCreateFunction: mockAppSyncClientCreateFunction{
+				returns: []mockAppSyncClientCreateFunctionReturn{},
+			},
+			mockAppSyncClientUpdateFunction: mockAppSyncClientUpdateFunction{
+				returns: []mockAppSyncClientUpdateFunctionReturn{
+					{
+						out: nil,
+						err: &awshttp.ResponseError{
+							ResponseError: &smithyhttp.ResponseError{
+								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
+								Err:      &types.ConcurrentModificationException{},
+							},
+						},
+					},
+					{
+						out: nil,
+						err: &awshttp.ResponseError{
+							ResponseError: &smithyhttp.ResponseError{
+								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
+								Err:      &types.ConcurrentModificationException{},
+							},
+						},
+					},
+					{
+						out: nil,
+						err: &awshttp.ResponseError{
+							ResponseError: &smithyhttp.ResponseError{
+								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
+								Err:      &types.ConcurrentModificationException{},
+							},
+						},
+					},
+				},
+			},
+			expected: expected{
+				out:   nil,
+				errAs: &model.LibError{},
 				errIs: nil,
 			},
 		},
@@ -699,6 +990,9 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 						)
 					},
 				}),
+				config.WithRetryer(func() aws.Retryer {
+					return retry.AddWithMaxBackoffDelay(retry.NewStandard(), duration)
+				}),
 			)
 			assert.NoError(t, err)
 
@@ -730,6 +1024,8 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 }
 
 func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
+	duration := time.Duration(1) * time.Millisecond
+
 	type args struct {
 		apiID      string
 		functionID string
@@ -756,7 +1052,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 		expected                        expected
 	}{
 		{
-			name: "happy path",
+			name: "happy path: default",
 			args: args{
 				apiID:      "apiID",
 				functionID: "functionID",
@@ -771,6 +1067,76 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 			},
 			expected: expected{
 				errAs: nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "happy path: retries on ConcurrentModificationException",
+			args: args{
+				apiID:      "apiID",
+				functionID: "functionID",
+			},
+			mockAppSyncClientDeleteFunction: mockAppSyncClientDeleteFunction{
+				returns: []mockAppSyncClientDeleteFunctionReturn{
+					{
+						out: nil,
+						err: &awshttp.ResponseError{
+							ResponseError: &smithyhttp.ResponseError{
+								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
+								Err:      &types.ConcurrentModificationException{},
+							},
+						},
+					},
+					{
+						out: &appsync.DeleteFunctionOutput{},
+						err: nil,
+					},
+				},
+			},
+			expected: expected{
+				errAs: nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "edge path: exceeds max retry count",
+			args: args{
+				apiID:      "apiID",
+				functionID: "functionID",
+			},
+			mockAppSyncClientDeleteFunction: mockAppSyncClientDeleteFunction{
+				returns: []mockAppSyncClientDeleteFunctionReturn{
+					{
+						out: nil,
+						err: &awshttp.ResponseError{
+							ResponseError: &smithyhttp.ResponseError{
+								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
+								Err:      &types.ConcurrentModificationException{},
+							},
+						},
+					},
+					{
+						out: nil,
+						err: &awshttp.ResponseError{
+							ResponseError: &smithyhttp.ResponseError{
+								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
+								Err:      &types.ConcurrentModificationException{},
+							},
+						},
+					},
+					{
+						out: nil,
+						err: &awshttp.ResponseError{
+							ResponseError: &smithyhttp.ResponseError{
+								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
+								Err:      &types.ConcurrentModificationException{},
+							},
+						},
+					},
+				},
+			},
+			expected: expected{
+				errAs: &model.LibError{},
 				errIs: nil,
 			},
 		},
@@ -819,6 +1185,9 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 							}), smithymiddleware.After,
 						)
 					},
+				}),
+				config.WithRetryer(func() aws.Retryer {
+					return retry.AddWithMaxBackoffDelay(retry.NewStandard(), duration)
 				}),
 			)
 			assert.NoError(t, err)
