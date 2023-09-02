@@ -207,6 +207,19 @@ func (r *functionRepositoryForAppSync) update(ctx context.Context, apiID string,
 	return fn, nil
 }
 
-func (*functionRepositoryForAppSync) Delete(ctx context.Context, apiID string, functionID string) error {
-	panic("unimplemented")
+func (r *functionRepositoryForAppSync) Delete(ctx context.Context, apiID string, functionID string) error {
+	if _, err := r.appsyncClient.DeleteFunction(
+		ctx,
+		&appsync.DeleteFunctionInput{
+			ApiId:      &apiID,
+			FunctionId: &functionID,
+		},
+		func(o *appsync.Options) {
+			o.Retryer = retry.AddWithErrorCodes(o.Retryer, (*types.ConcurrentModificationException)(nil).ErrorCode())
+		},
+	); err != nil {
+		return &model.LibError{Err: err}
+	}
+
+	return nil
 }
