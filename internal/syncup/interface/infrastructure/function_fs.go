@@ -31,6 +31,7 @@ import (
 	ptr "github.com/Aton-Kish/goptr"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
+	"github.com/Aton-Kish/syncup/internal/xfilepath"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -145,8 +146,48 @@ func (r *functionRepositoryForFS) Get(ctx context.Context, apiID string, functio
 	return fn, nil
 }
 
-func (*functionRepositoryForFS) Save(ctx context.Context, apiID string, function *model.Function) (*model.Function, error) {
-	panic("unimplemented")
+func (r *functionRepositoryForFS) Save(ctx context.Context, apiID string, function *model.Function) (*model.Function, error) {
+	if function == nil || function.FunctionId == nil {
+		return nil, &model.LibError{Err: model.ErrNilValue}
+	}
+
+	dir := filepath.Join(r.BaseDir(ctx), dirNameFunctions, *function.FunctionId)
+	if !xfilepath.Exist(dir) {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return nil, &model.LibError{Err: err}
+		}
+	}
+
+	metadata, err := json.MarshalIndent(function, "", "  ")
+	if err != nil {
+		return nil, &model.LibError{Err: err}
+	}
+
+	if err := os.WriteFile(filepath.Join(dir, fileNameFunctionMetadata), metadata, 0o644); err != nil {
+		return nil, &model.LibError{Err: err}
+	}
+
+	switch {
+	case function.Runtime == nil:
+		// VTL runtime
+		if err := os.WriteFile(filepath.Join(dir, fileNameFunctionVTLRequestMappingTemplate), []byte(ptr.ToValue(function.RequestMappingTemplate)), 0o644); err != nil {
+			return nil, &model.LibError{Err: err}
+		}
+
+		if err := os.WriteFile(filepath.Join(dir, fileNameFunctionVTLResponseMappingTemplate), []byte(ptr.ToValue(function.ResponseMappingTemplate)), 0o644); err != nil {
+			return nil, &model.LibError{Err: err}
+		}
+	case function.Runtime.Name == model.RuntimeNameAppsyncJs:
+		// AppSync JS runtime
+		if err := os.WriteFile(filepath.Join(dir, fileNameFunctionAppSyncJSCode), []byte(ptr.ToValue(function.Code)), 0o644); err != nil {
+			return nil, &model.LibError{Err: err}
+		}
+	default:
+		// invalid runtime
+		return nil, &model.LibError{Err: fmt.Errorf("%w: runtime %s", model.ErrInvalidValue, function.Runtime.Name)}
+	}
+
+	return function, nil
 }
 
 func (*functionRepositoryForFS) Delete(ctx context.Context, apiID string, functionID string) error {
