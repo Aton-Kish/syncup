@@ -31,6 +31,97 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func Test_functionRepositoryForFS_List(t *testing.T) {
+	testdataBaseDir := "../../../../testdata"
+	functionVTL_2018_05_29 := testhelpers.MustJSONUnmarshal[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/metadata.json")))
+	functionVTL_2018_05_29.RequestMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/request.vtl"))))
+	functionVTL_2018_05_29.ResponseMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/response.vtl"))))
+	functionAPPSYNC_JS_1_0_0 := testhelpers.MustJSONUnmarshal[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/APPSYNC_JS_1.0.0/metadata.json")))
+	functionAPPSYNC_JS_1_0_0.Code = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/APPSYNC_JS_1.0.0/code.js"))))
+
+	type fields struct {
+		baseDir string
+	}
+
+	type args struct {
+		apiID string
+	}
+
+	type expected struct {
+		out   []model.Function
+		errAs error
+		errIs error
+	}
+
+	tests := []struct {
+		name     string
+		fields   fields
+		args     args
+		expected expected
+	}{
+		{
+			name: "happy path",
+			fields: fields{
+				baseDir: testdataBaseDir,
+			},
+			args: args{
+				apiID: "apiID",
+			},
+			expected: expected{
+				out: []model.Function{
+					functionVTL_2018_05_29,
+					functionAPPSYNC_JS_1_0_0,
+				},
+				errAs: nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "edge path: non-existing dir",
+			fields: fields{
+				baseDir: filepath.Join(testdataBaseDir, "invalidBaseDir"),
+			},
+			args: args{
+				apiID: "apiID",
+			},
+			expected: expected{
+				out:   nil,
+				errAs: &model.LibError{},
+				errIs: nil,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange
+			ctx := context.Background()
+
+			r := &functionRepositoryForFS{
+				baseDir: tt.fields.baseDir,
+			}
+
+			// Act
+			actual, err := r.List(ctx, tt.args.apiID)
+
+			// Assert
+			assert.ElementsMatch(t, tt.expected.out, actual)
+
+			if tt.expected.errAs == nil && tt.expected.errIs == nil {
+				assert.NoError(t, err)
+			} else {
+				if tt.expected.errAs != nil {
+					assert.ErrorAs(t, err, &tt.expected.errAs)
+				}
+
+				if tt.expected.errIs != nil {
+					assert.ErrorIs(t, err, tt.expected.errIs)
+				}
+			}
+		})
+	}
+}
+
 func Test_functionRepositoryForFS_Get(t *testing.T) {
 	testdataBaseDir := "../../../../testdata"
 	functionVTL_2018_05_29 := testhelpers.MustJSONUnmarshal[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/metadata.json")))
