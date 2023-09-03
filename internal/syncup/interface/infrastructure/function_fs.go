@@ -26,10 +26,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 
 	ptr "github.com/Aton-Kish/goptr"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
+	"golang.org/x/sync/errgroup"
 )
 
 const (
@@ -62,8 +64,41 @@ func (r *functionRepositoryForFS) SetBaseDir(ctx context.Context, dir string) {
 	r.baseDir = dir
 }
 
-func (*functionRepositoryForFS) List(ctx context.Context, apiID string) ([]model.Function, error) {
-	panic("unimplemented")
+func (r *functionRepositoryForFS) List(ctx context.Context, apiID string) ([]model.Function, error) {
+	es, err := os.ReadDir(filepath.Join(r.BaseDir(ctx), dirNameFunctions))
+	if err != nil {
+		return nil, &model.LibError{Err: err}
+	}
+
+	var mu sync.Mutex
+	g, ctx := errgroup.WithContext(ctx)
+
+	fns := make([]model.Function, 0)
+	for _, e := range es {
+		if !e.IsDir() {
+			continue
+		}
+
+		functionID := e.Name()
+		g.Go(func() error {
+			fn, err := r.Get(ctx, apiID, functionID)
+			if err != nil {
+				return err
+			}
+
+			mu.Lock()
+			fns = append(fns, *fn)
+			mu.Unlock()
+
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
+
+	return fns, nil
 }
 
 func (r *functionRepositoryForFS) Get(ctx context.Context, apiID string, functionID string) (*model.Function, error) {

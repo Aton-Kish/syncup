@@ -19,6 +19,7 @@ require (
 	github.com/briandowns/spinner v1.23.0
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b
 	go.uber.org/mock v0.2.0
+	golang.org/x/sync v0.3.0
 )
 
 require (
