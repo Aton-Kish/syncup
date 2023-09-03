@@ -190,6 +190,10 @@ func (r *functionRepositoryForFS) Save(ctx context.Context, apiID string, functi
 	return function, nil
 }
 
-func (*functionRepositoryForFS) Delete(ctx context.Context, apiID string, functionID string) error {
-	panic("unimplemented")
+func (r *functionRepositoryForFS) Delete(ctx context.Context, apiID string, functionID string) error {
+	if err := os.RemoveAll(filepath.Join(r.BaseDir(ctx), dirNameFunctions, functionID)); err != nil {
+		return &model.LibError{Err: err}
+	}
+
+	return nil
 }
