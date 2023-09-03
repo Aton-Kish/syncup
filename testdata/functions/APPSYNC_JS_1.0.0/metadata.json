@@ -1,0 +1,18 @@
+{
+  "functionId": "APPSYNC_JS_1.0.0",
+  "name": "Name",
+  "description": "Description",
+  "dataSourceName": "DataSourceName",
+  "syncConfig": {
+    "conflictHandler": "ConflictHandler",
+    "conflictDetection": "ConflictDetection",
+    "lambdaConflictHandlerConfig": {
+      "lambdaConflictHandlerArn": "LambdaConflictHandlerArn"
+    }
+  },
+  "maxBatchSize": 0,
+  "runtime": {
+    "name": "APPSYNC_JS",
+    "runtimeVersion": "1.0.0"
+  }
+}
