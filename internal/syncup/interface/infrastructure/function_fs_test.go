@@ -398,3 +398,109 @@ func Test_functionRepositoryForFS_Save(t *testing.T) {
 		})
 	}
 }
+
+func Test_functionRepositoryForFS_Delete(t *testing.T) {
+	testdataBaseDir := "../../../../testdata"
+	functionVTL_2018_05_29 := testhelpers.MustJSONUnmarshal[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/metadata.json")))
+	functionVTL_2018_05_29.RequestMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/request.vtl"))))
+	functionVTL_2018_05_29.ResponseMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/response.vtl"))))
+	functionAPPSYNC_JS_1_0_0 := testhelpers.MustJSONUnmarshal[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/APPSYNC_JS_1.0.0/metadata.json")))
+	functionAPPSYNC_JS_1_0_0.Code = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/APPSYNC_JS_1.0.0/code.js"))))
+
+	type fields struct {
+		baseDir string
+	}
+
+	type args struct {
+		apiID      string
+		functionID string
+	}
+
+	type expected struct {
+		errAs error
+		errIs error
+	}
+
+	tests := []struct {
+		name     string
+		fields   fields
+		args     args
+		expected expected
+	}{
+		{
+			name: "happy path: VTL runtime",
+			fields: fields{
+				baseDir: t.TempDir(),
+			},
+			args: args{
+				apiID:      "apiID",
+				functionID: *functionVTL_2018_05_29.FunctionId,
+			},
+			expected: expected{
+				errAs: nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "happy path: AppSync JS runtime",
+			fields: fields{
+				baseDir: t.TempDir(),
+			},
+			args: args{
+				apiID:      "apiID",
+				functionID: *functionAPPSYNC_JS_1_0_0.FunctionId,
+			},
+			expected: expected{
+				errAs: nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "happy path: non-existing dir",
+			fields: fields{
+				baseDir: t.TempDir(),
+			},
+			args: args{
+				apiID:      "apiID",
+				functionID: "notExistFunctionID",
+			},
+			expected: expected{
+				errAs: nil,
+				errIs: nil,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange
+			ctx := context.Background()
+
+			r := &functionRepositoryForFS{
+				baseDir: tt.fields.baseDir,
+			}
+
+			_, err := r.Save(ctx, tt.args.apiID, &functionVTL_2018_05_29)
+			assert.NoError(t, err)
+
+			_, err = r.Save(ctx, tt.args.apiID, &functionAPPSYNC_JS_1_0_0)
+			assert.NoError(t, err)
+
+			// Act
+			err = r.Delete(ctx, tt.args.apiID, tt.args.functionID)
+
+			// Assert
+			if tt.expected.errAs == nil && tt.expected.errIs == nil {
+				assert.NoError(t, err)
+			} else {
+				if tt.expected.errAs != nil {
+					assert.ErrorAs(t, err, &tt.expected.errAs)
+				}
+
+				if tt.expected.errIs != nil {
+					assert.ErrorIs(t, err, tt.expected.errIs)
+				}
+			}
+		})
+	}
+}
