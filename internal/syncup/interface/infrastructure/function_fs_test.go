@@ -227,3 +227,174 @@ func Test_functionRepositoryForFS_Get(t *testing.T) {
 		})
 	}
 }
+
+func Test_functionRepositoryForFS_Save(t *testing.T) {
+	testdataBaseDir := "../../../../testdata"
+	functionVTL_2018_05_29 := testhelpers.MustJSONUnmarshal[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/metadata.json")))
+	functionVTL_2018_05_29.RequestMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/request.vtl"))))
+	functionVTL_2018_05_29.ResponseMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/response.vtl"))))
+	functionAPPSYNC_JS_1_0_0 := testhelpers.MustJSONUnmarshal[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/APPSYNC_JS_1.0.0/metadata.json")))
+	functionAPPSYNC_JS_1_0_0.Code = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/APPSYNC_JS_1.0.0/code.js"))))
+
+	type fields struct {
+		baseDir string
+	}
+
+	type args struct {
+		apiID    string
+		function *model.Function
+	}
+
+	type expected struct {
+		out   *model.Function
+		errAs error
+		errIs error
+	}
+
+	tests := []struct {
+		name     string
+		fields   fields
+		args     args
+		expected expected
+	}{
+		{
+			name: "happy path: VTL runtime - existing dir",
+			fields: fields{
+				baseDir: t.TempDir(),
+			},
+			args: args{
+				apiID:    "apiID",
+				function: &functionVTL_2018_05_29,
+			},
+			expected: expected{
+				out:   &functionVTL_2018_05_29,
+				errAs: nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "happy path: AppSync JS runtime - existing dir",
+			fields: fields{
+				baseDir: t.TempDir(),
+			},
+			args: args{
+				apiID:    "apiID",
+				function: &functionAPPSYNC_JS_1_0_0,
+			},
+			expected: expected{
+				out:   &functionAPPSYNC_JS_1_0_0,
+				errAs: nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "happy path: VTL runtime - non-existing dir",
+			fields: fields{
+				baseDir: filepath.Join(t.TempDir(), "notExist"),
+			},
+			args: args{
+				apiID:    "apiID",
+				function: &functionVTL_2018_05_29,
+			},
+			expected: expected{
+				out:   &functionVTL_2018_05_29,
+				errAs: nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "happy path: AppSync JS runtime - non-existing dir",
+			fields: fields{
+				baseDir: filepath.Join(t.TempDir(), "notExist"),
+			},
+			args: args{
+				apiID:    "apiID",
+				function: &functionAPPSYNC_JS_1_0_0,
+			},
+			expected: expected{
+				out:   &functionAPPSYNC_JS_1_0_0,
+				errAs: nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "edge path: nil schema",
+			fields: fields{
+				baseDir: t.TempDir(),
+			},
+			args: args{
+				apiID:    "apiID",
+				function: nil,
+			},
+			expected: expected{
+				out:   nil,
+				errAs: &model.LibError{},
+				errIs: model.ErrNilValue,
+			},
+		},
+		{
+			name: "edge path: nil function id",
+			fields: fields{
+				baseDir: t.TempDir(),
+			},
+			args: args{
+				apiID:    "apiID",
+				function: &model.Function{},
+			},
+			expected: expected{
+				out:   nil,
+				errAs: &model.LibError{},
+				errIs: model.ErrNilValue,
+			},
+		},
+		{
+			name: "edge path: invalid runtime",
+			fields: fields{
+				baseDir: t.TempDir(),
+			},
+			args: args{
+				apiID: "apiID",
+				function: &model.Function{
+					FunctionId: ptr.Pointer("FunctionId"),
+					Runtime: &model.Runtime{
+						Name: "INVALID",
+					},
+				},
+			},
+			expected: expected{
+				out:   nil,
+				errAs: &model.LibError{},
+				errIs: model.ErrInvalidValue,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange
+			ctx := context.Background()
+
+			r := &functionRepositoryForFS{
+				baseDir: tt.fields.baseDir,
+			}
+
+			// Act
+			actual, err := r.Save(ctx, tt.args.apiID, tt.args.function)
+
+			// Assert
+			assert.Equal(t, tt.expected.out, actual)
+
+			if tt.expected.errAs == nil && tt.expected.errIs == nil {
+				assert.NoError(t, err)
+			} else {
+				if tt.expected.errAs != nil {
+					assert.ErrorAs(t, err, &tt.expected.errAs)
+				}
+
+				if tt.expected.errIs != nil {
+					assert.ErrorIs(t, err, tt.expected.errIs)
+				}
+			}
+		})
+	}
+}
