@@ -49,4 +49,7 @@ type Repository interface {
 
 	SchemaRepositoryForAppSync() SchemaRepository
 	SchemaRepositoryForFS() SchemaRepository
+
+	FunctionRepositoryForAppSync() FunctionRepository
+	FunctionRepositoryForFS() FunctionRepository
 }
