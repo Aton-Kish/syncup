@@ -24,7 +24,11 @@ package usecase
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"sync"
 
+	ptr "github.com/Aton-Kish/goptr"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
 )
 
@@ -40,16 +44,20 @@ type PullUseCase interface {
 }
 
 type pullUseCase struct {
-	trackerRepository          repository.TrackerRepository
-	schemaRepositoryForAppSync repository.SchemaRepository
-	schemaRepositoryForFS      repository.SchemaRepository
+	trackerRepository            repository.TrackerRepository
+	schemaRepositoryForAppSync   repository.SchemaRepository
+	schemaRepositoryForFS        repository.SchemaRepository
+	functionRepositoryForAppSync repository.FunctionRepository
+	functionRepositoryForFS      repository.FunctionRepository
 }
 
 func NewPullUseCase(repo repository.Repository) PullUseCase {
 	return &pullUseCase{
-		trackerRepository:          repo.TrackerRepository(),
-		schemaRepositoryForAppSync: repo.SchemaRepositoryForAppSync(),
-		schemaRepositoryForFS:      repo.SchemaRepositoryForFS(),
+		trackerRepository:            repo.TrackerRepository(),
+		schemaRepositoryForAppSync:   repo.SchemaRepositoryForAppSync(),
+		schemaRepositoryForFS:        repo.SchemaRepositoryForFS(),
+		functionRepositoryForAppSync: repo.FunctionRepositoryForAppSync(),
+		functionRepositoryForFS:      repo.FunctionRepositoryForFS(),
 	}
 }
 
@@ -70,6 +78,43 @@ func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (*PullOut
 	}
 
 	uc.trackerRepository.Success(ctx, "saved schema")
+
+	uc.trackerRepository.InProgress(ctx, "fetching functions")
+
+	fns, err := uc.functionRepositoryForAppSync.List(ctx, apiID)
+	if err != nil {
+		uc.trackerRepository.Failed(ctx, "failed to fetch functions")
+		return nil, err
+	}
+
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+	errs := make([]error, 0)
+
+	for _, fn := range fns {
+		fn := fn
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			if _, err := uc.functionRepositoryForFS.Save(ctx, apiID, &fn); err != nil {
+				mu.Lock()
+				errs = append(errs, err)
+				mu.Unlock()
+
+				uc.trackerRepository.Failed(ctx, fmt.Sprintf("failed to save function %s", ptr.ToValue(fn.FunctionId)))
+				return
+			}
+
+			uc.trackerRepository.Success(ctx, fmt.Sprintf("saved function %s", ptr.ToValue(fn.FunctionId)))
+		}()
+	}
+
+	wg.Wait()
+
+	if err := errors.Join(errs...); err != nil {
+		return nil, err
+	}
 
 	return &PullOutput{}, nil
 }
