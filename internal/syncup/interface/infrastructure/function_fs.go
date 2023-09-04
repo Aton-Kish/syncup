@@ -23,6 +23,7 @@ package infrastructure
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -32,7 +33,6 @@ import (
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
 	"github.com/Aton-Kish/syncup/internal/xfilepath"
-	"golang.org/x/sync/errgroup"
 )
 
 const (
@@ -72,30 +72,37 @@ func (r *functionRepositoryForFS) List(ctx context.Context, apiID string) ([]mod
 	}
 
 	var mu sync.Mutex
-	g, ctx := errgroup.WithContext(ctx)
-
+	var wg sync.WaitGroup
 	fns := make([]model.Function, 0)
+	errs := make([]error, 0)
+
 	for _, e := range es {
 		if !e.IsDir() {
 			continue
 		}
 
 		functionID := e.Name()
-		g.Go(func() error {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
 			fn, err := r.Get(ctx, apiID, functionID)
 			if err != nil {
-				return err
+				mu.Lock()
+				errs = append(errs, err)
+				mu.Unlock()
+				return
 			}
 
 			mu.Lock()
 			fns = append(fns, *fn)
 			mu.Unlock()
-
-			return nil
-		})
+		}()
 	}
 
-	if err := g.Wait(); err != nil {
+	wg.Wait()
+
+	if err := errors.Join(errs...); err != nil {
 		return nil, err
 	}
 
