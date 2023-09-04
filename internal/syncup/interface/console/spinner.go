@@ -23,6 +23,7 @@
 package console
 
 import (
+	"sync"
 	"time"
 
 	"github.com/briandowns/spinner"
@@ -48,19 +49,24 @@ type ispinner interface {
 }
 
 type xspinner struct {
+	mu sync.Mutex
 	*spinner.Spinner
 }
 
 func newSpinner(cs []string, d time.Duration, options ...spinner.Option) ispinner {
 	return &xspinner{
-		spinner.New(cs, d, options...),
+		Spinner: spinner.New(cs, d, options...),
 	}
 }
 
 func (s *xspinner) SetSuffix(suffix string) {
+	s.mu.Lock()
 	s.Suffix = suffix
+	s.mu.Unlock()
 }
 
 func (s *xspinner) SetFinalMsg(msg string) {
+	s.mu.Lock()
 	s.FinalMSG = msg
+	s.mu.Unlock()
 }
