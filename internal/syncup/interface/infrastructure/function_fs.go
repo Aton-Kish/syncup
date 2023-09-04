@@ -154,8 +154,12 @@ func (r *functionRepositoryForFS) Get(ctx context.Context, apiID string, functio
 }
 
 func (r *functionRepositoryForFS) Save(ctx context.Context, apiID string, function *model.Function) (*model.Function, error) {
-	if function == nil || function.FunctionId == nil {
-		return nil, &model.LibError{Err: model.ErrNilValue}
+	if function == nil {
+		return nil, &model.LibError{Err: fmt.Errorf("%w: missing arguments in save function method", model.ErrNilValue)}
+	}
+
+	if function.FunctionId == nil {
+		return nil, &model.LibError{Err: fmt.Errorf("%w: missing function id", model.ErrNilValue)}
 	}
 
 	dir := filepath.Join(r.BaseDir(ctx), dirNameFunctions, *function.FunctionId)

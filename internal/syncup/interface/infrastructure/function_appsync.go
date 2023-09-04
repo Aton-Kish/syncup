@@ -23,6 +23,7 @@ package infrastructure
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
@@ -103,7 +104,7 @@ func (r *functionRepositoryForAppSync) Get(ctx context.Context, apiID string, fu
 
 	fn := mapper.NewFunctionMapper().ToModel(ctx, out.FunctionConfiguration)
 	if fn == nil {
-		return nil, &model.LibError{Err: model.ErrNilValue}
+		return nil, &model.LibError{Err: fmt.Errorf("%w: missing function in AppSync GetFunction API response", model.ErrNilValue)}
 	}
 
 	return fn, nil
@@ -111,7 +112,7 @@ func (r *functionRepositoryForAppSync) Get(ctx context.Context, apiID string, fu
 
 func (r *functionRepositoryForAppSync) Save(ctx context.Context, apiID string, function *model.Function) (*model.Function, error) {
 	if function == nil {
-		return nil, &model.LibError{Err: model.ErrNilValue}
+		return nil, &model.LibError{Err: fmt.Errorf("%w: missing arguments in save function method", model.ErrNilValue)}
 	}
 
 	save := r.update
@@ -134,7 +135,7 @@ func (r *functionRepositoryForAppSync) Save(ctx context.Context, apiID string, f
 
 func (r *functionRepositoryForAppSync) create(ctx context.Context, apiID string, function *model.Function) (*model.Function, error) {
 	if function == nil {
-		return nil, &model.LibError{Err: model.ErrNilValue}
+		return nil, &model.LibError{Err: fmt.Errorf("%w: missing arguments in create function method", model.ErrNilValue)}
 	}
 
 	f := mapper.NewFunctionMapper().FromModel(ctx, function)
@@ -163,7 +164,7 @@ func (r *functionRepositoryForAppSync) create(ctx context.Context, apiID string,
 
 	fn := mapper.NewFunctionMapper().ToModel(ctx, out.FunctionConfiguration)
 	if fn == nil {
-		return nil, &model.LibError{Err: model.ErrNilValue}
+		return nil, &model.LibError{Err: fmt.Errorf("%w: missing function in AppSync CreateFunction API response", model.ErrNilValue)}
 	}
 
 	return fn, nil
@@ -171,7 +172,7 @@ func (r *functionRepositoryForAppSync) create(ctx context.Context, apiID string,
 
 func (r *functionRepositoryForAppSync) update(ctx context.Context, apiID string, function *model.Function) (*model.Function, error) {
 	if function == nil {
-		return nil, &model.LibError{Err: model.ErrNilValue}
+		return nil, &model.LibError{Err: fmt.Errorf("%w: missing arguments in update function method", model.ErrNilValue)}
 	}
 
 	f := mapper.NewFunctionMapper().FromModel(ctx, function)
@@ -201,7 +202,7 @@ func (r *functionRepositoryForAppSync) update(ctx context.Context, apiID string,
 
 	fn := mapper.NewFunctionMapper().ToModel(ctx, out.FunctionConfiguration)
 	if fn == nil {
-		return nil, &model.LibError{Err: model.ErrNilValue}
+		return nil, &model.LibError{Err: fmt.Errorf("%w: missing function in AppSync UpdateFunction API response", model.ErrNilValue)}
 	}
 
 	return fn, nil
