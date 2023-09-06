@@ -15,6 +15,7 @@ require (
 )
 
 require (
+	github.com/Aton-Kish/goptr v0.1.0
 	github.com/briandowns/spinner v1.23.0
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b
 	go.uber.org/mock v0.2.0

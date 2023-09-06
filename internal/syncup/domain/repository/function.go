@@ -20,53 +20,17 @@
 
 //go:generate mockgen -source=$GOFILE -destination=./mock/mock_$GOFILE
 
-package console
+package repository
 
 import (
-	"sync"
-	"time"
+	"context"
 
-	"github.com/briandowns/spinner"
+	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 )
 
-type ispinner interface {
-	Active() bool
-	Color(colors ...string) error
-	Disable()
-	Enable()
-	Enabled() bool
-	Lock()
-	Restart()
-	Reverse()
-	Start()
-	Stop()
-	Unlock()
-	UpdateCharSet(cs []string)
-	UpdateSpeed(d time.Duration)
-
-	SetSuffix(suffix string)
-	SetFinalMsg(msg string)
-}
-
-type xspinner struct {
-	mu sync.Mutex
-	*spinner.Spinner
-}
-
-func newSpinner(cs []string, d time.Duration, options ...spinner.Option) ispinner {
-	return &xspinner{
-		Spinner: spinner.New(cs, d, options...),
-	}
-}
-
-func (s *xspinner) SetSuffix(suffix string) {
-	s.mu.Lock()
-	s.Suffix = suffix
-	s.mu.Unlock()
-}
-
-func (s *xspinner) SetFinalMsg(msg string) {
-	s.mu.Lock()
-	s.FinalMSG = msg
-	s.mu.Unlock()
+type FunctionRepository interface {
+	List(ctx context.Context, apiID string) ([]model.Function, error)
+	Get(ctx context.Context, apiID string, functionID string) (*model.Function, error)
+	Save(ctx context.Context, apiID string, function *model.Function) (*model.Function, error)
+	Delete(ctx context.Context, apiID string, functionID string) error
 }

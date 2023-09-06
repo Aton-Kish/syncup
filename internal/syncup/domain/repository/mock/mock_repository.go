@@ -160,6 +160,34 @@ func (mr *MockRepositoryMockRecorder) BaseDir(ctx interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BaseDir", reflect.TypeOf((*MockRepository)(nil).BaseDir), ctx)
 }
 
+// FunctionRepositoryForAppSync mocks base method.
+func (m *MockRepository) FunctionRepositoryForAppSync() repository.FunctionRepository {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FunctionRepositoryForAppSync")
+	ret0, _ := ret[0].(repository.FunctionRepository)
+	return ret0
+}
+
+// FunctionRepositoryForAppSync indicates an expected call of FunctionRepositoryForAppSync.
+func (mr *MockRepositoryMockRecorder) FunctionRepositoryForAppSync() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FunctionRepositoryForAppSync", reflect.TypeOf((*MockRepository)(nil).FunctionRepositoryForAppSync))
+}
+
+// FunctionRepositoryForFS mocks base method.
+func (m *MockRepository) FunctionRepositoryForFS() repository.FunctionRepository {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FunctionRepositoryForFS")
+	ret0, _ := ret[0].(repository.FunctionRepository)
+	return ret0
+}
+
+// FunctionRepositoryForFS indicates an expected call of FunctionRepositoryForFS.
+func (mr *MockRepositoryMockRecorder) FunctionRepositoryForFS() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FunctionRepositoryForFS", reflect.TypeOf((*MockRepository)(nil).FunctionRepositoryForFS))
+}
+
 // MFATokenProviderRepository mocks base method.
 func (m *MockRepository) MFATokenProviderRepository() repository.MFATokenProviderRepository {
 	m.ctrl.T.Helper()

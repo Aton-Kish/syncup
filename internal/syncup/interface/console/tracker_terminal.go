@@ -24,6 +24,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"sync"
 	"time"
 
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
@@ -33,6 +34,7 @@ import (
 )
 
 type trackerRepositoryForTerminal struct {
+	mu      sync.Mutex
 	writer  io.Writer
 	spinner ispinner
 }
@@ -76,10 +78,12 @@ func (r *trackerRepositoryForTerminal) done(ctx context.Context, status model.Tr
 
 	cmsg := fmt.Sprintln(ansi.Color(icon, iconStyle), ansi.Color(msg, msgStyle))
 
+	r.mu.Lock()
 	if r.spinner.Active() {
 		r.spinner.SetFinalMsg(cmsg)
 		r.spinner.Stop()
 	} else {
 		fmt.Fprint(r.writer, cmsg)
 	}
+	r.mu.Unlock()
 }

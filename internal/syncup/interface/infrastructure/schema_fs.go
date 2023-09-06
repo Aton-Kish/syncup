@@ -22,6 +22,7 @@ package infrastructure
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -68,7 +69,7 @@ func (r *schemaRepositoryForFS) Get(ctx context.Context, apiID string) (*model.S
 
 func (r *schemaRepositoryForFS) Save(ctx context.Context, apiID string, schema *model.Schema) (*model.Schema, error) {
 	if schema == nil {
-		return nil, &model.LibError{Err: model.ErrNilValue}
+		return nil, &model.LibError{Err: fmt.Errorf("%w: missing arguments in save schema method", model.ErrNilValue)}
 	}
 
 	dir := r.BaseDir(ctx)

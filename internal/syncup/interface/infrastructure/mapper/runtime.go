@@ -18,55 +18,42 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-//go:generate mockgen -source=$GOFILE -destination=./mock/mock_$GOFILE
-
-package console
+package mapper
 
 import (
-	"sync"
-	"time"
+	"context"
 
-	"github.com/briandowns/spinner"
+	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
+	"github.com/aws/aws-sdk-go-v2/service/appsync/types"
 )
 
-type ispinner interface {
-	Active() bool
-	Color(colors ...string) error
-	Disable()
-	Enable()
-	Enabled() bool
-	Lock()
-	Restart()
-	Reverse()
-	Start()
-	Stop()
-	Unlock()
-	UpdateCharSet(cs []string)
-	UpdateSpeed(d time.Duration)
+type runtimeMapper struct{}
 
-	SetSuffix(suffix string)
-	SetFinalMsg(msg string)
-}
+var (
+	_ interface {
+		ToModel(ctx context.Context, v *types.AppSyncRuntime) *model.Runtime
+		FromModel(ctx context.Context, v *model.Runtime) *types.AppSyncRuntime
+	} = (*runtimeMapper)(nil)
+)
 
-type xspinner struct {
-	mu sync.Mutex
-	*spinner.Spinner
-}
+func (*runtimeMapper) ToModel(ctx context.Context, v *types.AppSyncRuntime) *model.Runtime {
+	if v == nil {
+		return nil
+	}
 
-func newSpinner(cs []string, d time.Duration, options ...spinner.Option) ispinner {
-	return &xspinner{
-		Spinner: spinner.New(cs, d, options...),
+	return &model.Runtime{
+		Name:           model.RuntimeName(v.Name),
+		RuntimeVersion: v.RuntimeVersion,
 	}
 }
 
-func (s *xspinner) SetSuffix(suffix string) {
-	s.mu.Lock()
-	s.Suffix = suffix
-	s.mu.Unlock()
-}
+func (*runtimeMapper) FromModel(ctx context.Context, v *model.Runtime) *types.AppSyncRuntime {
+	if v == nil {
+		return nil
+	}
 
-func (s *xspinner) SetFinalMsg(msg string) {
-	s.mu.Lock()
-	s.FinalMSG = msg
-	s.mu.Unlock()
+	return &types.AppSyncRuntime{
+		Name:           types.RuntimeName(v.Name),
+		RuntimeVersion: v.RuntimeVersion,
+	}
 }

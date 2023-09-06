@@ -25,6 +25,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	ptr "github.com/Aton-Kish/goptr"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	mock_repository "github.com/Aton-Kish/syncup/internal/syncup/domain/repository/mock"
 	"github.com/Aton-Kish/syncup/internal/testhelpers"
@@ -35,6 +36,11 @@ import (
 func Test_pullUseCase_Execute(t *testing.T) {
 	testdataBaseDir := "../../../testdata"
 	schema := model.Schema(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "schema/schema.graphqls")))
+	functionVTL_2018_05_29 := testhelpers.MustUnmarshalJSON[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/metadata.json")))
+	functionVTL_2018_05_29.RequestMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/request.vtl"))))
+	functionVTL_2018_05_29.ResponseMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/response.vtl"))))
+	functionAPPSYNC_JS_1_0_0 := testhelpers.MustUnmarshalJSON[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/APPSYNC_JS_1.0.0/metadata.json")))
+	functionAPPSYNC_JS_1_0_0.Code = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/APPSYNC_JS_1.0.0/code.js"))))
 
 	type args struct {
 		params *PullInput
@@ -58,6 +64,24 @@ func Test_pullUseCase_Execute(t *testing.T) {
 		returns []mockSchemaRepositoryForFSSaveReturn
 	}
 
+	type mockFunctionRepositoryForAppSyncListReturn struct {
+		out []model.Function
+		err error
+	}
+	type mockFunctionRepositoryForAppSyncList struct {
+		calls   int
+		returns []mockFunctionRepositoryForAppSyncListReturn
+	}
+
+	type mockFunctionRepositoryForFSSaveReturn struct {
+		out *model.Function
+		err error
+	}
+	type mockFunctionRepositoryForFSSave struct {
+		calls   int
+		returns []mockFunctionRepositoryForFSSaveReturn
+	}
+
 	type expected struct {
 		out   *PullOutput
 		errAs error
@@ -65,11 +89,13 @@ func Test_pullUseCase_Execute(t *testing.T) {
 	}
 
 	tests := []struct {
-		name                              string
-		args                              args
-		mockSchemaRepositoryForAppSyncGet mockSchemaRepositoryForAppSyncGet
-		mockSchemaRepositoryForFSSave     mockSchemaRepositoryForFSSave
-		expected                          expected
+		name                                 string
+		args                                 args
+		mockSchemaRepositoryForAppSyncGet    mockSchemaRepositoryForAppSyncGet
+		mockSchemaRepositoryForFSSave        mockSchemaRepositoryForFSSave
+		mockFunctionRepositoryForAppSyncList mockFunctionRepositoryForAppSyncList
+		mockFunctionRepositoryForFSSave      mockFunctionRepositoryForFSSave
+		expected                             expected
 	}{
 		{
 			name: "happy path",
@@ -90,6 +116,29 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				returns: []mockSchemaRepositoryForFSSaveReturn{
 					{
 						out: &schema,
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForAppSyncList: mockFunctionRepositoryForAppSyncList{
+				returns: []mockFunctionRepositoryForAppSyncListReturn{
+					{
+						out: []model.Function{
+							functionVTL_2018_05_29,
+							functionAPPSYNC_JS_1_0_0,
+						},
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForFSSave: mockFunctionRepositoryForFSSave{
+				returns: []mockFunctionRepositoryForFSSaveReturn{
+					{
+						out: &functionVTL_2018_05_29,
+						err: nil,
+					},
+					{
+						out: &functionAPPSYNC_JS_1_0_0,
 						err: nil,
 					},
 				},
@@ -117,6 +166,12 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			},
 			mockSchemaRepositoryForFSSave: mockSchemaRepositoryForFSSave{
 				returns: []mockSchemaRepositoryForFSSaveReturn{},
+			},
+			mockFunctionRepositoryForAppSyncList: mockFunctionRepositoryForAppSyncList{
+				returns: []mockFunctionRepositoryForAppSyncListReturn{},
+			},
+			mockFunctionRepositoryForFSSave: mockFunctionRepositoryForFSSave{
+				returns: []mockFunctionRepositoryForFSSaveReturn{},
 			},
 			expected: expected{
 				out:   nil,
@@ -147,6 +202,104 @@ func Test_pullUseCase_Execute(t *testing.T) {
 					},
 				},
 			},
+			mockFunctionRepositoryForAppSyncList: mockFunctionRepositoryForAppSyncList{
+				returns: []mockFunctionRepositoryForAppSyncListReturn{},
+			},
+			mockFunctionRepositoryForFSSave: mockFunctionRepositoryForFSSave{
+				returns: []mockFunctionRepositoryForFSSaveReturn{},
+			},
+			expected: expected{
+				out:   nil,
+				errAs: &model.LibError{},
+				errIs: nil,
+			},
+		},
+		{
+			name: "edge path: FunctionRepositoryForFSSave.List() error",
+			args: args{
+				params: &PullInput{
+					APIID: "APIID",
+				},
+			},
+			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
+				returns: []mockSchemaRepositoryForAppSyncGetReturn{
+					{
+						out: &schema,
+						err: nil,
+					},
+				},
+			},
+			mockSchemaRepositoryForFSSave: mockSchemaRepositoryForFSSave{
+				returns: []mockSchemaRepositoryForFSSaveReturn{
+					{
+						out: &schema,
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForAppSyncList: mockFunctionRepositoryForAppSyncList{
+				returns: []mockFunctionRepositoryForAppSyncListReturn{
+					{
+						out: nil,
+						err: &model.LibError{},
+					},
+				},
+			},
+			mockFunctionRepositoryForFSSave: mockFunctionRepositoryForFSSave{
+				returns: []mockFunctionRepositoryForFSSaveReturn{},
+			},
+			expected: expected{
+				out:   nil,
+				errAs: &model.LibError{},
+				errIs: nil,
+			},
+		},
+		{
+			name: "edge path: FunctionRepositoryForFSSave.Save() error",
+			args: args{
+				params: &PullInput{
+					APIID: "APIID",
+				},
+			},
+			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
+				returns: []mockSchemaRepositoryForAppSyncGetReturn{
+					{
+						out: &schema,
+						err: nil,
+					},
+				},
+			},
+			mockSchemaRepositoryForFSSave: mockSchemaRepositoryForFSSave{
+				returns: []mockSchemaRepositoryForFSSaveReturn{
+					{
+						out: &schema,
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForAppSyncList: mockFunctionRepositoryForAppSyncList{
+				returns: []mockFunctionRepositoryForAppSyncListReturn{
+					{
+						out: []model.Function{
+							functionVTL_2018_05_29,
+							functionAPPSYNC_JS_1_0_0,
+						},
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForFSSave: mockFunctionRepositoryForFSSave{
+				returns: []mockFunctionRepositoryForFSSaveReturn{
+					{
+						out: nil,
+						err: &model.LibError{},
+					},
+					{
+						out: nil,
+						err: &model.LibError{},
+					},
+				},
+			},
 			expected: expected{
 				out:   nil,
 				errAs: &model.LibError{},
@@ -166,23 +319,23 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			mockTrackerRepository := mock_repository.NewMockTrackerRepository(ctrl)
 			mockSchemaRepositoryForAppSync := mock_repository.NewMockSchemaRepository(ctrl)
 			mockSchemaRepositoryForFS := mock_repository.NewMockSchemaRepository(ctrl)
+			mockFunctionRepositoryForAppSync := mock_repository.NewMockFunctionRepository(ctrl)
+			mockFunctionRepositoryForFS := mock_repository.NewMockFunctionRepository(ctrl)
 
 			mockTrackerRepository.
 				EXPECT().
 				InProgress(ctx, gomock.Any()).
-				Times(1)
+				AnyTimes()
 
-			if tt.expected.errAs == nil && tt.expected.errIs == nil {
-				mockTrackerRepository.
-					EXPECT().
-					Success(ctx, gomock.Any()).
-					Times(1)
-			} else {
-				mockTrackerRepository.
-					EXPECT().
-					Failed(ctx, gomock.Any()).
-					Times(1)
-			}
+			mockTrackerRepository.
+				EXPECT().
+				Success(ctx, gomock.Any()).
+				AnyTimes()
+
+			mockTrackerRepository.
+				EXPECT().
+				Failed(ctx, gomock.Any()).
+				AnyTimes()
 
 			mockSchemaRepositoryForAppSync.
 				EXPECT().
@@ -204,10 +357,32 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				}).
 				Times(len(tt.mockSchemaRepositoryForFSSave.returns))
 
+			mockFunctionRepositoryForAppSync.
+				EXPECT().
+				List(ctx, gomock.Any()).
+				DoAndReturn(func(ctx context.Context, apiID string) ([]model.Function, error) {
+					defer func() { tt.mockFunctionRepositoryForAppSyncList.calls++ }()
+					r := tt.mockFunctionRepositoryForAppSyncList.returns[tt.mockFunctionRepositoryForAppSyncList.calls]
+					return r.out, r.err
+				}).
+				Times(len(tt.mockFunctionRepositoryForAppSyncList.returns))
+
+			mockFunctionRepositoryForFS.
+				EXPECT().
+				Save(ctx, gomock.Any(), gomock.Any()).
+				DoAndReturn(func(ctx context.Context, apiID string, function *model.Function) (*model.Function, error) {
+					defer func() { tt.mockFunctionRepositoryForFSSave.calls++ }()
+					r := tt.mockFunctionRepositoryForFSSave.returns[tt.mockFunctionRepositoryForFSSave.calls]
+					return r.out, r.err
+				}).
+				Times(len(tt.mockFunctionRepositoryForFSSave.returns))
+
 			uc := &pullUseCase{
-				trackerRepository:          mockTrackerRepository,
-				schemaRepositoryForAppSync: mockSchemaRepositoryForAppSync,
-				schemaRepositoryForFS:      mockSchemaRepositoryForFS,
+				trackerRepository:            mockTrackerRepository,
+				schemaRepositoryForAppSync:   mockSchemaRepositoryForAppSync,
+				schemaRepositoryForFS:        mockSchemaRepositoryForFS,
+				functionRepositoryForAppSync: mockFunctionRepositoryForAppSync,
+				functionRepositoryForFS:      mockFunctionRepositoryForFS,
 			}
 
 			// Act

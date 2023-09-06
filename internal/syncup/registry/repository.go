@@ -49,6 +49,9 @@ type repo struct {
 
 	schemaRepositoryForAppSync repository.SchemaRepository
 	schemaRepositoryForFS      repository.SchemaRepository
+
+	functionRepositoryForAppSync repository.FunctionRepository
+	functionRepositoryForFS      repository.FunctionRepository
 }
 
 func NewRepository() repository.Repository {
@@ -73,6 +76,9 @@ func NewRepository() repository.Repository {
 	schemaRepositoryForAppSync := infrastructure.NewSchemaRepositoryForAppSync()
 	schemaRepositoryForFS := infrastructure.NewSchemaRepositoryForFS()
 
+	functionRepositoryForAppSync := infrastructure.NewFunctionRepositoryForAppSync()
+	functionRepositoryForFS := infrastructure.NewFunctionRepositoryForFS()
+
 	return &repo{
 		version: version,
 
@@ -82,6 +88,9 @@ func NewRepository() repository.Repository {
 
 		schemaRepositoryForAppSync: schemaRepositoryForAppSync,
 		schemaRepositoryForFS:      schemaRepositoryForFS,
+
+		functionRepositoryForAppSync: functionRepositoryForAppSync,
+		functionRepositoryForFS:      functionRepositoryForFS,
 	}
 }
 
@@ -93,6 +102,9 @@ func (r *repo) repositories() []any {
 
 		r.SchemaRepositoryForAppSync(),
 		r.SchemaRepositoryForFS(),
+
+		r.FunctionRepositoryForAppSync(),
+		r.FunctionRepositoryForFS(),
 	}
 }
 
@@ -144,4 +156,12 @@ func (r *repo) SchemaRepositoryForAppSync() repository.SchemaRepository {
 
 func (r *repo) SchemaRepositoryForFS() repository.SchemaRepository {
 	return r.schemaRepositoryForFS
+}
+
+func (r *repo) FunctionRepositoryForAppSync() repository.FunctionRepository {
+	return r.functionRepositoryForAppSync
+}
+
+func (r *repo) FunctionRepositoryForFS() repository.FunctionRepository {
+	return r.functionRepositoryForFS
 }

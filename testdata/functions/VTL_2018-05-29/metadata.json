@@ -1,0 +1,15 @@
+{
+  "functionId": "VTL_2018-05-29",
+  "name": "Name",
+  "description": "Description",
+  "dataSourceName": "DataSourceName",
+  "functionVersion": "2018-05-29",
+  "syncConfig": {
+    "conflictHandler": "ConflictHandler",
+    "conflictDetection": "ConflictDetection",
+    "lambdaConflictHandlerConfig": {
+      "lambdaConflictHandlerArn": "LambdaConflictHandlerArn"
+    }
+  },
+  "maxBatchSize": 0
+}

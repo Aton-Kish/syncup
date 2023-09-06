@@ -18,55 +18,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-//go:generate mockgen -source=$GOFILE -destination=./mock/mock_$GOFILE
-
-package console
+package testhelpers
 
 import (
-	"sync"
-	"time"
-
-	"github.com/briandowns/spinner"
+	"encoding/json"
+	"testing"
 )
 
-type ispinner interface {
-	Active() bool
-	Color(colors ...string) error
-	Disable()
-	Enable()
-	Enabled() bool
-	Lock()
-	Restart()
-	Reverse()
-	Start()
-	Stop()
-	Unlock()
-	UpdateCharSet(cs []string)
-	UpdateSpeed(d time.Duration)
+func MustUnmarshalJSON[T any](t *testing.T, data []byte) T {
+	t.Helper()
 
-	SetSuffix(suffix string)
-	SetFinalMsg(msg string)
-}
-
-type xspinner struct {
-	mu sync.Mutex
-	*spinner.Spinner
-}
-
-func newSpinner(cs []string, d time.Duration, options ...spinner.Option) ispinner {
-	return &xspinner{
-		Spinner: spinner.New(cs, d, options...),
+	var v T
+	if err := json.Unmarshal(data, &v); err != nil {
+		t.Fatal(err)
 	}
-}
 
-func (s *xspinner) SetSuffix(suffix string) {
-	s.mu.Lock()
-	s.Suffix = suffix
-	s.mu.Unlock()
-}
-
-func (s *xspinner) SetFinalMsg(msg string) {
-	s.mu.Lock()
-	s.FinalMSG = msg
-	s.mu.Unlock()
+	return v
 }

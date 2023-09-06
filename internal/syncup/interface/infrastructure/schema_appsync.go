@@ -83,7 +83,7 @@ func (r *schemaRepositoryForAppSync) Get(ctx context.Context, apiID string) (*mo
 
 func (r *schemaRepositoryForAppSync) Save(ctx context.Context, apiID string, schema *model.Schema) (*model.Schema, error) {
 	if schema == nil {
-		return nil, &model.LibError{Err: model.ErrNilValue}
+		return nil, &model.LibError{Err: fmt.Errorf("%w: missing arguments in save schema method", model.ErrNilValue)}
 	}
 
 	if err := r.startCreation(ctx, apiID, []byte(*schema)); err != nil {
@@ -163,7 +163,7 @@ func (r *schemaRepositoryForAppSync) isCreated(ctx context.Context, apiID string
 	case types.SchemaStatusProcessing:
 		return false, nil
 	case types.SchemaStatusFailed:
-		return false, &model.LibError{Err: model.ErrCreateFailed}
+		return false, &model.LibError{Err: fmt.Errorf("%w: schema status %s", model.ErrCreateFailed, out.Status)}
 	default:
 		return false, &model.LibError{Err: fmt.Errorf("%w: schema status %s", model.ErrInvalidValue, out.Status)}
 	}
