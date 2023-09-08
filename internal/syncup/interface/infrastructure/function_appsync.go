@@ -84,6 +84,20 @@ func (r *functionRepositoryForAppSync) List(ctx context.Context, apiID string) (
 		}
 	}
 
+	encountered := make(map[string]bool)
+	for _, fn := range fns {
+		if fn.Name == nil {
+			return nil, &model.LibError{Err: fmt.Errorf("%w: missing name", model.ErrNilValue)}
+		}
+
+		name := *fn.Name
+		if encountered[name] {
+			return nil, &model.LibError{Err: fmt.Errorf("%w: function name %s", model.ErrDuplicateValue, name)}
+		}
+
+		encountered[name] = true
+	}
+
 	return fns, nil
 }
 
@@ -94,7 +108,7 @@ func (r *functionRepositoryForAppSync) Get(ctx context.Context, apiID string, na
 	}
 
 	for _, fn := range fns {
-		if fn.Name != nil && *fn.Name == name {
+		if *fn.Name == name {
 			return &fn, nil
 		}
 	}

@@ -145,6 +145,72 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 				errIs: nil,
 			},
 		},
+		{
+			name: "edge path: nil name",
+			args: args{
+				apiID: "apiID",
+			},
+			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
+				returns: []mockAppSyncClientListFunctionsReturn{
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+							},
+							NextToken: aws.String("NextToken"),
+						},
+						err: nil,
+					},
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &model.Function{}),
+							},
+							NextToken: nil,
+						},
+						err: nil,
+					},
+				},
+			},
+			expected: expected{
+				out:   nil,
+				errAs: &model.LibError{},
+				errIs: model.ErrNilValue,
+			},
+		},
+		{
+			name: "edge path: duplicate name",
+			args: args{
+				apiID: "apiID",
+			},
+			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
+				returns: []mockAppSyncClientListFunctionsReturn{
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+							},
+							NextToken: aws.String("NextToken"),
+						},
+						err: nil,
+					},
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+							},
+							NextToken: nil,
+						},
+						err: nil,
+					},
+				},
+			},
+			expected: expected{
+				out:   nil,
+				errAs: &model.LibError{},
+				errIs: model.ErrDuplicateValue,
+			},
+		},
 	}
 
 	for _, tt := range tests {
