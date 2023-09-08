@@ -81,12 +81,12 @@ func (r *functionRepositoryForFS) List(ctx context.Context, apiID string) ([]mod
 			continue
 		}
 
-		functionID := e.Name()
+		name := e.Name()
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 
-			fn, err := r.Get(ctx, apiID, functionID)
+			fn, err := r.Get(ctx, apiID, name)
 			if err != nil {
 				mu.Lock()
 				errs = append(errs, err)
@@ -109,8 +109,8 @@ func (r *functionRepositoryForFS) List(ctx context.Context, apiID string) ([]mod
 	return fns, nil
 }
 
-func (r *functionRepositoryForFS) Get(ctx context.Context, apiID string, functionID string) (*model.Function, error) {
-	dir := filepath.Join(r.BaseDir(ctx), dirNameFunctions, functionID)
+func (r *functionRepositoryForFS) Get(ctx context.Context, apiID string, name string) (*model.Function, error) {
+	dir := filepath.Join(r.BaseDir(ctx), dirNameFunctions, name)
 	metadata, err := os.ReadFile(filepath.Join(dir, fileNameFunctionMetadata))
 	if err != nil {
 		return nil, &model.LibError{Err: err}
@@ -158,11 +158,11 @@ func (r *functionRepositoryForFS) Save(ctx context.Context, apiID string, functi
 		return nil, &model.LibError{Err: fmt.Errorf("%w: missing arguments in save function method", model.ErrNilValue)}
 	}
 
-	if function.FunctionId == nil {
-		return nil, &model.LibError{Err: fmt.Errorf("%w: missing function id", model.ErrNilValue)}
+	if function.Name == nil {
+		return nil, &model.LibError{Err: fmt.Errorf("%w: missing name", model.ErrNilValue)}
 	}
 
-	dir := filepath.Join(r.BaseDir(ctx), dirNameFunctions, *function.FunctionId)
+	dir := filepath.Join(r.BaseDir(ctx), dirNameFunctions, *function.Name)
 	if !xfilepath.Exist(dir) {
 		if err := os.MkdirAll(dir, 0o755); err != nil {
 			return nil, &model.LibError{Err: err}
@@ -201,8 +201,8 @@ func (r *functionRepositoryForFS) Save(ctx context.Context, apiID string, functi
 	return function, nil
 }
 
-func (r *functionRepositoryForFS) Delete(ctx context.Context, apiID string, functionID string) error {
-	if err := os.RemoveAll(filepath.Join(r.BaseDir(ctx), dirNameFunctions, functionID)); err != nil {
+func (r *functionRepositoryForFS) Delete(ctx context.Context, apiID string, name string) error {
+	if err := os.RemoveAll(filepath.Join(r.BaseDir(ctx), dirNameFunctions, name)); err != nil {
 		return &model.LibError{Err: err}
 	}
 

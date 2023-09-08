@@ -48,9 +48,11 @@ import (
 func Test_functionRepositoryForAppSync_List(t *testing.T) {
 	testdataBaseDir := "../../../../testdata"
 	functionVTL_2018_05_29 := testhelpers.MustUnmarshalJSON[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/metadata.json")))
+	functionVTL_2018_05_29.FunctionId = ptr.Pointer("FunctionId")
 	functionVTL_2018_05_29.RequestMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/request.vtl"))))
 	functionVTL_2018_05_29.ResponseMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/response.vtl"))))
 	functionAPPSYNC_JS_1_0_0 := testhelpers.MustUnmarshalJSON[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/APPSYNC_JS_1.0.0/metadata.json")))
+	functionAPPSYNC_JS_1_0_0.FunctionId = ptr.Pointer("FunctionId")
 	functionAPPSYNC_JS_1_0_0.Code = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/APPSYNC_JS_1.0.0/code.js"))))
 	duration := time.Duration(1) * time.Millisecond
 
@@ -143,6 +145,72 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 				errIs: nil,
 			},
 		},
+		{
+			name: "edge path: nil name",
+			args: args{
+				apiID: "apiID",
+			},
+			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
+				returns: []mockAppSyncClientListFunctionsReturn{
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+							},
+							NextToken: aws.String("NextToken"),
+						},
+						err: nil,
+					},
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &model.Function{}),
+							},
+							NextToken: nil,
+						},
+						err: nil,
+					},
+				},
+			},
+			expected: expected{
+				out:   nil,
+				errAs: &model.LibError{},
+				errIs: model.ErrNilValue,
+			},
+		},
+		{
+			name: "edge path: duplicate name",
+			args: args{
+				apiID: "apiID",
+			},
+			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
+				returns: []mockAppSyncClientListFunctionsReturn{
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+							},
+							NextToken: aws.String("NextToken"),
+						},
+						err: nil,
+					},
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+							},
+							NextToken: nil,
+						},
+						err: nil,
+					},
+				},
+			},
+			expected: expected{
+				out:   nil,
+				errAs: &model.LibError{},
+				errIs: model.ErrDuplicateValue,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -206,22 +274,26 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 	testdataBaseDir := "../../../../testdata"
 	functionVTL_2018_05_29 := testhelpers.MustUnmarshalJSON[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/metadata.json")))
+	functionVTL_2018_05_29.FunctionId = ptr.Pointer("FunctionId")
 	functionVTL_2018_05_29.RequestMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/request.vtl"))))
 	functionVTL_2018_05_29.ResponseMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/response.vtl"))))
+	functionAPPSYNC_JS_1_0_0 := testhelpers.MustUnmarshalJSON[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/APPSYNC_JS_1.0.0/metadata.json")))
+	functionAPPSYNC_JS_1_0_0.FunctionId = ptr.Pointer("FunctionId")
+	functionAPPSYNC_JS_1_0_0.Code = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/APPSYNC_JS_1.0.0/code.js"))))
 	duration := time.Duration(1) * time.Millisecond
 
 	type args struct {
-		apiID      string
-		functionID string
+		apiID string
+		name  string
 	}
 
-	type mockAppSyncClientGetFunctionReturn struct {
-		out *appsync.GetFunctionOutput
+	type mockAppSyncClientListFunctionsReturn struct {
+		out *appsync.ListFunctionsOutput
 		err error
 	}
-	type mockAppSyncClientGetFunction struct {
+	type mockAppSyncClientListFunctions struct {
 		calls   int
-		returns []mockAppSyncClientGetFunctionReturn
+		returns []mockAppSyncClientListFunctionsReturn
 	}
 
 	type expected struct {
@@ -231,22 +303,34 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 	}
 
 	tests := []struct {
-		name                         string
-		args                         args
-		mockAppSyncClientGetFunction mockAppSyncClientGetFunction
-		expected                     expected
+		name                           string
+		args                           args
+		mockAppSyncClientListFunctions mockAppSyncClientListFunctions
+		expected                       expected
 	}{
 		{
 			name: "happy path: default",
 			args: args{
-				apiID:      "apiID",
-				functionID: "functionID",
+				apiID: "apiID",
+				name:  "VTL_2018-05-29",
 			},
-			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
-				returns: []mockAppSyncClientGetFunctionReturn{
+			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
+				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.GetFunctionOutput{
-							FunctionConfiguration: mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+							},
+							NextToken: aws.String("NextToken"),
+						},
+						err: nil,
+					},
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
+							},
+							NextToken: nil,
 						},
 						err: nil,
 					},
@@ -259,87 +343,22 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 			},
 		},
 		{
-			name: "happy path: retries on ConcurrentModificationException",
+			name: "edge path: appsync.ListFunctions() error",
 			args: args{
-				apiID:      "apiID",
-				functionID: "functionID",
+				apiID: "apiID",
+				name:  "VTL_2018-05-29",
 			},
-			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
-				returns: []mockAppSyncClientGetFunctionReturn{
+			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
+				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: nil,
-						err: &awshttp.ResponseError{
-							ResponseError: &smithyhttp.ResponseError{
-								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
-								Err:      &types.ConcurrentModificationException{},
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
 							},
-						},
-					},
-					{
-						out: &appsync.GetFunctionOutput{
-							FunctionConfiguration: mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+							NextToken: aws.String("NextToken"),
 						},
 						err: nil,
 					},
-				},
-			},
-			expected: expected{
-				out:   &functionVTL_2018_05_29,
-				errAs: nil,
-				errIs: nil,
-			},
-		},
-		{
-			name: "edge path: exceeds max retry count",
-			args: args{
-				apiID:      "apiID",
-				functionID: "functionID",
-			},
-			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
-				returns: []mockAppSyncClientGetFunctionReturn{
-					{
-						out: nil,
-						err: &awshttp.ResponseError{
-							ResponseError: &smithyhttp.ResponseError{
-								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
-								Err:      &types.ConcurrentModificationException{},
-							},
-						},
-					},
-					{
-						out: nil,
-						err: &awshttp.ResponseError{
-							ResponseError: &smithyhttp.ResponseError{
-								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
-								Err:      &types.ConcurrentModificationException{},
-							},
-						},
-					},
-					{
-						out: nil,
-						err: &awshttp.ResponseError{
-							ResponseError: &smithyhttp.ResponseError{
-								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
-								Err:      &types.ConcurrentModificationException{},
-							},
-						},
-					},
-				},
-			},
-			expected: expected{
-				out:   nil,
-				errAs: &model.LibError{},
-				errIs: nil,
-			},
-		},
-		{
-			name: "edge path: appsync.GetFunction() error",
-			args: args{
-				apiID:      "apiID",
-				functionID: "functionID",
-			},
-			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
-				returns: []mockAppSyncClientGetFunctionReturn{
 					{
 						out: nil,
 						err: errors.New("error"),
@@ -353,16 +372,28 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 			},
 		},
 		{
-			name: "edge path: appsync.GetFunction() returns nil function",
+			name: "edge path: function not found",
 			args: args{
-				apiID:      "apiID",
-				functionID: "functionID",
+				apiID: "apiID",
+				name:  "notExistName",
 			},
-			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
-				returns: []mockAppSyncClientGetFunctionReturn{
+			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
+				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.GetFunctionOutput{
-							FunctionConfiguration: nil,
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+							},
+							NextToken: aws.String("NextToken"),
+						},
+						err: nil,
+					},
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
+							},
+							NextToken: nil,
 						},
 						err: nil,
 					},
@@ -371,7 +402,7 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 			expected: expected{
 				out:   nil,
 				errAs: &model.LibError{},
-				errIs: model.ErrNilValue,
+				errIs: model.ErrNotFound,
 			},
 		},
 	}
@@ -389,9 +420,9 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 						return stack.Finalize.Add(
 							smithymiddleware.FinalizeMiddlewareFunc("Mock", func(ctx context.Context, input smithymiddleware.FinalizeInput, next smithymiddleware.FinalizeHandler) (smithymiddleware.FinalizeOutput, smithymiddleware.Metadata, error) {
 								switch awsmiddleware.GetOperationName(ctx) {
-								case "GetFunction":
-									defer func() { tt.mockAppSyncClientGetFunction.calls++ }()
-									r := tt.mockAppSyncClientGetFunction.returns[tt.mockAppSyncClientGetFunction.calls]
+								case "ListFunctions":
+									defer func() { tt.mockAppSyncClientListFunctions.calls++ }()
+									r := tt.mockAppSyncClientListFunctions.returns[tt.mockAppSyncClientListFunctions.calls]
 									return smithymiddleware.FinalizeOutput{Result: r.out}, smithymiddleware.Metadata{}, r.err
 								default:
 									t.Fatal("unexpected operation")
@@ -414,7 +445,7 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 			}
 
 			// Act
-			actual, err := r.Get(ctx, tt.args.apiID, tt.args.functionID)
+			actual, err := r.Get(ctx, tt.args.apiID, tt.args.name)
 
 			// Assert
 			assert.Equal(t, tt.expected.out, actual)
@@ -437,8 +468,12 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 	testdataBaseDir := "../../../../testdata"
 	functionVTL_2018_05_29 := testhelpers.MustUnmarshalJSON[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/metadata.json")))
+	functionVTL_2018_05_29.FunctionId = ptr.Pointer("FunctionId")
 	functionVTL_2018_05_29.RequestMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/request.vtl"))))
 	functionVTL_2018_05_29.ResponseMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/response.vtl"))))
+	functionAPPSYNC_JS_1_0_0 := testhelpers.MustUnmarshalJSON[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/APPSYNC_JS_1.0.0/metadata.json")))
+	functionAPPSYNC_JS_1_0_0.FunctionId = ptr.Pointer("FunctionId")
+	functionAPPSYNC_JS_1_0_0.Code = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/APPSYNC_JS_1.0.0/code.js"))))
 	duration := time.Duration(1) * time.Millisecond
 
 	type args struct {
@@ -446,13 +481,13 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 		function *model.Function
 	}
 
-	type mockAppSyncClientGetFunctionReturn struct {
-		out *appsync.GetFunctionOutput
+	type mockAppSyncClientListFunctionsReturn struct {
+		out *appsync.ListFunctionsOutput
 		err error
 	}
-	type mockAppSyncClientGetFunction struct {
+	type mockAppSyncClientListFunctions struct {
 		calls   int
-		returns []mockAppSyncClientGetFunctionReturn
+		returns []mockAppSyncClientListFunctionsReturn
 	}
 
 	type mockAppSyncClientCreateFunctionReturn struct {
@@ -482,7 +517,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 	tests := []struct {
 		name                            string
 		args                            args
-		mockAppSyncClientGetFunction    mockAppSyncClientGetFunction
+		mockAppSyncClientListFunctions  mockAppSyncClientListFunctions
 		mockAppSyncClientCreateFunction mockAppSyncClientCreateFunction
 		mockAppSyncClientUpdateFunction mockAppSyncClientUpdateFunction
 		expected                        expected
@@ -493,16 +528,16 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 				apiID:    "apiID",
 				function: &functionVTL_2018_05_29,
 			},
-			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
-				returns: []mockAppSyncClientGetFunctionReturn{
+			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
+				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: nil,
-						err: &awshttp.ResponseError{
-							ResponseError: &smithyhttp.ResponseError{
-								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 404}},
-								Err:      &types.NotFoundException{},
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
 							},
+							NextToken: nil,
 						},
+						err: nil,
 					},
 				},
 			},
@@ -531,11 +566,23 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 				apiID:    "apiID",
 				function: &functionVTL_2018_05_29,
 			},
-			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
-				returns: []mockAppSyncClientGetFunctionReturn{
+			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
+				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.GetFunctionOutput{
-							FunctionConfiguration: mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+							},
+							NextToken: aws.String("NextToken"),
+						},
+						err: nil,
+					},
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
+							},
+							NextToken: nil,
 						},
 						err: nil,
 					},
@@ -566,16 +613,16 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 				apiID:    "apiID",
 				function: &functionVTL_2018_05_29,
 			},
-			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
-				returns: []mockAppSyncClientGetFunctionReturn{
+			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
+				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: nil,
-						err: &awshttp.ResponseError{
-							ResponseError: &smithyhttp.ResponseError{
-								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 404}},
-								Err:      &types.NotFoundException{},
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
 							},
+							NextToken: nil,
 						},
+						err: nil,
 					},
 				},
 			},
@@ -613,11 +660,23 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 				apiID:    "apiID",
 				function: &functionVTL_2018_05_29,
 			},
-			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
-				returns: []mockAppSyncClientGetFunctionReturn{
+			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
+				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.GetFunctionOutput{
-							FunctionConfiguration: mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+							},
+							NextToken: aws.String("NextToken"),
+						},
+						err: nil,
+					},
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
+							},
+							NextToken: nil,
 						},
 						err: nil,
 					},
@@ -657,16 +716,16 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 				apiID:    "apiID",
 				function: &functionVTL_2018_05_29,
 			},
-			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
-				returns: []mockAppSyncClientGetFunctionReturn{
+			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
+				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: nil,
-						err: &awshttp.ResponseError{
-							ResponseError: &smithyhttp.ResponseError{
-								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 404}},
-								Err:      &types.NotFoundException{},
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
 							},
+							NextToken: nil,
 						},
+						err: nil,
 					},
 				},
 			},
@@ -716,11 +775,23 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 				apiID:    "apiID",
 				function: &functionVTL_2018_05_29,
 			},
-			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
-				returns: []mockAppSyncClientGetFunctionReturn{
+			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
+				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.GetFunctionOutput{
-							FunctionConfiguration: mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+							},
+							NextToken: aws.String("NextToken"),
+						},
+						err: nil,
+					},
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
+							},
+							NextToken: nil,
 						},
 						err: nil,
 					},
@@ -772,8 +843,8 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 				apiID:    "apiID",
 				function: nil,
 			},
-			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
-				returns: []mockAppSyncClientGetFunctionReturn{},
+			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
+				returns: []mockAppSyncClientListFunctionsReturn{},
 			},
 			mockAppSyncClientCreateFunction: mockAppSyncClientCreateFunction{
 				returns: []mockAppSyncClientCreateFunctionReturn{},
@@ -788,13 +859,43 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			},
 		},
 		{
-			name: "edge path: FunctionRepositoryForAppSync.Get() error",
+			name: "edge path: nil name",
+			args: args{
+				apiID:    "apiID",
+				function: &model.Function{},
+			},
+			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
+				returns: []mockAppSyncClientListFunctionsReturn{},
+			},
+			mockAppSyncClientCreateFunction: mockAppSyncClientCreateFunction{
+				returns: []mockAppSyncClientCreateFunctionReturn{},
+			},
+			mockAppSyncClientUpdateFunction: mockAppSyncClientUpdateFunction{
+				returns: []mockAppSyncClientUpdateFunctionReturn{},
+			},
+			expected: expected{
+				out:   nil,
+				errAs: &model.LibError{},
+				errIs: model.ErrNilValue,
+			},
+		},
+		{
+			name: "edge path: appsync.ListFunctions() error",
 			args: args{
 				apiID:    "apiID",
 				function: &functionVTL_2018_05_29,
 			},
-			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
-				returns: []mockAppSyncClientGetFunctionReturn{
+			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
+				returns: []mockAppSyncClientListFunctionsReturn{
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+							},
+							NextToken: aws.String("NextToken"),
+						},
+						err: nil,
+					},
 					{
 						out: nil,
 						err: errors.New("error"),
@@ -819,16 +920,16 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 				apiID:    "apiID",
 				function: &functionVTL_2018_05_29,
 			},
-			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
-				returns: []mockAppSyncClientGetFunctionReturn{
+			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
+				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: nil,
-						err: &awshttp.ResponseError{
-							ResponseError: &smithyhttp.ResponseError{
-								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 404}},
-								Err:      &types.NotFoundException{},
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
 							},
+							NextToken: nil,
 						},
+						err: nil,
 					},
 				},
 			},
@@ -847,44 +948,6 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 				out:   nil,
 				errAs: &model.LibError{},
 				errIs: nil,
-			},
-		},
-		{
-			name: "edge path: appsync.CreateFunction() returns nil function",
-			args: args{
-				apiID:    "apiID",
-				function: &functionVTL_2018_05_29,
-			},
-			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
-				returns: []mockAppSyncClientGetFunctionReturn{
-					{
-						out: nil,
-						err: &awshttp.ResponseError{
-							ResponseError: &smithyhttp.ResponseError{
-								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 404}},
-								Err:      &types.NotFoundException{},
-							},
-						},
-					},
-				},
-			},
-			mockAppSyncClientCreateFunction: mockAppSyncClientCreateFunction{
-				returns: []mockAppSyncClientCreateFunctionReturn{
-					{
-						out: &appsync.CreateFunctionOutput{
-							FunctionConfiguration: nil,
-						},
-						err: nil,
-					},
-				},
-			},
-			mockAppSyncClientUpdateFunction: mockAppSyncClientUpdateFunction{
-				returns: []mockAppSyncClientUpdateFunctionReturn{},
-			},
-			expected: expected{
-				out:   nil,
-				errAs: &model.LibError{},
-				errIs: model.ErrNilValue,
 			},
 		},
 		{
@@ -893,11 +956,23 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 				apiID:    "apiID",
 				function: &functionVTL_2018_05_29,
 			},
-			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
-				returns: []mockAppSyncClientGetFunctionReturn{
+			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
+				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.GetFunctionOutput{
-							FunctionConfiguration: mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+							},
+							NextToken: aws.String("NextToken"),
+						},
+						err: nil,
+					},
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
+							},
+							NextToken: nil,
 						},
 						err: nil,
 					},
@@ -918,41 +993,6 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 				out:   nil,
 				errAs: &model.LibError{},
 				errIs: nil,
-			},
-		},
-		{
-			name: "edge path: appsync.UpdateFunction() returns nil function",
-			args: args{
-				apiID:    "apiID",
-				function: &functionVTL_2018_05_29,
-			},
-			mockAppSyncClientGetFunction: mockAppSyncClientGetFunction{
-				returns: []mockAppSyncClientGetFunctionReturn{
-					{
-						out: &appsync.GetFunctionOutput{
-							FunctionConfiguration: mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
-						},
-						err: nil,
-					},
-				},
-			},
-			mockAppSyncClientCreateFunction: mockAppSyncClientCreateFunction{
-				returns: []mockAppSyncClientCreateFunctionReturn{},
-			},
-			mockAppSyncClientUpdateFunction: mockAppSyncClientUpdateFunction{
-				returns: []mockAppSyncClientUpdateFunctionReturn{
-					{
-						out: &appsync.UpdateFunctionOutput{
-							FunctionConfiguration: nil,
-						},
-						err: nil,
-					},
-				},
-			},
-			expected: expected{
-				out:   nil,
-				errAs: &model.LibError{},
-				errIs: model.ErrNilValue,
 			},
 		},
 	}
@@ -970,9 +1010,9 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 						return stack.Finalize.Add(
 							smithymiddleware.FinalizeMiddlewareFunc("Mock", func(ctx context.Context, input smithymiddleware.FinalizeInput, next smithymiddleware.FinalizeHandler) (smithymiddleware.FinalizeOutput, smithymiddleware.Metadata, error) {
 								switch awsmiddleware.GetOperationName(ctx) {
-								case "GetFunction":
-									defer func() { tt.mockAppSyncClientGetFunction.calls++ }()
-									r := tt.mockAppSyncClientGetFunction.returns[tt.mockAppSyncClientGetFunction.calls]
+								case "ListFunctions":
+									defer func() { tt.mockAppSyncClientListFunctions.calls++ }()
+									r := tt.mockAppSyncClientListFunctions.returns[tt.mockAppSyncClientListFunctions.calls]
 									return smithymiddleware.FinalizeOutput{Result: r.out}, smithymiddleware.Metadata{}, r.err
 								case "CreateFunction":
 									defer func() { tt.mockAppSyncClientCreateFunction.calls++ }()
@@ -1024,11 +1064,28 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 }
 
 func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
+	testdataBaseDir := "../../../../testdata"
+	functionVTL_2018_05_29 := testhelpers.MustUnmarshalJSON[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/metadata.json")))
+	functionVTL_2018_05_29.FunctionId = ptr.Pointer("FunctionId")
+	functionVTL_2018_05_29.RequestMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/request.vtl"))))
+	functionVTL_2018_05_29.ResponseMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/response.vtl"))))
+	functionAPPSYNC_JS_1_0_0 := testhelpers.MustUnmarshalJSON[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/APPSYNC_JS_1.0.0/metadata.json")))
+	functionAPPSYNC_JS_1_0_0.FunctionId = ptr.Pointer("FunctionId")
+	functionAPPSYNC_JS_1_0_0.Code = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/APPSYNC_JS_1.0.0/code.js"))))
 	duration := time.Duration(1) * time.Millisecond
 
 	type args struct {
-		apiID      string
-		functionID string
+		apiID string
+		name  string
+	}
+
+	type mockAppSyncClientListFunctionsReturn struct {
+		out *appsync.ListFunctionsOutput
+		err error
+	}
+	type mockAppSyncClientListFunctions struct {
+		calls   int
+		returns []mockAppSyncClientListFunctionsReturn
 	}
 
 	type mockAppSyncClientDeleteFunctionReturn struct {
@@ -1048,14 +1105,37 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 	tests := []struct {
 		name                            string
 		args                            args
+		mockAppSyncClientListFunctions  mockAppSyncClientListFunctions
 		mockAppSyncClientDeleteFunction mockAppSyncClientDeleteFunction
 		expected                        expected
 	}{
 		{
 			name: "happy path: default",
 			args: args{
-				apiID:      "apiID",
-				functionID: "functionID",
+				apiID: "apiID",
+				name:  "VTL_2018-05-29",
+			},
+			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
+				returns: []mockAppSyncClientListFunctionsReturn{
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+							},
+							NextToken: aws.String("NextToken"),
+						},
+						err: nil,
+					},
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
+							},
+							NextToken: nil,
+						},
+						err: nil,
+					},
+				},
 			},
 			mockAppSyncClientDeleteFunction: mockAppSyncClientDeleteFunction{
 				returns: []mockAppSyncClientDeleteFunctionReturn{
@@ -1073,8 +1153,30 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 		{
 			name: "happy path: retries on ConcurrentModificationException",
 			args: args{
-				apiID:      "apiID",
-				functionID: "functionID",
+				apiID: "apiID",
+				name:  "VTL_2018-05-29",
+			},
+			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
+				returns: []mockAppSyncClientListFunctionsReturn{
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+							},
+							NextToken: aws.String("NextToken"),
+						},
+						err: nil,
+					},
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
+							},
+							NextToken: nil,
+						},
+						err: nil,
+					},
+				},
 			},
 			mockAppSyncClientDeleteFunction: mockAppSyncClientDeleteFunction{
 				returns: []mockAppSyncClientDeleteFunctionReturn{
@@ -1101,8 +1203,30 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 		{
 			name: "edge path: exceeds max retry count",
 			args: args{
-				apiID:      "apiID",
-				functionID: "functionID",
+				apiID: "apiID",
+				name:  "VTL_2018-05-29",
+			},
+			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
+				returns: []mockAppSyncClientListFunctionsReturn{
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+							},
+							NextToken: aws.String("NextToken"),
+						},
+						err: nil,
+					},
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
+							},
+							NextToken: nil,
+						},
+						err: nil,
+					},
+				},
 			},
 			mockAppSyncClientDeleteFunction: mockAppSyncClientDeleteFunction{
 				returns: []mockAppSyncClientDeleteFunctionReturn{
@@ -1141,10 +1265,100 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 			},
 		},
 		{
+			name: "edge path: appsync.ListFunctions() error",
+			args: args{
+				apiID: "apiID",
+				name:  "VTL_2018-05-29",
+			},
+			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
+				returns: []mockAppSyncClientListFunctionsReturn{
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+							},
+							NextToken: aws.String("NextToken"),
+						},
+						err: nil,
+					},
+					{
+						out: nil,
+						err: errors.New("error"),
+					},
+				},
+			},
+			mockAppSyncClientDeleteFunction: mockAppSyncClientDeleteFunction{
+				returns: []mockAppSyncClientDeleteFunctionReturn{
+					{
+						out: nil,
+						err: errors.New("error"),
+					},
+				},
+			},
+			expected: expected{
+				errAs: &model.LibError{},
+				errIs: nil,
+			},
+		},
+		{
+			name: "edge path: function not found",
+			args: args{
+				apiID: "apiID",
+				name:  "VTL_2018-05-29",
+			},
+			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
+				returns: []mockAppSyncClientListFunctionsReturn{
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
+							},
+							NextToken: nil,
+						},
+						err: nil,
+					},
+				},
+			},
+			mockAppSyncClientDeleteFunction: mockAppSyncClientDeleteFunction{
+				returns: []mockAppSyncClientDeleteFunctionReturn{
+					{
+						out: nil,
+						err: errors.New("error"),
+					},
+				},
+			},
+			expected: expected{
+				errAs: &model.LibError{},
+				errIs: model.ErrNotFound,
+			},
+		},
+		{
 			name: "edge path: appsync.DeleteFunction() error",
 			args: args{
-				apiID:      "apiID",
-				functionID: "functionID",
+				apiID: "apiID",
+				name:  "VTL_2018-05-29",
+			},
+			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
+				returns: []mockAppSyncClientListFunctionsReturn{
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
+							},
+							NextToken: aws.String("NextToken"),
+						},
+						err: nil,
+					},
+					{
+						out: &appsync.ListFunctionsOutput{
+							Functions: []types.FunctionConfiguration{
+								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
+							},
+							NextToken: nil,
+						},
+						err: nil,
+					},
+				},
 			},
 			mockAppSyncClientDeleteFunction: mockAppSyncClientDeleteFunction{
 				returns: []mockAppSyncClientDeleteFunctionReturn{
@@ -1174,6 +1388,10 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 						return stack.Finalize.Add(
 							smithymiddleware.FinalizeMiddlewareFunc("Mock", func(ctx context.Context, input smithymiddleware.FinalizeInput, next smithymiddleware.FinalizeHandler) (smithymiddleware.FinalizeOutput, smithymiddleware.Metadata, error) {
 								switch awsmiddleware.GetOperationName(ctx) {
+								case "ListFunctions":
+									defer func() { tt.mockAppSyncClientListFunctions.calls++ }()
+									r := tt.mockAppSyncClientListFunctions.returns[tt.mockAppSyncClientListFunctions.calls]
+									return smithymiddleware.FinalizeOutput{Result: r.out}, smithymiddleware.Metadata{}, r.err
 								case "DeleteFunction":
 									defer func() { tt.mockAppSyncClientDeleteFunction.calls++ }()
 									r := tt.mockAppSyncClientDeleteFunction.returns[tt.mockAppSyncClientDeleteFunction.calls]
@@ -1199,7 +1417,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 			}
 
 			// Act
-			err = r.Delete(ctx, tt.args.apiID, tt.args.functionID)
+			err = r.Delete(ctx, tt.args.apiID, tt.args.name)
 
 			// Assert
 			if tt.expected.errAs == nil && tt.expected.errIs == nil {

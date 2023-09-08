@@ -102,11 +102,11 @@ func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (*PullOut
 				errs = append(errs, err)
 				mu.Unlock()
 
-				uc.trackerRepository.Failed(ctx, fmt.Sprintf("failed to save function %s", ptr.ToValue(fn.FunctionId)))
+				uc.trackerRepository.Failed(ctx, fmt.Sprintf("failed to save function %s", ptr.ToValue(fn.Name)))
 				return
 			}
 
-			uc.trackerRepository.Success(ctx, fmt.Sprintf("saved function %s", ptr.ToValue(fn.FunctionId)))
+			uc.trackerRepository.Success(ctx, fmt.Sprintf("saved function %s", ptr.ToValue(fn.Name)))
 		}()
 	}
 

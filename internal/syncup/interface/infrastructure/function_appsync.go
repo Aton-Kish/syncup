@@ -84,30 +84,36 @@ func (r *functionRepositoryForAppSync) List(ctx context.Context, apiID string) (
 		}
 	}
 
+	encountered := make(map[string]bool)
+	for _, fn := range fns {
+		if fn.Name == nil {
+			return nil, &model.LibError{Err: fmt.Errorf("%w: missing name", model.ErrNilValue)}
+		}
+
+		name := *fn.Name
+		if encountered[name] {
+			return nil, &model.LibError{Err: fmt.Errorf("%w: function name %s", model.ErrDuplicateValue, name)}
+		}
+
+		encountered[name] = true
+	}
+
 	return fns, nil
 }
 
-func (r *functionRepositoryForAppSync) Get(ctx context.Context, apiID string, functionID string) (*model.Function, error) {
-	out, err := r.appsyncClient.GetFunction(
-		ctx,
-		&appsync.GetFunctionInput{
-			ApiId:      &apiID,
-			FunctionId: &functionID,
-		},
-		func(o *appsync.Options) {
-			o.Retryer = retry.AddWithErrorCodes(o.Retryer, (*types.ConcurrentModificationException)(nil).ErrorCode())
-		},
-	)
+func (r *functionRepositoryForAppSync) Get(ctx context.Context, apiID string, name string) (*model.Function, error) {
+	fns, err := r.List(ctx, apiID)
 	if err != nil {
-		return nil, &model.LibError{Err: err}
+		return nil, err
 	}
 
-	fn := mapper.NewFunctionMapper().ToModel(ctx, out.FunctionConfiguration)
-	if fn == nil {
-		return nil, &model.LibError{Err: fmt.Errorf("%w: missing function in AppSync GetFunction API response", model.ErrNilValue)}
+	for _, fn := range fns {
+		if *fn.Name == name {
+			return &fn, nil
+		}
 	}
 
-	return fn, nil
+	return nil, &model.LibError{Err: model.ErrNotFound}
 }
 
 func (r *functionRepositoryForAppSync) Save(ctx context.Context, apiID string, function *model.Function) (*model.Function, error) {
@@ -115,10 +121,13 @@ func (r *functionRepositoryForAppSync) Save(ctx context.Context, apiID string, f
 		return nil, &model.LibError{Err: fmt.Errorf("%w: missing arguments in save function method", model.ErrNilValue)}
 	}
 
+	if function.Name == nil {
+		return nil, &model.LibError{Err: fmt.Errorf("%w: missing name", model.ErrNilValue)}
+	}
+
 	save := r.update
-	if _, err := r.Get(ctx, apiID, *function.FunctionId); err != nil {
-		var nfe *types.NotFoundException
-		if errors.As(err, &nfe) {
+	if _, err := r.Get(ctx, apiID, *function.Name); err != nil {
+		if errors.Is(err, model.ErrNotFound) {
 			save = r.create
 		} else {
 			return nil, &model.LibError{Err: err}
@@ -208,12 +217,17 @@ func (r *functionRepositoryForAppSync) update(ctx context.Context, apiID string,
 	return fn, nil
 }
 
-func (r *functionRepositoryForAppSync) Delete(ctx context.Context, apiID string, functionID string) error {
+func (r *functionRepositoryForAppSync) Delete(ctx context.Context, apiID string, name string) error {
+	fn, err := r.Get(ctx, apiID, name)
+	if err != nil {
+		return err
+	}
+
 	if _, err := r.appsyncClient.DeleteFunction(
 		ctx,
 		&appsync.DeleteFunctionInput{
 			ApiId:      &apiID,
-			FunctionId: &functionID,
+			FunctionId: fn.FunctionId,
 		},
 		func(o *appsync.Options) {
 			o.Retryer = retry.AddWithErrorCodes(o.Retryer, (*types.ConcurrentModificationException)(nil).ErrorCode())

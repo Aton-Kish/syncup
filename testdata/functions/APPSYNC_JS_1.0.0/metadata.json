@@ -1,6 +1,5 @@
 {
-  "functionId": "APPSYNC_JS_1.0.0",
-  "name": "Name",
+  "name": "APPSYNC_JS_1.0.0",
   "description": "Description",
   "dataSourceName": "DataSourceName",
   "syncConfig": {
