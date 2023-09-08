@@ -23,7 +23,7 @@ package model
 type Schema string
 
 type Function struct {
-	FunctionId              *string     `json:"functionId,omitempty"`
+	FunctionId              *string     `json:"-"`
 	FunctionArn             *string     `json:"-"`
 	Name                    *string     `json:"name,omitempty"`
 	Description             *string     `json:"description,omitempty"`
