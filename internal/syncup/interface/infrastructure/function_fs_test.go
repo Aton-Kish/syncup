@@ -135,8 +135,8 @@ func Test_functionRepositoryForFS_Get(t *testing.T) {
 	}
 
 	type args struct {
-		apiID      string
-		functionID string
+		apiID string
+		name  string
 	}
 
 	type expected struct {
@@ -157,8 +157,8 @@ func Test_functionRepositoryForFS_Get(t *testing.T) {
 				baseDir: testdataBaseDir,
 			},
 			args: args{
-				apiID:      "apiID",
-				functionID: "VTL_2018-05-29",
+				apiID: "apiID",
+				name:  "VTL_2018-05-29",
 			},
 			expected: expected{
 				out:   &functionVTL_2018_05_29,
@@ -172,8 +172,8 @@ func Test_functionRepositoryForFS_Get(t *testing.T) {
 				baseDir: testdataBaseDir,
 			},
 			args: args{
-				apiID:      "apiID",
-				functionID: "APPSYNC_JS_1.0.0",
+				apiID: "apiID",
+				name:  "APPSYNC_JS_1.0.0",
 			},
 			expected: expected{
 				out:   &functionAPPSYNC_JS_1_0_0,
@@ -187,8 +187,8 @@ func Test_functionRepositoryForFS_Get(t *testing.T) {
 				baseDir: filepath.Join(testdataBaseDir, "invalidBaseDir"),
 			},
 			args: args{
-				apiID:      "apiID",
-				functionID: "invalidFunctionId",
+				apiID: "apiID",
+				name:  "invalidName",
 			},
 			expected: expected{
 				out:   nil,
@@ -208,7 +208,7 @@ func Test_functionRepositoryForFS_Get(t *testing.T) {
 			}
 
 			// Act
-			actual, err := r.Get(ctx, tt.args.apiID, tt.args.functionID)
+			actual, err := r.Get(ctx, tt.args.apiID, tt.args.name)
 
 			// Assert
 			assert.Equal(t, tt.expected.out, actual)
@@ -333,7 +333,7 @@ func Test_functionRepositoryForFS_Save(t *testing.T) {
 			},
 		},
 		{
-			name: "edge path: nil function id",
+			name: "edge path: nil name",
 			fields: fields{
 				baseDir: t.TempDir(),
 			},
@@ -355,7 +355,7 @@ func Test_functionRepositoryForFS_Save(t *testing.T) {
 			args: args{
 				apiID: "apiID",
 				function: &model.Function{
-					FunctionId: ptr.Pointer("FunctionId"),
+					Name: ptr.Pointer("Name"),
 					Runtime: &model.Runtime{
 						Name: "INVALID",
 					},
@@ -412,8 +412,8 @@ func Test_functionRepositoryForFS_Delete(t *testing.T) {
 	}
 
 	type args struct {
-		apiID      string
-		functionID string
+		apiID string
+		name  string
 	}
 
 	type expected struct {
@@ -433,8 +433,8 @@ func Test_functionRepositoryForFS_Delete(t *testing.T) {
 				baseDir: t.TempDir(),
 			},
 			args: args{
-				apiID:      "apiID",
-				functionID: *functionVTL_2018_05_29.FunctionId,
+				apiID: "apiID",
+				name:  *functionVTL_2018_05_29.Name,
 			},
 			expected: expected{
 				errAs: nil,
@@ -447,8 +447,8 @@ func Test_functionRepositoryForFS_Delete(t *testing.T) {
 				baseDir: t.TempDir(),
 			},
 			args: args{
-				apiID:      "apiID",
-				functionID: *functionAPPSYNC_JS_1_0_0.FunctionId,
+				apiID: "apiID",
+				name:  *functionAPPSYNC_JS_1_0_0.Name,
 			},
 			expected: expected{
 				errAs: nil,
@@ -461,8 +461,8 @@ func Test_functionRepositoryForFS_Delete(t *testing.T) {
 				baseDir: t.TempDir(),
 			},
 			args: args{
-				apiID:      "apiID",
-				functionID: "notExistFunctionID",
+				apiID: "apiID",
+				name:  "notExistName",
 			},
 			expected: expected{
 				errAs: nil,
@@ -487,7 +487,7 @@ func Test_functionRepositoryForFS_Delete(t *testing.T) {
 			assert.NoError(t, err)
 
 			// Act
-			err = r.Delete(ctx, tt.args.apiID, tt.args.functionID)
+			err = r.Delete(ctx, tt.args.apiID, tt.args.name)
 
 			// Assert
 			if tt.expected.errAs == nil && tt.expected.errIs == nil {

@@ -30,7 +30,7 @@ import (
 
 type FunctionRepository interface {
 	List(ctx context.Context, apiID string) ([]model.Function, error)
-	Get(ctx context.Context, apiID string, functionID string) (*model.Function, error)
+	Get(ctx context.Context, apiID string, name string) (*model.Function, error)
 	Save(ctx context.Context, apiID string, function *model.Function) (*model.Function, error)
-	Delete(ctx context.Context, apiID string, functionID string) error
+	Delete(ctx context.Context, apiID string, name string) error
 }

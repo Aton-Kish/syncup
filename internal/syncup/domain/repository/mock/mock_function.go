@@ -36,32 +36,32 @@ func (m *MockFunctionRepository) EXPECT() *MockFunctionRepositoryMockRecorder {
 }
 
 // Delete mocks base method.
-func (m *MockFunctionRepository) Delete(ctx context.Context, apiID, functionID string) error {
+func (m *MockFunctionRepository) Delete(ctx context.Context, apiID, name string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", ctx, apiID, functionID)
+	ret := m.ctrl.Call(m, "Delete", ctx, apiID, name)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockFunctionRepositoryMockRecorder) Delete(ctx, apiID, functionID interface{}) *gomock.Call {
+func (mr *MockFunctionRepositoryMockRecorder) Delete(ctx, apiID, name interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockFunctionRepository)(nil).Delete), ctx, apiID, functionID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockFunctionRepository)(nil).Delete), ctx, apiID, name)
 }
 
 // Get mocks base method.
-func (m *MockFunctionRepository) Get(ctx context.Context, apiID, functionID string) (*model.Function, error) {
+func (m *MockFunctionRepository) Get(ctx context.Context, apiID, name string) (*model.Function, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ctx, apiID, functionID)
+	ret := m.ctrl.Call(m, "Get", ctx, apiID, name)
 	ret0, _ := ret[0].(*model.Function)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockFunctionRepositoryMockRecorder) Get(ctx, apiID, functionID interface{}) *gomock.Call {
+func (mr *MockFunctionRepositoryMockRecorder) Get(ctx, apiID, name interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockFunctionRepository)(nil).Get), ctx, apiID, functionID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockFunctionRepository)(nil).Get), ctx, apiID, name)
 }
 
 // List mocks base method.
