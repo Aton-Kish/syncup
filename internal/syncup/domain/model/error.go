@@ -29,6 +29,7 @@ var (
 	ErrNilValue     = errors.New("nil value")
 	ErrInvalidValue = errors.New("invalid value")
 
+	ErrNotFound     = errors.New("not found")
 	ErrCreateFailed = errors.New("failed to create")
 )
 
