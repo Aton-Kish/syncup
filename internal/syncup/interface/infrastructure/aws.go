@@ -40,7 +40,6 @@ type appsyncClient interface {
 	GetSchemaCreationStatus(ctx context.Context, params *appsync.GetSchemaCreationStatusInput, optFns ...func(*appsync.Options)) (*appsync.GetSchemaCreationStatusOutput, error)
 
 	ListFunctions(ctx context.Context, params *appsync.ListFunctionsInput, optFns ...func(*appsync.Options)) (*appsync.ListFunctionsOutput, error)
-	GetFunction(ctx context.Context, params *appsync.GetFunctionInput, optFns ...func(*appsync.Options)) (*appsync.GetFunctionOutput, error)
 	CreateFunction(ctx context.Context, params *appsync.CreateFunctionInput, optFns ...func(*appsync.Options)) (*appsync.CreateFunctionOutput, error)
 	UpdateFunction(ctx context.Context, params *appsync.UpdateFunctionInput, optFns ...func(*appsync.Options)) (*appsync.UpdateFunctionOutput, error)
 	DeleteFunction(ctx context.Context, params *appsync.DeleteFunctionInput, optFns ...func(*appsync.Options)) (*appsync.DeleteFunctionOutput, error)
