@@ -128,8 +128,8 @@ func Test_schemaRepositoryForAppSync_Get(t *testing.T) {
 							smithymiddleware.FinalizeMiddlewareFunc("Mock", func(ctx context.Context, input smithymiddleware.FinalizeInput, next smithymiddleware.FinalizeHandler) (smithymiddleware.FinalizeOutput, smithymiddleware.Metadata, error) {
 								switch awsmiddleware.GetOperationName(ctx) {
 								case "GetIntrospectionSchema":
-									defer func() { tt.mockAppSyncClientGetIntrospectionSchema.calls++ }()
 									r := tt.mockAppSyncClientGetIntrospectionSchema.returns[tt.mockAppSyncClientGetIntrospectionSchema.calls]
+									tt.mockAppSyncClientGetIntrospectionSchema.calls++
 									return smithymiddleware.FinalizeOutput{Result: r.res}, smithymiddleware.Metadata{}, r.err
 								default:
 									t.Fatal("unexpected operation")
@@ -692,16 +692,16 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 							smithymiddleware.FinalizeMiddlewareFunc("Mock", func(ctx context.Context, input smithymiddleware.FinalizeInput, next smithymiddleware.FinalizeHandler) (smithymiddleware.FinalizeOutput, smithymiddleware.Metadata, error) {
 								switch awsmiddleware.GetOperationName(ctx) {
 								case "StartSchemaCreation":
-									defer func() { tt.mockAppSyncClientStartSchemaCreation.calls++ }()
 									r := tt.mockAppSyncClientStartSchemaCreation.returns[tt.mockAppSyncClientStartSchemaCreation.calls]
+									tt.mockAppSyncClientStartSchemaCreation.calls++
 									return smithymiddleware.FinalizeOutput{Result: r.res}, smithymiddleware.Metadata{}, r.err
 								case "GetSchemaCreationStatus":
-									defer func() { tt.mockAppSyncClientGetSchemaCreationStatus.calls++ }()
 									r := tt.mockAppSyncClientGetSchemaCreationStatus.returns[tt.mockAppSyncClientGetSchemaCreationStatus.calls]
+									tt.mockAppSyncClientGetSchemaCreationStatus.calls++
 									return smithymiddleware.FinalizeOutput{Result: r.res}, smithymiddleware.Metadata{}, r.err
 								case "GetIntrospectionSchema":
-									defer func() { tt.mockAppSyncClientGetIntrospectionSchema.calls++ }()
 									r := tt.mockAppSyncClientGetIntrospectionSchema.returns[tt.mockAppSyncClientGetIntrospectionSchema.calls]
+									tt.mockAppSyncClientGetIntrospectionSchema.calls++
 									return smithymiddleware.FinalizeOutput{Result: r.res}, smithymiddleware.Metadata{}, r.err
 								default:
 									t.Fatal("unexpected operation")

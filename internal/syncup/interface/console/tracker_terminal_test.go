@@ -90,7 +90,7 @@ func Test_trackerRepositoryForTerminal_InProgress(t *testing.T) {
 				EXPECT().
 				SetSuffix(gomock.Any()).
 				DoAndReturn(func(suffix string) {
-					defer func() { tt.mockSpinnerSetSuffix.calls++ }()
+					tt.mockSpinnerSetSuffix.calls++
 				}).
 				Times(len(tt.mockSpinnerSetSuffix.returns))
 
@@ -98,7 +98,7 @@ func Test_trackerRepositoryForTerminal_InProgress(t *testing.T) {
 				EXPECT().
 				Start().
 				DoAndReturn(func() {
-					defer func() { tt.mockSpinnerStart.calls++ }()
+					tt.mockSpinnerStart.calls++
 					fmt.Fprint(w, fmt.Sprintln("spinner", tt.args.msg))
 				}).
 				Times(len(tt.mockSpinnerStart.returns))
@@ -211,8 +211,8 @@ func Test_trackerRepositoryForTerminal_Failed(t *testing.T) {
 				EXPECT().
 				Active().
 				DoAndReturn(func() bool {
-					defer func() { tt.mockSpinnerActive.calls++ }()
 					r := tt.mockSpinnerActive.returns[tt.mockSpinnerActive.calls]
+					tt.mockSpinnerActive.calls++
 					return r.res
 				}).
 				Times(len(tt.mockSpinnerActive.returns))
@@ -221,7 +221,7 @@ func Test_trackerRepositoryForTerminal_Failed(t *testing.T) {
 				EXPECT().
 				SetFinalMsg(gomock.Any()).
 				DoAndReturn(func(suffix string) {
-					defer func() { tt.mockSpinnerSetFinalMsg.calls++ }()
+					tt.mockSpinnerSetFinalMsg.calls++
 				}).
 				Times(len(tt.mockSpinnerSetFinalMsg.returns))
 
@@ -229,7 +229,7 @@ func Test_trackerRepositoryForTerminal_Failed(t *testing.T) {
 				EXPECT().
 				Stop().
 				DoAndReturn(func() {
-					defer func() { tt.mockSpinnerStop.calls++ }()
+					tt.mockSpinnerStop.calls++
 					fmt.Fprint(w, fmt.Sprintln("spinner", tt.args.msg))
 				}).
 				Times(len(tt.mockSpinnerStop.returns))
@@ -342,8 +342,8 @@ func Test_trackerRepositoryForTerminal_Success(t *testing.T) {
 				EXPECT().
 				Active().
 				DoAndReturn(func() bool {
-					defer func() { tt.mockSpinnerActive.calls++ }()
 					r := tt.mockSpinnerActive.returns[tt.mockSpinnerActive.calls]
+					tt.mockSpinnerActive.calls++
 					return r.res
 				}).
 				Times(len(tt.mockSpinnerActive.returns))
@@ -352,7 +352,7 @@ func Test_trackerRepositoryForTerminal_Success(t *testing.T) {
 				EXPECT().
 				SetFinalMsg(gomock.Any()).
 				DoAndReturn(func(suffix string) {
-					defer func() { tt.mockSpinnerSetFinalMsg.calls++ }()
+					tt.mockSpinnerSetFinalMsg.calls++
 				}).
 				Times(len(tt.mockSpinnerSetFinalMsg.returns))
 
@@ -360,7 +360,7 @@ func Test_trackerRepositoryForTerminal_Success(t *testing.T) {
 				EXPECT().
 				Stop().
 				DoAndReturn(func() {
-					defer func() { tt.mockSpinnerStop.calls++ }()
+					tt.mockSpinnerStop.calls++
 					fmt.Fprint(w, fmt.Sprintln("spinner", tt.args.msg))
 				}).
 				Times(len(tt.mockSpinnerStop.returns))

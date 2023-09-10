@@ -227,8 +227,8 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 							smithymiddleware.FinalizeMiddlewareFunc("Mock", func(ctx context.Context, input smithymiddleware.FinalizeInput, next smithymiddleware.FinalizeHandler) (smithymiddleware.FinalizeOutput, smithymiddleware.Metadata, error) {
 								switch awsmiddleware.GetOperationName(ctx) {
 								case "ListFunctions":
-									defer func() { tt.mockAppSyncClientListFunctions.calls++ }()
 									r := tt.mockAppSyncClientListFunctions.returns[tt.mockAppSyncClientListFunctions.calls]
+									tt.mockAppSyncClientListFunctions.calls++
 									return smithymiddleware.FinalizeOutput{Result: r.res}, smithymiddleware.Metadata{}, r.err
 								default:
 									t.Fatal("unexpected operation")
@@ -421,8 +421,8 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 							smithymiddleware.FinalizeMiddlewareFunc("Mock", func(ctx context.Context, input smithymiddleware.FinalizeInput, next smithymiddleware.FinalizeHandler) (smithymiddleware.FinalizeOutput, smithymiddleware.Metadata, error) {
 								switch awsmiddleware.GetOperationName(ctx) {
 								case "ListFunctions":
-									defer func() { tt.mockAppSyncClientListFunctions.calls++ }()
 									r := tt.mockAppSyncClientListFunctions.returns[tt.mockAppSyncClientListFunctions.calls]
+									tt.mockAppSyncClientListFunctions.calls++
 									return smithymiddleware.FinalizeOutput{Result: r.res}, smithymiddleware.Metadata{}, r.err
 								default:
 									t.Fatal("unexpected operation")
@@ -1011,16 +1011,16 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 							smithymiddleware.FinalizeMiddlewareFunc("Mock", func(ctx context.Context, input smithymiddleware.FinalizeInput, next smithymiddleware.FinalizeHandler) (smithymiddleware.FinalizeOutput, smithymiddleware.Metadata, error) {
 								switch awsmiddleware.GetOperationName(ctx) {
 								case "ListFunctions":
-									defer func() { tt.mockAppSyncClientListFunctions.calls++ }()
 									r := tt.mockAppSyncClientListFunctions.returns[tt.mockAppSyncClientListFunctions.calls]
+									tt.mockAppSyncClientListFunctions.calls++
 									return smithymiddleware.FinalizeOutput{Result: r.res}, smithymiddleware.Metadata{}, r.err
 								case "CreateFunction":
-									defer func() { tt.mockAppSyncClientCreateFunction.calls++ }()
 									r := tt.mockAppSyncClientCreateFunction.returns[tt.mockAppSyncClientCreateFunction.calls]
+									tt.mockAppSyncClientCreateFunction.calls++
 									return smithymiddleware.FinalizeOutput{Result: r.res}, smithymiddleware.Metadata{}, r.err
 								case "UpdateFunction":
-									defer func() { tt.mockAppSyncClientUpdateFunction.calls++ }()
 									r := tt.mockAppSyncClientUpdateFunction.returns[tt.mockAppSyncClientUpdateFunction.calls]
+									tt.mockAppSyncClientUpdateFunction.calls++
 									return smithymiddleware.FinalizeOutput{Result: r.res}, smithymiddleware.Metadata{}, r.err
 								default:
 									t.Fatal("unexpected operation")
@@ -1389,12 +1389,12 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 							smithymiddleware.FinalizeMiddlewareFunc("Mock", func(ctx context.Context, input smithymiddleware.FinalizeInput, next smithymiddleware.FinalizeHandler) (smithymiddleware.FinalizeOutput, smithymiddleware.Metadata, error) {
 								switch awsmiddleware.GetOperationName(ctx) {
 								case "ListFunctions":
-									defer func() { tt.mockAppSyncClientListFunctions.calls++ }()
 									r := tt.mockAppSyncClientListFunctions.returns[tt.mockAppSyncClientListFunctions.calls]
+									tt.mockAppSyncClientListFunctions.calls++
 									return smithymiddleware.FinalizeOutput{Result: r.res}, smithymiddleware.Metadata{}, r.err
 								case "DeleteFunction":
-									defer func() { tt.mockAppSyncClientDeleteFunction.calls++ }()
 									r := tt.mockAppSyncClientDeleteFunction.returns[tt.mockAppSyncClientDeleteFunction.calls]
+									tt.mockAppSyncClientDeleteFunction.calls++
 									return smithymiddleware.FinalizeOutput{Result: r.res}, smithymiddleware.Metadata{}, r.err
 								default:
 									t.Fatal("unexpected operation")

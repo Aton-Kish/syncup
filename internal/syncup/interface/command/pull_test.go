@@ -248,8 +248,8 @@ func Test_pullCommand_Execute(t *testing.T) {
 				EXPECT().
 				Get(ctx).
 				DoAndReturn(func(ctx context.Context) model.MFATokenProvider {
-					defer func() { tt.mockMFATokenProviderRepositoryGet.calls++ }()
 					r := tt.mockMFATokenProviderRepositoryGet.returns[tt.mockMFATokenProviderRepositoryGet.calls]
+					tt.mockMFATokenProviderRepositoryGet.calls++
 					return r.res
 				}).
 				Times(len(tt.mockMFATokenProviderRepositoryGet.returns))
@@ -258,8 +258,8 @@ func Test_pullCommand_Execute(t *testing.T) {
 				EXPECT().
 				ActivateAWS(ctx, gomock.Any()).
 				DoAndReturn(func(ctx context.Context, optFns ...func(o *model.AWSOptions)) error {
-					defer func() { tt.mockAWSActivatorActivateAWS.calls++ }()
 					r := tt.mockAWSActivatorActivateAWS.returns[tt.mockAWSActivatorActivateAWS.calls]
+					tt.mockAWSActivatorActivateAWS.calls++
 					return r.err
 				}).
 				Times(len(tt.mockAWSActivatorActivateAWS.returns))
@@ -268,7 +268,7 @@ func Test_pullCommand_Execute(t *testing.T) {
 				EXPECT().
 				SetBaseDir(ctx, gomock.Any()).
 				DoAndReturn(func(ctx context.Context, dir string) {
-					defer func() { tt.mockBaseDirProviderSetBaseDir.calls++ }()
+					tt.mockBaseDirProviderSetBaseDir.calls++
 				}).
 				Times(len(tt.mockBaseDirProviderSetBaseDir.returns))
 
@@ -276,8 +276,8 @@ func Test_pullCommand_Execute(t *testing.T) {
 				EXPECT().
 				Execute(ctx, gomock.Any()).
 				DoAndReturn(func(ctx context.Context, params *usecase.PullInput) (*usecase.PullOutput, error) {
-					defer func() { tt.mockPullUseCaseExecute.calls++ }()
 					r := tt.mockPullUseCaseExecute.returns[tt.mockPullUseCaseExecute.calls]
+					tt.mockPullUseCaseExecute.calls++
 					return r.res, r.err
 				}).
 				Times(len(tt.mockPullUseCaseExecute.returns))

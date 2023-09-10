@@ -341,8 +341,8 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				EXPECT().
 				Get(ctx, gomock.Any()).
 				DoAndReturn(func(ctx context.Context, apiID string) (*model.Schema, error) {
-					defer func() { tt.mockSchemaRepositoryForAppSyncGet.calls++ }()
 					r := tt.mockSchemaRepositoryForAppSyncGet.returns[tt.mockSchemaRepositoryForAppSyncGet.calls]
+					tt.mockSchemaRepositoryForAppSyncGet.calls++
 					return r.res, r.err
 				}).
 				Times(len(tt.mockSchemaRepositoryForAppSyncGet.returns))
@@ -351,8 +351,8 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				EXPECT().
 				Save(ctx, gomock.Any(), gomock.Any()).
 				DoAndReturn(func(ctx context.Context, apiID string, schema *model.Schema) (*model.Schema, error) {
-					defer func() { tt.mockSchemaRepositoryForFSSave.calls++ }()
 					r := tt.mockSchemaRepositoryForFSSave.returns[tt.mockSchemaRepositoryForFSSave.calls]
+					tt.mockSchemaRepositoryForFSSave.calls++
 					return r.res, r.err
 				}).
 				Times(len(tt.mockSchemaRepositoryForFSSave.returns))
@@ -361,8 +361,8 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				EXPECT().
 				List(ctx, gomock.Any()).
 				DoAndReturn(func(ctx context.Context, apiID string) ([]model.Function, error) {
-					defer func() { tt.mockFunctionRepositoryForAppSyncList.calls++ }()
 					r := tt.mockFunctionRepositoryForAppSyncList.returns[tt.mockFunctionRepositoryForAppSyncList.calls]
+					tt.mockFunctionRepositoryForAppSyncList.calls++
 					return r.res, r.err
 				}).
 				Times(len(tt.mockFunctionRepositoryForAppSyncList.returns))
@@ -371,8 +371,8 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				EXPECT().
 				Save(ctx, gomock.Any(), gomock.Any()).
 				DoAndReturn(func(ctx context.Context, apiID string, function *model.Function) (*model.Function, error) {
-					defer func() { tt.mockFunctionRepositoryForFSSave.calls++ }()
 					r := tt.mockFunctionRepositoryForFSSave.returns[tt.mockFunctionRepositoryForFSSave.calls]
+					tt.mockFunctionRepositoryForFSSave.calls++
 					return r.res, r.err
 				}).
 				Times(len(tt.mockFunctionRepositoryForFSSave.returns))

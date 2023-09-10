@@ -101,8 +101,8 @@ func Test_mfaTokenProviderRepository_Get(t *testing.T) {
 				EXPECT().
 				Password(ctx, gomock.Any(), gomock.Any()).
 				DoAndReturn(func(ctx context.Context, prompt *survey.Password, opts ...survey.AskOpt) (string, error) {
-					defer func() { tt.mockSurveyPassword.calls++ }()
 					r := tt.mockSurveyPassword.returns[tt.mockSurveyPassword.calls]
+					tt.mockSurveyPassword.calls++
 					return r.res, r.err
 				}).
 				Times(len(tt.mockSurveyPassword.returns))
