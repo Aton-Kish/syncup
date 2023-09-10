@@ -47,7 +47,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 	}
 
 	type mockSchemaRepositoryForAppSyncGetReturn struct {
-		out *model.Schema
+		res *model.Schema
 		err error
 	}
 	type mockSchemaRepositoryForAppSyncGet struct {
@@ -56,7 +56,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 	}
 
 	type mockSchemaRepositoryForFSSaveReturn struct {
-		out *model.Schema
+		res *model.Schema
 		err error
 	}
 	type mockSchemaRepositoryForFSSave struct {
@@ -65,7 +65,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 	}
 
 	type mockFunctionRepositoryForAppSyncListReturn struct {
-		out []model.Function
+		res []model.Function
 		err error
 	}
 	type mockFunctionRepositoryForAppSyncList struct {
@@ -74,7 +74,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 	}
 
 	type mockFunctionRepositoryForFSSaveReturn struct {
-		out *model.Function
+		res *model.Function
 		err error
 	}
 	type mockFunctionRepositoryForFSSave struct {
@@ -83,7 +83,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 	}
 
 	type expected struct {
-		out   *PullOutput
+		res   *PullOutput
 		errAs error
 		errIs error
 	}
@@ -107,7 +107,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
 				returns: []mockSchemaRepositoryForAppSyncGetReturn{
 					{
-						out: &schema,
+						res: &schema,
 						err: nil,
 					},
 				},
@@ -115,7 +115,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			mockSchemaRepositoryForFSSave: mockSchemaRepositoryForFSSave{
 				returns: []mockSchemaRepositoryForFSSaveReturn{
 					{
-						out: &schema,
+						res: &schema,
 						err: nil,
 					},
 				},
@@ -123,7 +123,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			mockFunctionRepositoryForAppSyncList: mockFunctionRepositoryForAppSyncList{
 				returns: []mockFunctionRepositoryForAppSyncListReturn{
 					{
-						out: []model.Function{
+						res: []model.Function{
 							functionVTL_2018_05_29,
 							functionAPPSYNC_JS_1_0_0,
 						},
@@ -134,17 +134,17 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			mockFunctionRepositoryForFSSave: mockFunctionRepositoryForFSSave{
 				returns: []mockFunctionRepositoryForFSSaveReturn{
 					{
-						out: &functionVTL_2018_05_29,
+						res: &functionVTL_2018_05_29,
 						err: nil,
 					},
 					{
-						out: &functionAPPSYNC_JS_1_0_0,
+						res: &functionAPPSYNC_JS_1_0_0,
 						err: nil,
 					},
 				},
 			},
 			expected: expected{
-				out:   &PullOutput{},
+				res:   &PullOutput{},
 				errAs: nil,
 				errIs: nil,
 			},
@@ -159,7 +159,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
 				returns: []mockSchemaRepositoryForAppSyncGetReturn{
 					{
-						out: nil,
+						res: nil,
 						err: &model.LibError{},
 					},
 				},
@@ -174,7 +174,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				returns: []mockFunctionRepositoryForFSSaveReturn{},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: nil,
 			},
@@ -189,7 +189,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
 				returns: []mockSchemaRepositoryForAppSyncGetReturn{
 					{
-						out: &schema,
+						res: &schema,
 						err: nil,
 					},
 				},
@@ -197,7 +197,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			mockSchemaRepositoryForFSSave: mockSchemaRepositoryForFSSave{
 				returns: []mockSchemaRepositoryForFSSaveReturn{
 					{
-						out: nil,
+						res: nil,
 						err: &model.LibError{},
 					},
 				},
@@ -209,7 +209,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				returns: []mockFunctionRepositoryForFSSaveReturn{},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: nil,
 			},
@@ -224,7 +224,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
 				returns: []mockSchemaRepositoryForAppSyncGetReturn{
 					{
-						out: &schema,
+						res: &schema,
 						err: nil,
 					},
 				},
@@ -232,7 +232,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			mockSchemaRepositoryForFSSave: mockSchemaRepositoryForFSSave{
 				returns: []mockSchemaRepositoryForFSSaveReturn{
 					{
-						out: &schema,
+						res: &schema,
 						err: nil,
 					},
 				},
@@ -240,7 +240,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			mockFunctionRepositoryForAppSyncList: mockFunctionRepositoryForAppSyncList{
 				returns: []mockFunctionRepositoryForAppSyncListReturn{
 					{
-						out: nil,
+						res: nil,
 						err: &model.LibError{},
 					},
 				},
@@ -249,7 +249,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				returns: []mockFunctionRepositoryForFSSaveReturn{},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: nil,
 			},
@@ -264,7 +264,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
 				returns: []mockSchemaRepositoryForAppSyncGetReturn{
 					{
-						out: &schema,
+						res: &schema,
 						err: nil,
 					},
 				},
@@ -272,7 +272,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			mockSchemaRepositoryForFSSave: mockSchemaRepositoryForFSSave{
 				returns: []mockSchemaRepositoryForFSSaveReturn{
 					{
-						out: &schema,
+						res: &schema,
 						err: nil,
 					},
 				},
@@ -280,7 +280,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			mockFunctionRepositoryForAppSyncList: mockFunctionRepositoryForAppSyncList{
 				returns: []mockFunctionRepositoryForAppSyncListReturn{
 					{
-						out: []model.Function{
+						res: []model.Function{
 							functionVTL_2018_05_29,
 							functionAPPSYNC_JS_1_0_0,
 						},
@@ -291,17 +291,17 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			mockFunctionRepositoryForFSSave: mockFunctionRepositoryForFSSave{
 				returns: []mockFunctionRepositoryForFSSaveReturn{
 					{
-						out: nil,
+						res: nil,
 						err: &model.LibError{},
 					},
 					{
-						out: nil,
+						res: nil,
 						err: &model.LibError{},
 					},
 				},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: nil,
 			},
@@ -343,7 +343,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				DoAndReturn(func(ctx context.Context, apiID string) (*model.Schema, error) {
 					defer func() { tt.mockSchemaRepositoryForAppSyncGet.calls++ }()
 					r := tt.mockSchemaRepositoryForAppSyncGet.returns[tt.mockSchemaRepositoryForAppSyncGet.calls]
-					return r.out, r.err
+					return r.res, r.err
 				}).
 				Times(len(tt.mockSchemaRepositoryForAppSyncGet.returns))
 
@@ -353,7 +353,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				DoAndReturn(func(ctx context.Context, apiID string, schema *model.Schema) (*model.Schema, error) {
 					defer func() { tt.mockSchemaRepositoryForFSSave.calls++ }()
 					r := tt.mockSchemaRepositoryForFSSave.returns[tt.mockSchemaRepositoryForFSSave.calls]
-					return r.out, r.err
+					return r.res, r.err
 				}).
 				Times(len(tt.mockSchemaRepositoryForFSSave.returns))
 
@@ -363,7 +363,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				DoAndReturn(func(ctx context.Context, apiID string) ([]model.Function, error) {
 					defer func() { tt.mockFunctionRepositoryForAppSyncList.calls++ }()
 					r := tt.mockFunctionRepositoryForAppSyncList.returns[tt.mockFunctionRepositoryForAppSyncList.calls]
-					return r.out, r.err
+					return r.res, r.err
 				}).
 				Times(len(tt.mockFunctionRepositoryForAppSyncList.returns))
 
@@ -373,7 +373,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				DoAndReturn(func(ctx context.Context, apiID string, function *model.Function) (*model.Function, error) {
 					defer func() { tt.mockFunctionRepositoryForFSSave.calls++ }()
 					r := tt.mockFunctionRepositoryForFSSave.returns[tt.mockFunctionRepositoryForFSSave.calls]
-					return r.out, r.err
+					return r.res, r.err
 				}).
 				Times(len(tt.mockFunctionRepositoryForFSSave.returns))
 
@@ -389,7 +389,7 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			actual, err := uc.Execute(ctx, tt.args.params)
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 
 			if tt.expected.errAs == nil && tt.expected.errIs == nil {
 				assert.NoError(t, err)

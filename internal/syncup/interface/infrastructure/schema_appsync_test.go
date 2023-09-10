@@ -52,7 +52,7 @@ func Test_schemaRepositoryForAppSync_Get(t *testing.T) {
 	}
 
 	type mockAppSyncClientGetIntrospectionSchemaReturn struct {
-		out *appsync.GetIntrospectionSchemaOutput
+		res *appsync.GetIntrospectionSchemaOutput
 		err error
 	}
 	type mockAppSyncClientGetIntrospectionSchema struct {
@@ -61,7 +61,7 @@ func Test_schemaRepositoryForAppSync_Get(t *testing.T) {
 	}
 
 	type expected struct {
-		out   *model.Schema
+		res   *model.Schema
 		errAs error
 		errIs error
 	}
@@ -80,7 +80,7 @@ func Test_schemaRepositoryForAppSync_Get(t *testing.T) {
 			mockAppSyncClientGetIntrospectionSchema: mockAppSyncClientGetIntrospectionSchema{
 				returns: []mockAppSyncClientGetIntrospectionSchemaReturn{
 					{
-						out: &appsync.GetIntrospectionSchemaOutput{
+						res: &appsync.GetIntrospectionSchemaOutput{
 							Schema: []byte(schema),
 						},
 						err: nil,
@@ -88,7 +88,7 @@ func Test_schemaRepositoryForAppSync_Get(t *testing.T) {
 				},
 			},
 			expected: expected{
-				out:   &schema,
+				res:   &schema,
 				errAs: nil,
 				errIs: nil,
 			},
@@ -101,13 +101,13 @@ func Test_schemaRepositoryForAppSync_Get(t *testing.T) {
 			mockAppSyncClientGetIntrospectionSchema: mockAppSyncClientGetIntrospectionSchema{
 				returns: []mockAppSyncClientGetIntrospectionSchemaReturn{
 					{
-						out: nil,
+						res: nil,
 						err: errors.New("error"),
 					},
 				},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: nil,
 			},
@@ -130,7 +130,7 @@ func Test_schemaRepositoryForAppSync_Get(t *testing.T) {
 								case "GetIntrospectionSchema":
 									defer func() { tt.mockAppSyncClientGetIntrospectionSchema.calls++ }()
 									r := tt.mockAppSyncClientGetIntrospectionSchema.returns[tt.mockAppSyncClientGetIntrospectionSchema.calls]
-									return smithymiddleware.FinalizeOutput{Result: r.out}, smithymiddleware.Metadata{}, r.err
+									return smithymiddleware.FinalizeOutput{Result: r.res}, smithymiddleware.Metadata{}, r.err
 								default:
 									t.Fatal("unexpected operation")
 									return smithymiddleware.FinalizeOutput{}, smithymiddleware.Metadata{}, nil
@@ -152,7 +152,7 @@ func Test_schemaRepositoryForAppSync_Get(t *testing.T) {
 			actual, err := r.Get(ctx, tt.args.apiID)
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 
 			if tt.expected.errAs == nil && tt.expected.errIs == nil {
 				assert.NoError(t, err)
@@ -184,7 +184,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 	}
 
 	type mockAppSyncClientStartSchemaCreationReturn struct {
-		out *appsync.StartSchemaCreationOutput
+		res *appsync.StartSchemaCreationOutput
 		err error
 	}
 	type mockAppSyncClientStartSchemaCreation struct {
@@ -193,7 +193,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 	}
 
 	type mockAppSyncClientGetSchemaCreationStatusReturn struct {
-		out *appsync.GetSchemaCreationStatusOutput
+		res *appsync.GetSchemaCreationStatusOutput
 		err error
 	}
 	type mockAppSyncClientGetSchemaCreationStatus struct {
@@ -202,7 +202,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 	}
 
 	type mockAppSyncClientGetIntrospectionSchemaReturn struct {
-		out *appsync.GetIntrospectionSchemaOutput
+		res *appsync.GetIntrospectionSchemaOutput
 		err error
 	}
 	type mockAppSyncClientGetIntrospectionSchema struct {
@@ -211,7 +211,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 	}
 
 	type expected struct {
-		out   *model.Schema
+		res   *model.Schema
 		errAs error
 		errIs error
 	}
@@ -239,7 +239,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientStartSchemaCreation: mockAppSyncClientStartSchemaCreation{
 				returns: []mockAppSyncClientStartSchemaCreationReturn{
 					{
-						out: &appsync.StartSchemaCreationOutput{
+						res: &appsync.StartSchemaCreationOutput{
 							Status: types.SchemaStatusProcessing,
 						},
 						err: nil,
@@ -249,13 +249,13 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientGetSchemaCreationStatus: mockAppSyncClientGetSchemaCreationStatus{
 				returns: []mockAppSyncClientGetSchemaCreationStatusReturn{
 					{
-						out: &appsync.GetSchemaCreationStatusOutput{
+						res: &appsync.GetSchemaCreationStatusOutput{
 							Status: types.SchemaStatusProcessing,
 						},
 						err: nil,
 					},
 					{
-						out: &appsync.GetSchemaCreationStatusOutput{
+						res: &appsync.GetSchemaCreationStatusOutput{
 							Status: types.SchemaStatusSuccess,
 						},
 						err: nil,
@@ -265,7 +265,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientGetIntrospectionSchema: mockAppSyncClientGetIntrospectionSchema{
 				returns: []mockAppSyncClientGetIntrospectionSchemaReturn{
 					{
-						out: &appsync.GetIntrospectionSchemaOutput{
+						res: &appsync.GetIntrospectionSchemaOutput{
 							Schema: []byte(schema),
 						},
 						err: nil,
@@ -273,7 +273,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 				},
 			},
 			expected: expected{
-				out:   &schema,
+				res:   &schema,
 				errAs: nil,
 				errIs: nil,
 			},
@@ -291,7 +291,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientStartSchemaCreation: mockAppSyncClientStartSchemaCreation{
 				returns: []mockAppSyncClientStartSchemaCreationReturn{
 					{
-						out: nil,
+						res: nil,
 						err: &awshttp.ResponseError{
 							ResponseError: &smithyhttp.ResponseError{
 								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
@@ -300,7 +300,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 						},
 					},
 					{
-						out: &appsync.StartSchemaCreationOutput{
+						res: &appsync.StartSchemaCreationOutput{
 							Status: types.SchemaStatusProcessing,
 						},
 						err: nil,
@@ -310,13 +310,13 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientGetSchemaCreationStatus: mockAppSyncClientGetSchemaCreationStatus{
 				returns: []mockAppSyncClientGetSchemaCreationStatusReturn{
 					{
-						out: &appsync.GetSchemaCreationStatusOutput{
+						res: &appsync.GetSchemaCreationStatusOutput{
 							Status: types.SchemaStatusProcessing,
 						},
 						err: nil,
 					},
 					{
-						out: &appsync.GetSchemaCreationStatusOutput{
+						res: &appsync.GetSchemaCreationStatusOutput{
 							Status: types.SchemaStatusSuccess,
 						},
 						err: nil,
@@ -326,7 +326,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientGetIntrospectionSchema: mockAppSyncClientGetIntrospectionSchema{
 				returns: []mockAppSyncClientGetIntrospectionSchemaReturn{
 					{
-						out: &appsync.GetIntrospectionSchemaOutput{
+						res: &appsync.GetIntrospectionSchemaOutput{
 							Schema: []byte(schema),
 						},
 						err: nil,
@@ -334,7 +334,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 				},
 			},
 			expected: expected{
-				out:   &schema,
+				res:   &schema,
 				errAs: nil,
 				errIs: nil,
 			},
@@ -352,7 +352,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientStartSchemaCreation: mockAppSyncClientStartSchemaCreation{
 				returns: []mockAppSyncClientStartSchemaCreationReturn{
 					{
-						out: &appsync.StartSchemaCreationOutput{
+						res: &appsync.StartSchemaCreationOutput{
 							Status: types.SchemaStatusProcessing,
 						},
 						err: nil,
@@ -362,13 +362,13 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientGetSchemaCreationStatus: mockAppSyncClientGetSchemaCreationStatus{
 				returns: []mockAppSyncClientGetSchemaCreationStatusReturn{
 					{
-						out: &appsync.GetSchemaCreationStatusOutput{
+						res: &appsync.GetSchemaCreationStatusOutput{
 							Status: types.SchemaStatusProcessing,
 						},
 						err: nil,
 					},
 					{
-						out: &appsync.GetSchemaCreationStatusOutput{
+						res: &appsync.GetSchemaCreationStatusOutput{
 							Status: types.SchemaStatusProcessing,
 						},
 						err: nil,
@@ -379,7 +379,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 				returns: []mockAppSyncClientGetIntrospectionSchemaReturn{},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: context.DeadlineExceeded,
 			},
@@ -397,7 +397,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientStartSchemaCreation: mockAppSyncClientStartSchemaCreation{
 				returns: []mockAppSyncClientStartSchemaCreationReturn{
 					{
-						out: nil,
+						res: nil,
 						err: &awshttp.ResponseError{
 							ResponseError: &smithyhttp.ResponseError{
 								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
@@ -406,7 +406,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 						},
 					},
 					{
-						out: nil,
+						res: nil,
 						err: &awshttp.ResponseError{
 							ResponseError: &smithyhttp.ResponseError{
 								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
@@ -415,7 +415,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 						},
 					},
 					{
-						out: nil,
+						res: nil,
 						err: &awshttp.ResponseError{
 							ResponseError: &smithyhttp.ResponseError{
 								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
@@ -432,7 +432,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 				returns: []mockAppSyncClientGetIntrospectionSchemaReturn{},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: nil,
 			},
@@ -457,7 +457,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 				returns: []mockAppSyncClientGetIntrospectionSchemaReturn{},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: model.ErrNilValue,
 			},
@@ -475,7 +475,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientStartSchemaCreation: mockAppSyncClientStartSchemaCreation{
 				returns: []mockAppSyncClientStartSchemaCreationReturn{
 					{
-						out: nil,
+						res: nil,
 						err: errors.New("error"),
 					},
 				},
@@ -487,7 +487,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 				returns: []mockAppSyncClientGetIntrospectionSchemaReturn{},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: nil,
 			},
@@ -505,7 +505,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientStartSchemaCreation: mockAppSyncClientStartSchemaCreation{
 				returns: []mockAppSyncClientStartSchemaCreationReturn{
 					{
-						out: &appsync.StartSchemaCreationOutput{
+						res: &appsync.StartSchemaCreationOutput{
 							Status: types.SchemaStatusProcessing,
 						},
 						err: nil,
@@ -515,13 +515,13 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientGetSchemaCreationStatus: mockAppSyncClientGetSchemaCreationStatus{
 				returns: []mockAppSyncClientGetSchemaCreationStatusReturn{
 					{
-						out: &appsync.GetSchemaCreationStatusOutput{
+						res: &appsync.GetSchemaCreationStatusOutput{
 							Status: types.SchemaStatusProcessing,
 						},
 						err: nil,
 					},
 					{
-						out: &appsync.GetSchemaCreationStatusOutput{
+						res: &appsync.GetSchemaCreationStatusOutput{
 							Status: types.SchemaStatusFailed,
 						},
 						err: nil,
@@ -532,7 +532,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 				returns: []mockAppSyncClientGetIntrospectionSchemaReturn{},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: model.ErrCreateFailed,
 			},
@@ -550,7 +550,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientStartSchemaCreation: mockAppSyncClientStartSchemaCreation{
 				returns: []mockAppSyncClientStartSchemaCreationReturn{
 					{
-						out: &appsync.StartSchemaCreationOutput{
+						res: &appsync.StartSchemaCreationOutput{
 							Status: types.SchemaStatusProcessing,
 						},
 						err: nil,
@@ -560,13 +560,13 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientGetSchemaCreationStatus: mockAppSyncClientGetSchemaCreationStatus{
 				returns: []mockAppSyncClientGetSchemaCreationStatusReturn{
 					{
-						out: &appsync.GetSchemaCreationStatusOutput{
+						res: &appsync.GetSchemaCreationStatusOutput{
 							Status: types.SchemaStatusProcessing,
 						},
 						err: nil,
 					},
 					{
-						out: &appsync.GetSchemaCreationStatusOutput{
+						res: &appsync.GetSchemaCreationStatusOutput{
 							Status: types.SchemaStatus("invalid schema status"),
 						},
 						err: nil,
@@ -577,7 +577,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 				returns: []mockAppSyncClientGetIntrospectionSchemaReturn{},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: model.ErrInvalidValue,
 			},
@@ -595,7 +595,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientStartSchemaCreation: mockAppSyncClientStartSchemaCreation{
 				returns: []mockAppSyncClientStartSchemaCreationReturn{
 					{
-						out: &appsync.StartSchemaCreationOutput{
+						res: &appsync.StartSchemaCreationOutput{
 							Status: types.SchemaStatusProcessing,
 						},
 						err: nil,
@@ -605,13 +605,13 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientGetSchemaCreationStatus: mockAppSyncClientGetSchemaCreationStatus{
 				returns: []mockAppSyncClientGetSchemaCreationStatusReturn{
 					{
-						out: &appsync.GetSchemaCreationStatusOutput{
+						res: &appsync.GetSchemaCreationStatusOutput{
 							Status: types.SchemaStatusProcessing,
 						},
 						err: nil,
 					},
 					{
-						out: nil,
+						res: nil,
 						err: errors.New("error"),
 					},
 				},
@@ -620,7 +620,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 				returns: []mockAppSyncClientGetIntrospectionSchemaReturn{},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: nil,
 			},
@@ -638,7 +638,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientStartSchemaCreation: mockAppSyncClientStartSchemaCreation{
 				returns: []mockAppSyncClientStartSchemaCreationReturn{
 					{
-						out: &appsync.StartSchemaCreationOutput{
+						res: &appsync.StartSchemaCreationOutput{
 							Status: types.SchemaStatusProcessing,
 						},
 						err: nil,
@@ -648,13 +648,13 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientGetSchemaCreationStatus: mockAppSyncClientGetSchemaCreationStatus{
 				returns: []mockAppSyncClientGetSchemaCreationStatusReturn{
 					{
-						out: &appsync.GetSchemaCreationStatusOutput{
+						res: &appsync.GetSchemaCreationStatusOutput{
 							Status: types.SchemaStatusProcessing,
 						},
 						err: nil,
 					},
 					{
-						out: &appsync.GetSchemaCreationStatusOutput{
+						res: &appsync.GetSchemaCreationStatusOutput{
 							Status: types.SchemaStatusSuccess,
 						},
 						err: nil,
@@ -664,13 +664,13 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientGetIntrospectionSchema: mockAppSyncClientGetIntrospectionSchema{
 				returns: []mockAppSyncClientGetIntrospectionSchemaReturn{
 					{
-						out: nil,
+						res: nil,
 						err: errors.New("error"),
 					},
 				},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: nil,
 			},
@@ -694,15 +694,15 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 								case "StartSchemaCreation":
 									defer func() { tt.mockAppSyncClientStartSchemaCreation.calls++ }()
 									r := tt.mockAppSyncClientStartSchemaCreation.returns[tt.mockAppSyncClientStartSchemaCreation.calls]
-									return smithymiddleware.FinalizeOutput{Result: r.out}, smithymiddleware.Metadata{}, r.err
+									return smithymiddleware.FinalizeOutput{Result: r.res}, smithymiddleware.Metadata{}, r.err
 								case "GetSchemaCreationStatus":
 									defer func() { tt.mockAppSyncClientGetSchemaCreationStatus.calls++ }()
 									r := tt.mockAppSyncClientGetSchemaCreationStatus.returns[tt.mockAppSyncClientGetSchemaCreationStatus.calls]
-									return smithymiddleware.FinalizeOutput{Result: r.out}, smithymiddleware.Metadata{}, r.err
+									return smithymiddleware.FinalizeOutput{Result: r.res}, smithymiddleware.Metadata{}, r.err
 								case "GetIntrospectionSchema":
 									defer func() { tt.mockAppSyncClientGetIntrospectionSchema.calls++ }()
 									r := tt.mockAppSyncClientGetIntrospectionSchema.returns[tt.mockAppSyncClientGetIntrospectionSchema.calls]
-									return smithymiddleware.FinalizeOutput{Result: r.out}, smithymiddleware.Metadata{}, r.err
+									return smithymiddleware.FinalizeOutput{Result: r.res}, smithymiddleware.Metadata{}, r.err
 								default:
 									t.Fatal("unexpected operation")
 									return smithymiddleware.FinalizeOutput{}, smithymiddleware.Metadata{}, nil
@@ -728,7 +728,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			actual, err := r.Save(ctx, tt.args.apiID, tt.args.schema)
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 
 			if tt.expected.errAs == nil && tt.expected.errIs == nil {
 				assert.NoError(t, err)

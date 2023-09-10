@@ -34,7 +34,7 @@ import (
 
 func Test_mfaTokenProviderRepository_Get(t *testing.T) {
 	type mockSurveyPasswordReturn struct {
-		out string
+		res string
 		err error
 	}
 	type mockSurveyPassword struct {
@@ -43,7 +43,7 @@ func Test_mfaTokenProviderRepository_Get(t *testing.T) {
 	}
 
 	type expected struct {
-		out   string
+		res   string
 		errAs error
 		errIs error
 	}
@@ -58,13 +58,13 @@ func Test_mfaTokenProviderRepository_Get(t *testing.T) {
 			mockSurveyPassword: mockSurveyPassword{
 				returns: []mockSurveyPasswordReturn{
 					{
-						out: "123456",
+						res: "123456",
 						err: nil,
 					},
 				},
 			},
 			expected: expected{
-				out:   "123456",
+				res:   "123456",
 				errAs: nil,
 				errIs: nil,
 			},
@@ -74,13 +74,13 @@ func Test_mfaTokenProviderRepository_Get(t *testing.T) {
 			mockSurveyPassword: mockSurveyPassword{
 				returns: []mockSurveyPasswordReturn{
 					{
-						out: "",
+						res: "",
 						err: errors.New("error"),
 					},
 				},
 			},
 			expected: expected{
-				out:   "",
+				res:   "",
 				errAs: &model.LibError{},
 				errIs: nil,
 			},
@@ -103,7 +103,7 @@ func Test_mfaTokenProviderRepository_Get(t *testing.T) {
 				DoAndReturn(func(ctx context.Context, prompt *survey.Password, opts ...survey.AskOpt) (string, error) {
 					defer func() { tt.mockSurveyPassword.calls++ }()
 					r := tt.mockSurveyPassword.returns[tt.mockSurveyPassword.calls]
-					return r.out, r.err
+					return r.res, r.err
 				}).
 				Times(len(tt.mockSurveyPassword.returns))
 
@@ -116,7 +116,7 @@ func Test_mfaTokenProviderRepository_Get(t *testing.T) {
 			actual, err := provider()
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 
 			if tt.expected.errAs == nil && tt.expected.errIs == nil {
 				assert.NoError(t, err)

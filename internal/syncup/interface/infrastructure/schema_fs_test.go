@@ -43,7 +43,7 @@ func Test_schemaRepositoryForFS_Get(t *testing.T) {
 	}
 
 	type expected struct {
-		out   *model.Schema
+		res   *model.Schema
 		errAs error
 		errIs error
 	}
@@ -63,7 +63,7 @@ func Test_schemaRepositoryForFS_Get(t *testing.T) {
 				apiID: "apiID",
 			},
 			expected: expected{
-				out:   &schema,
+				res:   &schema,
 				errAs: nil,
 				errIs: nil,
 			},
@@ -77,7 +77,7 @@ func Test_schemaRepositoryForFS_Get(t *testing.T) {
 				apiID: "apiID",
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: nil,
 			},
@@ -97,7 +97,7 @@ func Test_schemaRepositoryForFS_Get(t *testing.T) {
 			actual, err := r.Get(ctx, tt.args.apiID)
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 
 			if tt.expected.errAs == nil && tt.expected.errIs == nil {
 				assert.NoError(t, err)
@@ -128,7 +128,7 @@ func Test_schemaRepositoryForFS_Save(t *testing.T) {
 	}
 
 	type expected struct {
-		out   *model.Schema
+		res   *model.Schema
 		errAs error
 		errIs error
 	}
@@ -149,7 +149,7 @@ func Test_schemaRepositoryForFS_Save(t *testing.T) {
 				schema: &schema,
 			},
 			expected: expected{
-				out:   &schema,
+				res:   &schema,
 				errAs: nil,
 				errIs: nil,
 			},
@@ -164,7 +164,7 @@ func Test_schemaRepositoryForFS_Save(t *testing.T) {
 				schema: &schema,
 			},
 			expected: expected{
-				out:   &schema,
+				res:   &schema,
 				errAs: nil,
 				errIs: nil,
 			},
@@ -179,7 +179,7 @@ func Test_schemaRepositoryForFS_Save(t *testing.T) {
 				schema: nil,
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: model.ErrNilValue,
 			},
@@ -199,7 +199,7 @@ func Test_schemaRepositoryForFS_Save(t *testing.T) {
 			actual, err := r.Save(ctx, tt.args.apiID, tt.args.schema)
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 
 			if tt.expected.errAs == nil && tt.expected.errIs == nil {
 				assert.NoError(t, err)

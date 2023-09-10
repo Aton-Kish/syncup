@@ -33,7 +33,7 @@ func TestExist(t *testing.T) {
 	}
 
 	type expected struct {
-		out bool
+		res bool
 	}
 
 	tests := []struct {
@@ -47,7 +47,7 @@ func TestExist(t *testing.T) {
 				name: t.TempDir(),
 			},
 			expected: expected{
-				out: true,
+				res: true,
 			},
 		},
 		{
@@ -56,7 +56,7 @@ func TestExist(t *testing.T) {
 				name: filepath.Join(t.TempDir(), "notExist"),
 			},
 			expected: expected{
-				out: false,
+				res: false,
 			},
 		},
 	}
@@ -67,7 +67,7 @@ func TestExist(t *testing.T) {
 			actual := Exist(tt.args.name)
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 		})
 	}
 }

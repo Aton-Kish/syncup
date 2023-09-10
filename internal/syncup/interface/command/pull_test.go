@@ -40,7 +40,7 @@ func Test_pullCommand_Execute(t *testing.T) {
 	}
 
 	type mockMFATokenProviderRepositoryGetReturn struct {
-		out model.MFATokenProvider
+		res model.MFATokenProvider
 	}
 	type mockMFATokenProviderRepositoryGet struct {
 		calls   int
@@ -63,7 +63,7 @@ func Test_pullCommand_Execute(t *testing.T) {
 	}
 
 	type mockPullUseCaseExecuteReturn struct {
-		out *usecase.PullOutput
+		res *usecase.PullOutput
 		err error
 	}
 	type mockPullUseCaseExecute struct {
@@ -93,7 +93,7 @@ func Test_pullCommand_Execute(t *testing.T) {
 			mockMFATokenProviderRepositoryGet: mockMFATokenProviderRepositoryGet{
 				returns: []mockMFATokenProviderRepositoryGetReturn{
 					{
-						out: func() (string, error) {
+						res: func() (string, error) {
 							return "123456", nil
 						},
 					},
@@ -114,7 +114,7 @@ func Test_pullCommand_Execute(t *testing.T) {
 			mockPullUseCaseExecute: mockPullUseCaseExecute{
 				returns: []mockPullUseCaseExecuteReturn{
 					{
-						out: &usecase.PullOutput{},
+						res: &usecase.PullOutput{},
 						err: nil,
 					},
 				},
@@ -132,7 +132,7 @@ func Test_pullCommand_Execute(t *testing.T) {
 			mockMFATokenProviderRepositoryGet: mockMFATokenProviderRepositoryGet{
 				returns: []mockMFATokenProviderRepositoryGetReturn{
 					{
-						out: func() (string, error) {
+						res: func() (string, error) {
 							return "123456", nil
 						},
 					},
@@ -166,7 +166,7 @@ func Test_pullCommand_Execute(t *testing.T) {
 			mockMFATokenProviderRepositoryGet: mockMFATokenProviderRepositoryGet{
 				returns: []mockMFATokenProviderRepositoryGetReturn{
 					{
-						out: func() (string, error) {
+						res: func() (string, error) {
 							return "123456", nil
 						},
 					},
@@ -198,7 +198,7 @@ func Test_pullCommand_Execute(t *testing.T) {
 			mockMFATokenProviderRepositoryGet: mockMFATokenProviderRepositoryGet{
 				returns: []mockMFATokenProviderRepositoryGetReturn{
 					{
-						out: func() (string, error) {
+						res: func() (string, error) {
 							return "123456", nil
 						},
 					},
@@ -219,7 +219,7 @@ func Test_pullCommand_Execute(t *testing.T) {
 			mockPullUseCaseExecute: mockPullUseCaseExecute{
 				returns: []mockPullUseCaseExecuteReturn{
 					{
-						out: nil,
+						res: nil,
 						err: errors.New("error"),
 					},
 				},
@@ -250,7 +250,7 @@ func Test_pullCommand_Execute(t *testing.T) {
 				DoAndReturn(func(ctx context.Context) model.MFATokenProvider {
 					defer func() { tt.mockMFATokenProviderRepositoryGet.calls++ }()
 					r := tt.mockMFATokenProviderRepositoryGet.returns[tt.mockMFATokenProviderRepositoryGet.calls]
-					return r.out
+					return r.res
 				}).
 				Times(len(tt.mockMFATokenProviderRepositoryGet.returns))
 
@@ -278,7 +278,7 @@ func Test_pullCommand_Execute(t *testing.T) {
 				DoAndReturn(func(ctx context.Context, params *usecase.PullInput) (*usecase.PullOutput, error) {
 					defer func() { tt.mockPullUseCaseExecute.calls++ }()
 					r := tt.mockPullUseCaseExecute.returns[tt.mockPullUseCaseExecute.calls]
-					return r.out, r.err
+					return r.res, r.err
 				}).
 				Times(len(tt.mockPullUseCaseExecute.returns))
 

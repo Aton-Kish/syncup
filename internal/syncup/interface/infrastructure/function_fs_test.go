@@ -48,7 +48,7 @@ func Test_functionRepositoryForFS_List(t *testing.T) {
 	}
 
 	type expected struct {
-		out   []model.Function
+		res   []model.Function
 		errAs error
 		errIs error
 	}
@@ -68,7 +68,7 @@ func Test_functionRepositoryForFS_List(t *testing.T) {
 				apiID: "apiID",
 			},
 			expected: expected{
-				out: []model.Function{
+				res: []model.Function{
 					functionVTL_2018_05_29,
 					functionAPPSYNC_JS_1_0_0,
 				},
@@ -85,7 +85,7 @@ func Test_functionRepositoryForFS_List(t *testing.T) {
 				apiID: "apiID",
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: nil,
 			},
@@ -105,7 +105,7 @@ func Test_functionRepositoryForFS_List(t *testing.T) {
 			actual, err := r.List(ctx, tt.args.apiID)
 
 			// Assert
-			assert.ElementsMatch(t, tt.expected.out, actual)
+			assert.ElementsMatch(t, tt.expected.res, actual)
 
 			if tt.expected.errAs == nil && tt.expected.errIs == nil {
 				assert.NoError(t, err)
@@ -140,7 +140,7 @@ func Test_functionRepositoryForFS_Get(t *testing.T) {
 	}
 
 	type expected struct {
-		out   *model.Function
+		res   *model.Function
 		errAs error
 		errIs error
 	}
@@ -161,7 +161,7 @@ func Test_functionRepositoryForFS_Get(t *testing.T) {
 				name:  "VTL_2018-05-29",
 			},
 			expected: expected{
-				out:   &functionVTL_2018_05_29,
+				res:   &functionVTL_2018_05_29,
 				errAs: nil,
 				errIs: nil,
 			},
@@ -176,7 +176,7 @@ func Test_functionRepositoryForFS_Get(t *testing.T) {
 				name:  "APPSYNC_JS_1.0.0",
 			},
 			expected: expected{
-				out:   &functionAPPSYNC_JS_1_0_0,
+				res:   &functionAPPSYNC_JS_1_0_0,
 				errAs: nil,
 				errIs: nil,
 			},
@@ -191,7 +191,7 @@ func Test_functionRepositoryForFS_Get(t *testing.T) {
 				name:  "invalidName",
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: nil,
 			},
@@ -211,7 +211,7 @@ func Test_functionRepositoryForFS_Get(t *testing.T) {
 			actual, err := r.Get(ctx, tt.args.apiID, tt.args.name)
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 
 			if tt.expected.errAs == nil && tt.expected.errIs == nil {
 				assert.NoError(t, err)
@@ -246,7 +246,7 @@ func Test_functionRepositoryForFS_Save(t *testing.T) {
 	}
 
 	type expected struct {
-		out   *model.Function
+		res   *model.Function
 		errAs error
 		errIs error
 	}
@@ -267,7 +267,7 @@ func Test_functionRepositoryForFS_Save(t *testing.T) {
 				function: &functionVTL_2018_05_29,
 			},
 			expected: expected{
-				out:   &functionVTL_2018_05_29,
+				res:   &functionVTL_2018_05_29,
 				errAs: nil,
 				errIs: nil,
 			},
@@ -282,7 +282,7 @@ func Test_functionRepositoryForFS_Save(t *testing.T) {
 				function: &functionAPPSYNC_JS_1_0_0,
 			},
 			expected: expected{
-				out:   &functionAPPSYNC_JS_1_0_0,
+				res:   &functionAPPSYNC_JS_1_0_0,
 				errAs: nil,
 				errIs: nil,
 			},
@@ -297,7 +297,7 @@ func Test_functionRepositoryForFS_Save(t *testing.T) {
 				function: &functionVTL_2018_05_29,
 			},
 			expected: expected{
-				out:   &functionVTL_2018_05_29,
+				res:   &functionVTL_2018_05_29,
 				errAs: nil,
 				errIs: nil,
 			},
@@ -312,7 +312,7 @@ func Test_functionRepositoryForFS_Save(t *testing.T) {
 				function: &functionAPPSYNC_JS_1_0_0,
 			},
 			expected: expected{
-				out:   &functionAPPSYNC_JS_1_0_0,
+				res:   &functionAPPSYNC_JS_1_0_0,
 				errAs: nil,
 				errIs: nil,
 			},
@@ -327,7 +327,7 @@ func Test_functionRepositoryForFS_Save(t *testing.T) {
 				function: nil,
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: model.ErrNilValue,
 			},
@@ -342,7 +342,7 @@ func Test_functionRepositoryForFS_Save(t *testing.T) {
 				function: &model.Function{},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: model.ErrNilValue,
 			},
@@ -362,7 +362,7 @@ func Test_functionRepositoryForFS_Save(t *testing.T) {
 				},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: model.ErrInvalidValue,
 			},
@@ -382,7 +382,7 @@ func Test_functionRepositoryForFS_Save(t *testing.T) {
 			actual, err := r.Save(ctx, tt.args.apiID, tt.args.function)
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 
 			if tt.expected.errAs == nil && tt.expected.errIs == nil {
 				assert.NoError(t, err)

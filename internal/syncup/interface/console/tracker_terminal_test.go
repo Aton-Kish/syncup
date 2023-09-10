@@ -123,7 +123,7 @@ func Test_trackerRepositoryForTerminal_Failed(t *testing.T) {
 	}
 
 	type mockSpinnerActiveReturn struct {
-		out bool
+		res bool
 	}
 	type mockSpinnerActive struct {
 		calls   int
@@ -159,7 +159,7 @@ func Test_trackerRepositoryForTerminal_Failed(t *testing.T) {
 			mockSpinnerActive: mockSpinnerActive{
 				returns: []mockSpinnerActiveReturn{
 					{
-						out: true,
+						res: true,
 					},
 				},
 			},
@@ -182,7 +182,7 @@ func Test_trackerRepositoryForTerminal_Failed(t *testing.T) {
 			mockSpinnerActive: mockSpinnerActive{
 				returns: []mockSpinnerActiveReturn{
 					{
-						out: false,
+						res: false,
 					},
 				},
 			},
@@ -213,7 +213,7 @@ func Test_trackerRepositoryForTerminal_Failed(t *testing.T) {
 				DoAndReturn(func() bool {
 					defer func() { tt.mockSpinnerActive.calls++ }()
 					r := tt.mockSpinnerActive.returns[tt.mockSpinnerActive.calls]
-					return r.out
+					return r.res
 				}).
 				Times(len(tt.mockSpinnerActive.returns))
 
@@ -254,7 +254,7 @@ func Test_trackerRepositoryForTerminal_Success(t *testing.T) {
 	}
 
 	type mockSpinnerActiveReturn struct {
-		out bool
+		res bool
 	}
 	type mockSpinnerActive struct {
 		calls   int
@@ -290,7 +290,7 @@ func Test_trackerRepositoryForTerminal_Success(t *testing.T) {
 			mockSpinnerActive: mockSpinnerActive{
 				returns: []mockSpinnerActiveReturn{
 					{
-						out: true,
+						res: true,
 					},
 				},
 			},
@@ -313,7 +313,7 @@ func Test_trackerRepositoryForTerminal_Success(t *testing.T) {
 			mockSpinnerActive: mockSpinnerActive{
 				returns: []mockSpinnerActiveReturn{
 					{
-						out: false,
+						res: false,
 					},
 				},
 			},
@@ -344,7 +344,7 @@ func Test_trackerRepositoryForTerminal_Success(t *testing.T) {
 				DoAndReturn(func() bool {
 					defer func() { tt.mockSpinnerActive.calls++ }()
 					r := tt.mockSpinnerActive.returns[tt.mockSpinnerActive.calls]
-					return r.out
+					return r.res
 				}).
 				Times(len(tt.mockSpinnerActive.returns))
 

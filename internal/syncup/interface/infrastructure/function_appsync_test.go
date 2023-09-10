@@ -61,7 +61,7 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 	}
 
 	type mockAppSyncClientListFunctionsReturn struct {
-		out *appsync.ListFunctionsOutput
+		res *appsync.ListFunctionsOutput
 		err error
 	}
 	type mockAppSyncClientListFunctions struct {
@@ -70,7 +70,7 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 	}
 
 	type expected struct {
-		out   []model.Function
+		res   []model.Function
 		errAs error
 		errIs error
 	}
@@ -89,7 +89,7 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
 							},
@@ -98,7 +98,7 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 						err: nil,
 					},
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
 							},
@@ -109,7 +109,7 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 				},
 			},
 			expected: expected{
-				out: []model.Function{
+				res: []model.Function{
 					functionVTL_2018_05_29,
 					functionAPPSYNC_JS_1_0_0,
 				},
@@ -125,7 +125,7 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
 							},
@@ -134,13 +134,13 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 						err: nil,
 					},
 					{
-						out: nil,
+						res: nil,
 						err: errors.New("error"),
 					},
 				},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: nil,
 			},
@@ -153,7 +153,7 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
 							},
@@ -162,7 +162,7 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 						err: nil,
 					},
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &model.Function{}),
 							},
@@ -173,7 +173,7 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 				},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: model.ErrNilValue,
 			},
@@ -186,7 +186,7 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
 							},
@@ -195,7 +195,7 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 						err: nil,
 					},
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
 							},
@@ -206,7 +206,7 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 				},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: model.ErrDuplicateValue,
 			},
@@ -229,7 +229,7 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 								case "ListFunctions":
 									defer func() { tt.mockAppSyncClientListFunctions.calls++ }()
 									r := tt.mockAppSyncClientListFunctions.returns[tt.mockAppSyncClientListFunctions.calls]
-									return smithymiddleware.FinalizeOutput{Result: r.out}, smithymiddleware.Metadata{}, r.err
+									return smithymiddleware.FinalizeOutput{Result: r.res}, smithymiddleware.Metadata{}, r.err
 								default:
 									t.Fatal("unexpected operation")
 									return smithymiddleware.FinalizeOutput{}, smithymiddleware.Metadata{}, nil
@@ -254,7 +254,7 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 			actual, err := r.List(ctx, tt.args.apiID)
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 
 			if tt.expected.errAs == nil && tt.expected.errIs == nil {
 				assert.NoError(t, err)
@@ -288,7 +288,7 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 	}
 
 	type mockAppSyncClientListFunctionsReturn struct {
-		out *appsync.ListFunctionsOutput
+		res *appsync.ListFunctionsOutput
 		err error
 	}
 	type mockAppSyncClientListFunctions struct {
@@ -297,7 +297,7 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 	}
 
 	type expected struct {
-		out   *model.Function
+		res   *model.Function
 		errAs error
 		errIs error
 	}
@@ -317,7 +317,7 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
 							},
@@ -326,7 +326,7 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 						err: nil,
 					},
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
 							},
@@ -337,7 +337,7 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 				},
 			},
 			expected: expected{
-				out:   &functionVTL_2018_05_29,
+				res:   &functionVTL_2018_05_29,
 				errAs: nil,
 				errIs: nil,
 			},
@@ -351,7 +351,7 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
 							},
@@ -360,13 +360,13 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 						err: nil,
 					},
 					{
-						out: nil,
+						res: nil,
 						err: errors.New("error"),
 					},
 				},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: nil,
 			},
@@ -380,7 +380,7 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
 							},
@@ -389,7 +389,7 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 						err: nil,
 					},
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
 							},
@@ -400,7 +400,7 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 				},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: model.ErrNotFound,
 			},
@@ -423,7 +423,7 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 								case "ListFunctions":
 									defer func() { tt.mockAppSyncClientListFunctions.calls++ }()
 									r := tt.mockAppSyncClientListFunctions.returns[tt.mockAppSyncClientListFunctions.calls]
-									return smithymiddleware.FinalizeOutput{Result: r.out}, smithymiddleware.Metadata{}, r.err
+									return smithymiddleware.FinalizeOutput{Result: r.res}, smithymiddleware.Metadata{}, r.err
 								default:
 									t.Fatal("unexpected operation")
 									return smithymiddleware.FinalizeOutput{}, smithymiddleware.Metadata{}, nil
@@ -448,7 +448,7 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 			actual, err := r.Get(ctx, tt.args.apiID, tt.args.name)
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 
 			if tt.expected.errAs == nil && tt.expected.errIs == nil {
 				assert.NoError(t, err)
@@ -482,7 +482,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 	}
 
 	type mockAppSyncClientListFunctionsReturn struct {
-		out *appsync.ListFunctionsOutput
+		res *appsync.ListFunctionsOutput
 		err error
 	}
 	type mockAppSyncClientListFunctions struct {
@@ -491,7 +491,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 	}
 
 	type mockAppSyncClientCreateFunctionReturn struct {
-		out *appsync.CreateFunctionOutput
+		res *appsync.CreateFunctionOutput
 		err error
 	}
 	type mockAppSyncClientCreateFunction struct {
@@ -500,7 +500,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 	}
 
 	type mockAppSyncClientUpdateFunctionReturn struct {
-		out *appsync.UpdateFunctionOutput
+		res *appsync.UpdateFunctionOutput
 		err error
 	}
 	type mockAppSyncClientUpdateFunction struct {
@@ -509,7 +509,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 	}
 
 	type expected struct {
-		out   *model.Function
+		res   *model.Function
 		errAs error
 		errIs error
 	}
@@ -531,7 +531,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
 							},
@@ -544,7 +544,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientCreateFunction: mockAppSyncClientCreateFunction{
 				returns: []mockAppSyncClientCreateFunctionReturn{
 					{
-						out: &appsync.CreateFunctionOutput{
+						res: &appsync.CreateFunctionOutput{
 							FunctionConfiguration: mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
 						},
 						err: nil,
@@ -555,7 +555,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 				returns: []mockAppSyncClientUpdateFunctionReturn{},
 			},
 			expected: expected{
-				out:   &functionVTL_2018_05_29,
+				res:   &functionVTL_2018_05_29,
 				errAs: nil,
 				errIs: nil,
 			},
@@ -569,7 +569,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
 							},
@@ -578,7 +578,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 						err: nil,
 					},
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
 							},
@@ -594,7 +594,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientUpdateFunction: mockAppSyncClientUpdateFunction{
 				returns: []mockAppSyncClientUpdateFunctionReturn{
 					{
-						out: &appsync.UpdateFunctionOutput{
+						res: &appsync.UpdateFunctionOutput{
 							FunctionConfiguration: mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
 						},
 						err: nil,
@@ -602,7 +602,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 				},
 			},
 			expected: expected{
-				out:   &functionVTL_2018_05_29,
+				res:   &functionVTL_2018_05_29,
 				errAs: nil,
 				errIs: nil,
 			},
@@ -616,7 +616,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
 							},
@@ -629,7 +629,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientCreateFunction: mockAppSyncClientCreateFunction{
 				returns: []mockAppSyncClientCreateFunctionReturn{
 					{
-						out: nil,
+						res: nil,
 						err: &awshttp.ResponseError{
 							ResponseError: &smithyhttp.ResponseError{
 								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
@@ -638,7 +638,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 						},
 					},
 					{
-						out: &appsync.CreateFunctionOutput{
+						res: &appsync.CreateFunctionOutput{
 							FunctionConfiguration: mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
 						},
 						err: nil,
@@ -649,7 +649,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 				returns: []mockAppSyncClientUpdateFunctionReturn{},
 			},
 			expected: expected{
-				out:   &functionVTL_2018_05_29,
+				res:   &functionVTL_2018_05_29,
 				errAs: nil,
 				errIs: nil,
 			},
@@ -663,7 +663,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
 							},
@@ -672,7 +672,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 						err: nil,
 					},
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
 							},
@@ -688,7 +688,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientUpdateFunction: mockAppSyncClientUpdateFunction{
 				returns: []mockAppSyncClientUpdateFunctionReturn{
 					{
-						out: nil,
+						res: nil,
 						err: &awshttp.ResponseError{
 							ResponseError: &smithyhttp.ResponseError{
 								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
@@ -697,7 +697,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 						},
 					},
 					{
-						out: &appsync.UpdateFunctionOutput{
+						res: &appsync.UpdateFunctionOutput{
 							FunctionConfiguration: mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
 						},
 						err: nil,
@@ -705,7 +705,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 				},
 			},
 			expected: expected{
-				out:   &functionVTL_2018_05_29,
+				res:   &functionVTL_2018_05_29,
 				errAs: nil,
 				errIs: nil,
 			},
@@ -719,7 +719,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
 							},
@@ -732,7 +732,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientCreateFunction: mockAppSyncClientCreateFunction{
 				returns: []mockAppSyncClientCreateFunctionReturn{
 					{
-						out: nil,
+						res: nil,
 						err: &awshttp.ResponseError{
 							ResponseError: &smithyhttp.ResponseError{
 								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
@@ -741,7 +741,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 						},
 					},
 					{
-						out: nil,
+						res: nil,
 						err: &awshttp.ResponseError{
 							ResponseError: &smithyhttp.ResponseError{
 								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
@@ -750,7 +750,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 						},
 					},
 					{
-						out: nil,
+						res: nil,
 						err: &awshttp.ResponseError{
 							ResponseError: &smithyhttp.ResponseError{
 								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
@@ -764,7 +764,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 				returns: []mockAppSyncClientUpdateFunctionReturn{},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: nil,
 			},
@@ -778,7 +778,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
 							},
@@ -787,7 +787,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 						err: nil,
 					},
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
 							},
@@ -803,7 +803,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientUpdateFunction: mockAppSyncClientUpdateFunction{
 				returns: []mockAppSyncClientUpdateFunctionReturn{
 					{
-						out: nil,
+						res: nil,
 						err: &awshttp.ResponseError{
 							ResponseError: &smithyhttp.ResponseError{
 								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
@@ -812,7 +812,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 						},
 					},
 					{
-						out: nil,
+						res: nil,
 						err: &awshttp.ResponseError{
 							ResponseError: &smithyhttp.ResponseError{
 								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
@@ -821,7 +821,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 						},
 					},
 					{
-						out: nil,
+						res: nil,
 						err: &awshttp.ResponseError{
 							ResponseError: &smithyhttp.ResponseError{
 								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
@@ -832,7 +832,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 				},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: nil,
 			},
@@ -853,7 +853,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 				returns: []mockAppSyncClientUpdateFunctionReturn{},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: model.ErrNilValue,
 			},
@@ -874,7 +874,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 				returns: []mockAppSyncClientUpdateFunctionReturn{},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: model.ErrNilValue,
 			},
@@ -888,7 +888,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
 							},
@@ -897,7 +897,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 						err: nil,
 					},
 					{
-						out: nil,
+						res: nil,
 						err: errors.New("error"),
 					},
 				},
@@ -909,7 +909,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 				returns: []mockAppSyncClientUpdateFunctionReturn{},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: nil,
 			},
@@ -923,7 +923,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
 							},
@@ -936,7 +936,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientCreateFunction: mockAppSyncClientCreateFunction{
 				returns: []mockAppSyncClientCreateFunctionReturn{
 					{
-						out: nil,
+						res: nil,
 						err: errors.New("error"),
 					},
 				},
@@ -945,7 +945,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 				returns: []mockAppSyncClientUpdateFunctionReturn{},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: nil,
 			},
@@ -959,7 +959,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
 							},
@@ -968,7 +968,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 						err: nil,
 					},
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
 							},
@@ -984,13 +984,13 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClientUpdateFunction: mockAppSyncClientUpdateFunction{
 				returns: []mockAppSyncClientUpdateFunctionReturn{
 					{
-						out: nil,
+						res: nil,
 						err: errors.New("error"),
 					},
 				},
 			},
 			expected: expected{
-				out:   nil,
+				res:   nil,
 				errAs: &model.LibError{},
 				errIs: nil,
 			},
@@ -1013,15 +1013,15 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 								case "ListFunctions":
 									defer func() { tt.mockAppSyncClientListFunctions.calls++ }()
 									r := tt.mockAppSyncClientListFunctions.returns[tt.mockAppSyncClientListFunctions.calls]
-									return smithymiddleware.FinalizeOutput{Result: r.out}, smithymiddleware.Metadata{}, r.err
+									return smithymiddleware.FinalizeOutput{Result: r.res}, smithymiddleware.Metadata{}, r.err
 								case "CreateFunction":
 									defer func() { tt.mockAppSyncClientCreateFunction.calls++ }()
 									r := tt.mockAppSyncClientCreateFunction.returns[tt.mockAppSyncClientCreateFunction.calls]
-									return smithymiddleware.FinalizeOutput{Result: r.out}, smithymiddleware.Metadata{}, r.err
+									return smithymiddleware.FinalizeOutput{Result: r.res}, smithymiddleware.Metadata{}, r.err
 								case "UpdateFunction":
 									defer func() { tt.mockAppSyncClientUpdateFunction.calls++ }()
 									r := tt.mockAppSyncClientUpdateFunction.returns[tt.mockAppSyncClientUpdateFunction.calls]
-									return smithymiddleware.FinalizeOutput{Result: r.out}, smithymiddleware.Metadata{}, r.err
+									return smithymiddleware.FinalizeOutput{Result: r.res}, smithymiddleware.Metadata{}, r.err
 								default:
 									t.Fatal("unexpected operation")
 									return smithymiddleware.FinalizeOutput{}, smithymiddleware.Metadata{}, nil
@@ -1046,7 +1046,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			actual, err := r.Save(ctx, tt.args.apiID, tt.args.function)
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 
 			if tt.expected.errAs == nil && tt.expected.errIs == nil {
 				assert.NoError(t, err)
@@ -1080,7 +1080,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 	}
 
 	type mockAppSyncClientListFunctionsReturn struct {
-		out *appsync.ListFunctionsOutput
+		res *appsync.ListFunctionsOutput
 		err error
 	}
 	type mockAppSyncClientListFunctions struct {
@@ -1089,7 +1089,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 	}
 
 	type mockAppSyncClientDeleteFunctionReturn struct {
-		out *appsync.DeleteFunctionOutput
+		res *appsync.DeleteFunctionOutput
 		err error
 	}
 	type mockAppSyncClientDeleteFunction struct {
@@ -1118,7 +1118,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
 							},
@@ -1127,7 +1127,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 						err: nil,
 					},
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
 							},
@@ -1140,7 +1140,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 			mockAppSyncClientDeleteFunction: mockAppSyncClientDeleteFunction{
 				returns: []mockAppSyncClientDeleteFunctionReturn{
 					{
-						out: &appsync.DeleteFunctionOutput{},
+						res: &appsync.DeleteFunctionOutput{},
 						err: nil,
 					},
 				},
@@ -1159,7 +1159,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
 							},
@@ -1168,7 +1168,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 						err: nil,
 					},
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
 							},
@@ -1181,7 +1181,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 			mockAppSyncClientDeleteFunction: mockAppSyncClientDeleteFunction{
 				returns: []mockAppSyncClientDeleteFunctionReturn{
 					{
-						out: nil,
+						res: nil,
 						err: &awshttp.ResponseError{
 							ResponseError: &smithyhttp.ResponseError{
 								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
@@ -1190,7 +1190,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 						},
 					},
 					{
-						out: &appsync.DeleteFunctionOutput{},
+						res: &appsync.DeleteFunctionOutput{},
 						err: nil,
 					},
 				},
@@ -1209,7 +1209,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
 							},
@@ -1218,7 +1218,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 						err: nil,
 					},
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
 							},
@@ -1231,7 +1231,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 			mockAppSyncClientDeleteFunction: mockAppSyncClientDeleteFunction{
 				returns: []mockAppSyncClientDeleteFunctionReturn{
 					{
-						out: nil,
+						res: nil,
 						err: &awshttp.ResponseError{
 							ResponseError: &smithyhttp.ResponseError{
 								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
@@ -1240,7 +1240,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 						},
 					},
 					{
-						out: nil,
+						res: nil,
 						err: &awshttp.ResponseError{
 							ResponseError: &smithyhttp.ResponseError{
 								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
@@ -1249,7 +1249,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 						},
 					},
 					{
-						out: nil,
+						res: nil,
 						err: &awshttp.ResponseError{
 							ResponseError: &smithyhttp.ResponseError{
 								Response: &smithyhttp.Response{Response: &http.Response{StatusCode: 409}},
@@ -1273,7 +1273,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
 							},
@@ -1282,7 +1282,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 						err: nil,
 					},
 					{
-						out: nil,
+						res: nil,
 						err: errors.New("error"),
 					},
 				},
@@ -1290,7 +1290,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 			mockAppSyncClientDeleteFunction: mockAppSyncClientDeleteFunction{
 				returns: []mockAppSyncClientDeleteFunctionReturn{
 					{
-						out: nil,
+						res: nil,
 						err: errors.New("error"),
 					},
 				},
@@ -1309,7 +1309,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
 							},
@@ -1322,7 +1322,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 			mockAppSyncClientDeleteFunction: mockAppSyncClientDeleteFunction{
 				returns: []mockAppSyncClientDeleteFunctionReturn{
 					{
-						out: nil,
+						res: nil,
 						err: errors.New("error"),
 					},
 				},
@@ -1341,7 +1341,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionVTL_2018_05_29),
 							},
@@ -1350,7 +1350,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 						err: nil,
 					},
 					{
-						out: &appsync.ListFunctionsOutput{
+						res: &appsync.ListFunctionsOutput{
 							Functions: []types.FunctionConfiguration{
 								*mapper.NewFunctionMapper().FromModel(context.Background(), &functionAPPSYNC_JS_1_0_0),
 							},
@@ -1363,7 +1363,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 			mockAppSyncClientDeleteFunction: mockAppSyncClientDeleteFunction{
 				returns: []mockAppSyncClientDeleteFunctionReturn{
 					{
-						out: nil,
+						res: nil,
 						err: errors.New("error"),
 					},
 				},
@@ -1391,11 +1391,11 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 								case "ListFunctions":
 									defer func() { tt.mockAppSyncClientListFunctions.calls++ }()
 									r := tt.mockAppSyncClientListFunctions.returns[tt.mockAppSyncClientListFunctions.calls]
-									return smithymiddleware.FinalizeOutput{Result: r.out}, smithymiddleware.Metadata{}, r.err
+									return smithymiddleware.FinalizeOutput{Result: r.res}, smithymiddleware.Metadata{}, r.err
 								case "DeleteFunction":
 									defer func() { tt.mockAppSyncClientDeleteFunction.calls++ }()
 									r := tt.mockAppSyncClientDeleteFunction.returns[tt.mockAppSyncClientDeleteFunction.calls]
-									return smithymiddleware.FinalizeOutput{Result: r.out}, smithymiddleware.Metadata{}, r.err
+									return smithymiddleware.FinalizeOutput{Result: r.res}, smithymiddleware.Metadata{}, r.err
 								default:
 									t.Fatal("unexpected operation")
 									return smithymiddleware.FinalizeOutput{}, smithymiddleware.Metadata{}, nil
