@@ -61,12 +61,14 @@ func NewVersionCommand(repo repository.Repository, optFns ...func(o *options)) V
 	}
 }
 
-func (c *versionCommand) Execute(ctx context.Context, args ...string) error {
+func (c *versionCommand) Execute(ctx context.Context, args ...string) (err error) {
+	defer wrap(&err)
+
 	cmd := c.command()
 	cmd.SetArgs(args)
 
 	if err := cmd.ExecuteContext(ctx); err != nil {
-		return &commandError{Err: err}
+		return err
 	}
 
 	return nil
@@ -87,7 +89,9 @@ func (c *versionCommand) command() *cobra.Command {
 		c.cmd = &cobra.Command{
 			Use:   "version",
 			Short: "Show the syncup version information",
-			RunE: func(cmd *cobra.Command, args []string) error {
+			RunE: func(cmd *cobra.Command, args []string) (err error) {
+				defer wrap(&err)
+
 				out := &versionOutput{
 					Version:   c.version.Version,
 					GitCommit: c.version.GitCommit,

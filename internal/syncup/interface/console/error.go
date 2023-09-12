@@ -18,10 +18,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package command
+package console
 
 import (
 	"errors"
+
+	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 )
 
 func wrap(errp *error) {
@@ -29,23 +31,7 @@ func wrap(errp *error) {
 		return
 	}
 
-	if ce := new(commandError); !errors.As(*errp, &ce) {
-		*errp = &commandError{Err: *errp}
+	if le := new(model.LibError); !errors.As(*errp, &le) {
+		*errp = &model.LibError{Err: *errp}
 	}
-}
-
-type commandError struct {
-	Err error
-}
-
-func (e *commandError) Error() string {
-	if e.Err == nil {
-		return "unexpected error occurred"
-	}
-
-	return e.Err.Error()
-}
-
-func (e *commandError) Unwrap() error {
-	return e.Err
 }

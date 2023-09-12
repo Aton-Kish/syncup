@@ -54,7 +54,9 @@ func NewSchemaRepositoryForAppSync() repository.SchemaRepository {
 	}
 }
 
-func (r *schemaRepositoryForAppSync) ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptions)) error {
+func (r *schemaRepositoryForAppSync) ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptions)) (err error) {
+	defer wrap(&err)
+
 	c, err := activatedAWSClients(ctx, optFns...)
 	if err != nil {
 		return err
@@ -65,7 +67,9 @@ func (r *schemaRepositoryForAppSync) ActivateAWS(ctx context.Context, optFns ...
 	return nil
 }
 
-func (r *schemaRepositoryForAppSync) Get(ctx context.Context, apiID string) (*model.Schema, error) {
+func (r *schemaRepositoryForAppSync) Get(ctx context.Context, apiID string) (res *model.Schema, err error) {
+	defer wrap(&err)
+
 	out, err := r.appsyncClient.GetIntrospectionSchema(
 		ctx,
 		&appsync.GetIntrospectionSchemaInput{
@@ -74,16 +78,18 @@ func (r *schemaRepositoryForAppSync) Get(ctx context.Context, apiID string) (*mo
 		},
 	)
 	if err != nil {
-		return nil, &model.LibError{Err: err}
+		return nil, err
 	}
 
 	s := model.Schema(out.Schema)
 	return &s, nil
 }
 
-func (r *schemaRepositoryForAppSync) Save(ctx context.Context, apiID string, schema *model.Schema) (*model.Schema, error) {
+func (r *schemaRepositoryForAppSync) Save(ctx context.Context, apiID string, schema *model.Schema) (res *model.Schema, err error) {
+	defer wrap(&err)
+
 	if schema == nil {
-		return nil, &model.LibError{Err: fmt.Errorf("%w: missing arguments in save schema method", model.ErrNilValue)}
+		return nil, fmt.Errorf("%w: missing arguments in save schema method", model.ErrNilValue)
 	}
 
 	if err := r.startCreation(ctx, apiID, []byte(*schema)); err != nil {
@@ -111,7 +117,7 @@ func (r *schemaRepositoryForAppSync) Save(ctx context.Context, apiID string, sch
 					return
 				}
 			case <-ctx.Done():
-				ch <- &model.LibError{Err: ctx.Err()}
+				ch <- ctx.Err()
 				return
 			}
 		}
@@ -129,7 +135,9 @@ func (r *schemaRepositoryForAppSync) Save(ctx context.Context, apiID string, sch
 	return s, nil
 }
 
-func (r *schemaRepositoryForAppSync) startCreation(ctx context.Context, apiID string, definition []byte) error {
+func (r *schemaRepositoryForAppSync) startCreation(ctx context.Context, apiID string, definition []byte) (err error) {
+	defer wrap(&err)
+
 	if _, err := r.appsyncClient.StartSchemaCreation(
 		ctx,
 		&appsync.StartSchemaCreationInput{
@@ -140,13 +148,15 @@ func (r *schemaRepositoryForAppSync) startCreation(ctx context.Context, apiID st
 			o.Retryer = retry.AddWithErrorCodes(o.Retryer, (*types.ConcurrentModificationException)(nil).ErrorCode())
 		},
 	); err != nil {
-		return &model.LibError{Err: err}
+		return err
 	}
 
 	return nil
 }
 
-func (r *schemaRepositoryForAppSync) isCreated(ctx context.Context, apiID string) (bool, error) {
+func (r *schemaRepositoryForAppSync) isCreated(ctx context.Context, apiID string) (res bool, err error) {
+	defer wrap(&err)
+
 	out, err := r.appsyncClient.GetSchemaCreationStatus(
 		ctx,
 		&appsync.GetSchemaCreationStatusInput{
@@ -154,7 +164,7 @@ func (r *schemaRepositoryForAppSync) isCreated(ctx context.Context, apiID string
 		},
 	)
 	if err != nil {
-		return false, &model.LibError{Err: err}
+		return false, err
 	}
 
 	switch out.Status {
@@ -163,8 +173,8 @@ func (r *schemaRepositoryForAppSync) isCreated(ctx context.Context, apiID string
 	case types.SchemaStatusProcessing:
 		return false, nil
 	case types.SchemaStatusFailed:
-		return false, &model.LibError{Err: fmt.Errorf("%w: schema status %s", model.ErrCreateFailed, out.Status)}
+		return false, fmt.Errorf("%w: schema status %s", model.ErrCreateFailed, out.Status)
 	default:
-		return false, &model.LibError{Err: fmt.Errorf("%w: schema status %s", model.ErrInvalidValue, out.Status)}
+		return false, fmt.Errorf("%w: schema status %s", model.ErrInvalidValue, out.Status)
 	}
 }

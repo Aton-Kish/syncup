@@ -57,30 +57,34 @@ func (r *schemaRepositoryForFS) SetBaseDir(ctx context.Context, dir string) {
 	r.baseDir = dir
 }
 
-func (r *schemaRepositoryForFS) Get(ctx context.Context, apiID string) (*model.Schema, error) {
+func (r *schemaRepositoryForFS) Get(ctx context.Context, apiID string) (res *model.Schema, err error) {
+	defer wrap(&err)
+
 	data, err := os.ReadFile(filepath.Join(r.BaseDir(ctx), fileNameSchema))
 	if err != nil {
-		return nil, &model.LibError{Err: err}
+		return nil, err
 	}
 
 	s := model.Schema(data)
 	return &s, nil
 }
 
-func (r *schemaRepositoryForFS) Save(ctx context.Context, apiID string, schema *model.Schema) (*model.Schema, error) {
+func (r *schemaRepositoryForFS) Save(ctx context.Context, apiID string, schema *model.Schema) (res *model.Schema, err error) {
+	defer wrap(&err)
+
 	if schema == nil {
-		return nil, &model.LibError{Err: fmt.Errorf("%w: missing arguments in save schema method", model.ErrNilValue)}
+		return nil, fmt.Errorf("%w: missing arguments in save schema method", model.ErrNilValue)
 	}
 
 	dir := r.BaseDir(ctx)
 	if !xfilepath.Exist(dir) {
 		if err := os.MkdirAll(dir, 0o755); err != nil {
-			return nil, &model.LibError{Err: err}
+			return nil, err
 		}
 	}
 
 	if err := os.WriteFile(filepath.Join(dir, fileNameSchema), []byte(*schema), 0o644); err != nil {
-		return nil, &model.LibError{Err: err}
+		return nil, err
 	}
 
 	return schema, nil
