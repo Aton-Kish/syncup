@@ -25,6 +25,7 @@ import (
 	"errors"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -71,7 +72,6 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 
 	type expected struct {
 		res   []model.Function
-		errAs error
 		errIs error
 	}
 
@@ -113,7 +113,6 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 					functionVTL_2018_05_29,
 					functionAPPSYNC_JS_1_0_0,
 				},
-				errAs: nil,
 				errIs: nil,
 			},
 		},
@@ -141,7 +140,6 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 			},
 			expected: expected{
 				res:   nil,
-				errAs: &model.LibError{},
 				errIs: nil,
 			},
 		},
@@ -174,7 +172,6 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 			},
 			expected: expected{
 				res:   nil,
-				errAs: &model.LibError{},
 				errIs: model.ErrNilValue,
 			},
 		},
@@ -207,7 +204,6 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 			},
 			expected: expected{
 				res:   nil,
-				errAs: &model.LibError{},
 				errIs: model.ErrDuplicateValue,
 			},
 		},
@@ -256,12 +252,11 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 			// Assert
 			assert.Equal(t, tt.expected.res, actual)
 
-			if tt.expected.errAs == nil && tt.expected.errIs == nil {
+			if strings.HasPrefix(tt.name, "happy") {
 				assert.NoError(t, err)
 			} else {
-				if tt.expected.errAs != nil {
-					assert.ErrorAs(t, err, &tt.expected.errAs)
-				}
+				var le *model.LibError
+				assert.ErrorAs(t, err, &le)
 
 				if tt.expected.errIs != nil {
 					assert.ErrorIs(t, err, tt.expected.errIs)
@@ -298,7 +293,6 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 
 	type expected struct {
 		res   *model.Function
-		errAs error
 		errIs error
 	}
 
@@ -338,7 +332,6 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 			},
 			expected: expected{
 				res:   &functionVTL_2018_05_29,
-				errAs: nil,
 				errIs: nil,
 			},
 		},
@@ -367,7 +360,6 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 			},
 			expected: expected{
 				res:   nil,
-				errAs: &model.LibError{},
 				errIs: nil,
 			},
 		},
@@ -401,7 +393,6 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 			},
 			expected: expected{
 				res:   nil,
-				errAs: &model.LibError{},
 				errIs: model.ErrNotFound,
 			},
 		},
@@ -450,12 +441,11 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 			// Assert
 			assert.Equal(t, tt.expected.res, actual)
 
-			if tt.expected.errAs == nil && tt.expected.errIs == nil {
+			if strings.HasPrefix(tt.name, "happy") {
 				assert.NoError(t, err)
 			} else {
-				if tt.expected.errAs != nil {
-					assert.ErrorAs(t, err, &tt.expected.errAs)
-				}
+				var le *model.LibError
+				assert.ErrorAs(t, err, &le)
 
 				if tt.expected.errIs != nil {
 					assert.ErrorIs(t, err, tt.expected.errIs)
@@ -510,7 +500,6 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 
 	type expected struct {
 		res   *model.Function
-		errAs error
 		errIs error
 	}
 
@@ -556,7 +545,6 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			},
 			expected: expected{
 				res:   &functionVTL_2018_05_29,
-				errAs: nil,
 				errIs: nil,
 			},
 		},
@@ -603,7 +591,6 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			},
 			expected: expected{
 				res:   &functionVTL_2018_05_29,
-				errAs: nil,
 				errIs: nil,
 			},
 		},
@@ -650,7 +637,6 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			},
 			expected: expected{
 				res:   &functionVTL_2018_05_29,
-				errAs: nil,
 				errIs: nil,
 			},
 		},
@@ -706,7 +692,6 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			},
 			expected: expected{
 				res:   &functionVTL_2018_05_29,
-				errAs: nil,
 				errIs: nil,
 			},
 		},
@@ -765,7 +750,6 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			},
 			expected: expected{
 				res:   nil,
-				errAs: &model.LibError{},
 				errIs: nil,
 			},
 		},
@@ -833,7 +817,6 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			},
 			expected: expected{
 				res:   nil,
-				errAs: &model.LibError{},
 				errIs: nil,
 			},
 		},
@@ -854,7 +837,6 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			},
 			expected: expected{
 				res:   nil,
-				errAs: &model.LibError{},
 				errIs: model.ErrNilValue,
 			},
 		},
@@ -875,7 +857,6 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			},
 			expected: expected{
 				res:   nil,
-				errAs: &model.LibError{},
 				errIs: model.ErrNilValue,
 			},
 		},
@@ -910,7 +891,6 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			},
 			expected: expected{
 				res:   nil,
-				errAs: &model.LibError{},
 				errIs: nil,
 			},
 		},
@@ -946,7 +926,6 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			},
 			expected: expected{
 				res:   nil,
-				errAs: &model.LibError{},
 				errIs: nil,
 			},
 		},
@@ -991,7 +970,6 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			},
 			expected: expected{
 				res:   nil,
-				errAs: &model.LibError{},
 				errIs: nil,
 			},
 		},
@@ -1048,12 +1026,11 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			// Assert
 			assert.Equal(t, tt.expected.res, actual)
 
-			if tt.expected.errAs == nil && tt.expected.errIs == nil {
+			if strings.HasPrefix(tt.name, "happy") {
 				assert.NoError(t, err)
 			} else {
-				if tt.expected.errAs != nil {
-					assert.ErrorAs(t, err, &tt.expected.errAs)
-				}
+				var le *model.LibError
+				assert.ErrorAs(t, err, &le)
 
 				if tt.expected.errIs != nil {
 					assert.ErrorIs(t, err, tt.expected.errIs)
@@ -1098,7 +1075,6 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 	}
 
 	type expected struct {
-		errAs error
 		errIs error
 	}
 
@@ -1146,7 +1122,6 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errAs: nil,
 				errIs: nil,
 			},
 		},
@@ -1196,7 +1171,6 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errAs: nil,
 				errIs: nil,
 			},
 		},
@@ -1260,7 +1234,6 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errAs: &model.LibError{},
 				errIs: nil,
 			},
 		},
@@ -1296,7 +1269,6 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errAs: &model.LibError{},
 				errIs: nil,
 			},
 		},
@@ -1328,7 +1300,6 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errAs: &model.LibError{},
 				errIs: model.ErrNotFound,
 			},
 		},
@@ -1369,7 +1340,6 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errAs: &model.LibError{},
 				errIs: nil,
 			},
 		},
@@ -1420,12 +1390,11 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 			err = r.Delete(ctx, tt.args.apiID, tt.args.name)
 
 			// Assert
-			if tt.expected.errAs == nil && tt.expected.errIs == nil {
+			if strings.HasPrefix(tt.name, "happy") {
 				assert.NoError(t, err)
 			} else {
-				if tt.expected.errAs != nil {
-					assert.ErrorAs(t, err, &tt.expected.errAs)
-				}
+				var le *model.LibError
+				assert.ErrorAs(t, err, &le)
 
 				if tt.expected.errIs != nil {
 					assert.ErrorIs(t, err, tt.expected.errIs)

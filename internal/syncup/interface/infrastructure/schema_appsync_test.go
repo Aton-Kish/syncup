@@ -25,6 +25,7 @@ import (
 	"errors"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -62,7 +63,6 @@ func Test_schemaRepositoryForAppSync_Get(t *testing.T) {
 
 	type expected struct {
 		res   *model.Schema
-		errAs error
 		errIs error
 	}
 
@@ -89,7 +89,6 @@ func Test_schemaRepositoryForAppSync_Get(t *testing.T) {
 			},
 			expected: expected{
 				res:   &schema,
-				errAs: nil,
 				errIs: nil,
 			},
 		},
@@ -108,7 +107,6 @@ func Test_schemaRepositoryForAppSync_Get(t *testing.T) {
 			},
 			expected: expected{
 				res:   nil,
-				errAs: &model.LibError{},
 				errIs: nil,
 			},
 		},
@@ -154,12 +152,11 @@ func Test_schemaRepositoryForAppSync_Get(t *testing.T) {
 			// Assert
 			assert.Equal(t, tt.expected.res, actual)
 
-			if tt.expected.errAs == nil && tt.expected.errIs == nil {
+			if strings.HasPrefix(tt.name, "happy") {
 				assert.NoError(t, err)
 			} else {
-				if tt.expected.errAs != nil {
-					assert.ErrorAs(t, err, &tt.expected.errAs)
-				}
+				var le *model.LibError
+				assert.ErrorAs(t, err, &le)
 
 				if tt.expected.errIs != nil {
 					assert.ErrorIs(t, err, tt.expected.errIs)
@@ -212,7 +209,6 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 
 	type expected struct {
 		res   *model.Schema
-		errAs error
 		errIs error
 	}
 
@@ -274,7 +270,6 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			},
 			expected: expected{
 				res:   &schema,
-				errAs: nil,
 				errIs: nil,
 			},
 		},
@@ -335,7 +330,6 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			},
 			expected: expected{
 				res:   &schema,
-				errAs: nil,
 				errIs: nil,
 			},
 		},
@@ -380,7 +374,6 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			},
 			expected: expected{
 				res:   nil,
-				errAs: &model.LibError{},
 				errIs: context.DeadlineExceeded,
 			},
 		},
@@ -433,7 +426,6 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			},
 			expected: expected{
 				res:   nil,
-				errAs: &model.LibError{},
 				errIs: nil,
 			},
 		},
@@ -458,7 +450,6 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			},
 			expected: expected{
 				res:   nil,
-				errAs: &model.LibError{},
 				errIs: model.ErrNilValue,
 			},
 		},
@@ -488,7 +479,6 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			},
 			expected: expected{
 				res:   nil,
-				errAs: &model.LibError{},
 				errIs: nil,
 			},
 		},
@@ -533,7 +523,6 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			},
 			expected: expected{
 				res:   nil,
-				errAs: &model.LibError{},
 				errIs: model.ErrCreateFailed,
 			},
 		},
@@ -578,7 +567,6 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			},
 			expected: expected{
 				res:   nil,
-				errAs: &model.LibError{},
 				errIs: model.ErrInvalidValue,
 			},
 		},
@@ -621,7 +609,6 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			},
 			expected: expected{
 				res:   nil,
-				errAs: &model.LibError{},
 				errIs: nil,
 			},
 		},
@@ -671,7 +658,6 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			},
 			expected: expected{
 				res:   nil,
-				errAs: &model.LibError{},
 				errIs: nil,
 			},
 		},
@@ -730,12 +716,11 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			// Assert
 			assert.Equal(t, tt.expected.res, actual)
 
-			if tt.expected.errAs == nil && tt.expected.errIs == nil {
+			if strings.HasPrefix(tt.name, "happy") {
 				assert.NoError(t, err)
 			} else {
-				if tt.expected.errAs != nil {
-					assert.ErrorAs(t, err, &tt.expected.errAs)
-				}
+				var le *model.LibError
+				assert.ErrorAs(t, err, &le)
 
 				if tt.expected.errIs != nil {
 					assert.ErrorIs(t, err, tt.expected.errIs)
