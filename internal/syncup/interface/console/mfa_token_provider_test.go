@@ -23,6 +23,7 @@ package console
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -34,7 +35,7 @@ import (
 
 func Test_mfaTokenProviderRepository_Get(t *testing.T) {
 	type mockSurveyPasswordReturn struct {
-		out string
+		res string
 		err error
 	}
 	type mockSurveyPassword struct {
@@ -43,8 +44,7 @@ func Test_mfaTokenProviderRepository_Get(t *testing.T) {
 	}
 
 	type expected struct {
-		out   string
-		errAs error
+		res   string
 		errIs error
 	}
 
@@ -58,14 +58,13 @@ func Test_mfaTokenProviderRepository_Get(t *testing.T) {
 			mockSurveyPassword: mockSurveyPassword{
 				returns: []mockSurveyPasswordReturn{
 					{
-						out: "123456",
+						res: "123456",
 						err: nil,
 					},
 				},
 			},
 			expected: expected{
-				out:   "123456",
-				errAs: nil,
+				res:   "123456",
 				errIs: nil,
 			},
 		},
@@ -74,14 +73,13 @@ func Test_mfaTokenProviderRepository_Get(t *testing.T) {
 			mockSurveyPassword: mockSurveyPassword{
 				returns: []mockSurveyPasswordReturn{
 					{
-						out: "",
+						res: "",
 						err: errors.New("error"),
 					},
 				},
 			},
 			expected: expected{
-				out:   "",
-				errAs: &model.LibError{},
+				res:   "",
 				errIs: nil,
 			},
 		},
@@ -101,9 +99,9 @@ func Test_mfaTokenProviderRepository_Get(t *testing.T) {
 				EXPECT().
 				Password(ctx, gomock.Any(), gomock.Any()).
 				DoAndReturn(func(ctx context.Context, prompt *survey.Password, opts ...survey.AskOpt) (string, error) {
-					defer func() { tt.mockSurveyPassword.calls++ }()
 					r := tt.mockSurveyPassword.returns[tt.mockSurveyPassword.calls]
-					return r.out, r.err
+					tt.mockSurveyPassword.calls++
+					return r.res, r.err
 				}).
 				Times(len(tt.mockSurveyPassword.returns))
 
@@ -116,14 +114,13 @@ func Test_mfaTokenProviderRepository_Get(t *testing.T) {
 			actual, err := provider()
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 
-			if tt.expected.errAs == nil && tt.expected.errIs == nil {
+			if strings.HasPrefix(tt.name, "happy") {
 				assert.NoError(t, err)
 			} else {
-				if tt.expected.errAs != nil {
-					assert.ErrorAs(t, err, &tt.expected.errAs)
-				}
+				var le *model.LibError
+				assert.ErrorAs(t, err, &le)
 
 				if tt.expected.errIs != nil {
 					assert.ErrorIs(t, err, tt.expected.errIs)

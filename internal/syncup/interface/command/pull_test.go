@@ -24,6 +24,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
@@ -40,7 +41,7 @@ func Test_pullCommand_Execute(t *testing.T) {
 	}
 
 	type mockMFATokenProviderRepositoryGetReturn struct {
-		out model.MFATokenProvider
+		res model.MFATokenProvider
 	}
 	type mockMFATokenProviderRepositoryGet struct {
 		calls   int
@@ -63,7 +64,7 @@ func Test_pullCommand_Execute(t *testing.T) {
 	}
 
 	type mockPullUseCaseExecuteReturn struct {
-		out *usecase.PullOutput
+		res *usecase.PullOutput
 		err error
 	}
 	type mockPullUseCaseExecute struct {
@@ -72,7 +73,6 @@ func Test_pullCommand_Execute(t *testing.T) {
 	}
 
 	type expected struct {
-		errAs error
 		errIs error
 	}
 
@@ -93,7 +93,7 @@ func Test_pullCommand_Execute(t *testing.T) {
 			mockMFATokenProviderRepositoryGet: mockMFATokenProviderRepositoryGet{
 				returns: []mockMFATokenProviderRepositoryGetReturn{
 					{
-						out: func() (string, error) {
+						res: func() (string, error) {
 							return "123456", nil
 						},
 					},
@@ -114,13 +114,12 @@ func Test_pullCommand_Execute(t *testing.T) {
 			mockPullUseCaseExecute: mockPullUseCaseExecute{
 				returns: []mockPullUseCaseExecuteReturn{
 					{
-						out: &usecase.PullOutput{},
+						res: &usecase.PullOutput{},
 						err: nil,
 					},
 				},
 			},
 			expected: expected{
-				errAs: nil,
 				errIs: nil,
 			},
 		},
@@ -132,7 +131,7 @@ func Test_pullCommand_Execute(t *testing.T) {
 			mockMFATokenProviderRepositoryGet: mockMFATokenProviderRepositoryGet{
 				returns: []mockMFATokenProviderRepositoryGetReturn{
 					{
-						out: func() (string, error) {
+						res: func() (string, error) {
 							return "123456", nil
 						},
 					},
@@ -154,7 +153,6 @@ func Test_pullCommand_Execute(t *testing.T) {
 				returns: []mockPullUseCaseExecuteReturn{},
 			},
 			expected: expected{
-				errAs: &commandError{},
 				errIs: nil,
 			},
 		},
@@ -166,7 +164,7 @@ func Test_pullCommand_Execute(t *testing.T) {
 			mockMFATokenProviderRepositoryGet: mockMFATokenProviderRepositoryGet{
 				returns: []mockMFATokenProviderRepositoryGetReturn{
 					{
-						out: func() (string, error) {
+						res: func() (string, error) {
 							return "123456", nil
 						},
 					},
@@ -186,7 +184,6 @@ func Test_pullCommand_Execute(t *testing.T) {
 				returns: []mockPullUseCaseExecuteReturn{},
 			},
 			expected: expected{
-				errAs: &commandError{},
 				errIs: nil,
 			},
 		},
@@ -198,7 +195,7 @@ func Test_pullCommand_Execute(t *testing.T) {
 			mockMFATokenProviderRepositoryGet: mockMFATokenProviderRepositoryGet{
 				returns: []mockMFATokenProviderRepositoryGetReturn{
 					{
-						out: func() (string, error) {
+						res: func() (string, error) {
 							return "123456", nil
 						},
 					},
@@ -219,13 +216,12 @@ func Test_pullCommand_Execute(t *testing.T) {
 			mockPullUseCaseExecute: mockPullUseCaseExecute{
 				returns: []mockPullUseCaseExecuteReturn{
 					{
-						out: nil,
+						res: nil,
 						err: errors.New("error"),
 					},
 				},
 			},
 			expected: expected{
-				errAs: &commandError{},
 				errIs: nil,
 			},
 		},
@@ -248,9 +244,9 @@ func Test_pullCommand_Execute(t *testing.T) {
 				EXPECT().
 				Get(ctx).
 				DoAndReturn(func(ctx context.Context) model.MFATokenProvider {
-					defer func() { tt.mockMFATokenProviderRepositoryGet.calls++ }()
 					r := tt.mockMFATokenProviderRepositoryGet.returns[tt.mockMFATokenProviderRepositoryGet.calls]
-					return r.out
+					tt.mockMFATokenProviderRepositoryGet.calls++
+					return r.res
 				}).
 				Times(len(tt.mockMFATokenProviderRepositoryGet.returns))
 
@@ -258,8 +254,8 @@ func Test_pullCommand_Execute(t *testing.T) {
 				EXPECT().
 				ActivateAWS(ctx, gomock.Any()).
 				DoAndReturn(func(ctx context.Context, optFns ...func(o *model.AWSOptions)) error {
-					defer func() { tt.mockAWSActivatorActivateAWS.calls++ }()
 					r := tt.mockAWSActivatorActivateAWS.returns[tt.mockAWSActivatorActivateAWS.calls]
+					tt.mockAWSActivatorActivateAWS.calls++
 					return r.err
 				}).
 				Times(len(tt.mockAWSActivatorActivateAWS.returns))
@@ -268,7 +264,7 @@ func Test_pullCommand_Execute(t *testing.T) {
 				EXPECT().
 				SetBaseDir(ctx, gomock.Any()).
 				DoAndReturn(func(ctx context.Context, dir string) {
-					defer func() { tt.mockBaseDirProviderSetBaseDir.calls++ }()
+					tt.mockBaseDirProviderSetBaseDir.calls++
 				}).
 				Times(len(tt.mockBaseDirProviderSetBaseDir.returns))
 
@@ -276,9 +272,9 @@ func Test_pullCommand_Execute(t *testing.T) {
 				EXPECT().
 				Execute(ctx, gomock.Any()).
 				DoAndReturn(func(ctx context.Context, params *usecase.PullInput) (*usecase.PullOutput, error) {
-					defer func() { tt.mockPullUseCaseExecute.calls++ }()
 					r := tt.mockPullUseCaseExecute.returns[tt.mockPullUseCaseExecute.calls]
-					return r.out, r.err
+					tt.mockPullUseCaseExecute.calls++
+					return r.res, r.err
 				}).
 				Times(len(tt.mockPullUseCaseExecute.returns))
 
@@ -298,16 +294,15 @@ func Test_pullCommand_Execute(t *testing.T) {
 			err := c.Execute(ctx, tt.args.args...)
 
 			// Assert
-			if tt.expected.errAs == nil && tt.expected.errIs == nil {
+			if strings.HasPrefix(tt.name, "happy") {
 				assert.NoError(t, err)
 
 				assert.Equal(t, 0, stdin.Len())
 				assert.Equal(t, 0, stdout.Len())
 				assert.Equal(t, 0, stderr.Len())
 			} else {
-				if tt.expected.errAs != nil {
-					assert.ErrorAs(t, err, &tt.expected.errAs)
-				}
+				var ce *commandError
+				assert.ErrorAs(t, err, &ce)
 
 				if tt.expected.errIs != nil {
 					assert.ErrorIs(t, err, tt.expected.errIs)

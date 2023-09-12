@@ -37,7 +37,7 @@ func Test_runtimeMapper_ToModel(t *testing.T) {
 	}
 
 	type expected struct {
-		out *model.Runtime
+		res *model.Runtime
 	}
 
 	tests := []struct {
@@ -51,7 +51,7 @@ func Test_runtimeMapper_ToModel(t *testing.T) {
 				v: nil,
 			},
 			expected: expected{
-				out: nil,
+				res: nil,
 			},
 		},
 		{
@@ -63,7 +63,7 @@ func Test_runtimeMapper_ToModel(t *testing.T) {
 				},
 			},
 			expected: expected{
-				out: &model.Runtime{
+				res: &model.Runtime{
 					Name:           model.RuntimeName("Name"),
 					RuntimeVersion: ptr.Pointer("RuntimeVersion"),
 				},
@@ -80,7 +80,7 @@ func Test_runtimeMapper_ToModel(t *testing.T) {
 			actual := (*runtimeMapper)(nil).ToModel(ctx, tt.args.v)
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 		})
 	}
 }
@@ -91,7 +91,7 @@ func Test_runtimeMapper_FromModel(t *testing.T) {
 	}
 
 	type expected struct {
-		out *types.AppSyncRuntime
+		res *types.AppSyncRuntime
 	}
 
 	tests := []struct {
@@ -105,7 +105,7 @@ func Test_runtimeMapper_FromModel(t *testing.T) {
 				v: nil,
 			},
 			expected: expected{
-				out: nil,
+				res: nil,
 			},
 		},
 		{
@@ -117,7 +117,7 @@ func Test_runtimeMapper_FromModel(t *testing.T) {
 				},
 			},
 			expected: expected{
-				out: &types.AppSyncRuntime{
+				res: &types.AppSyncRuntime{
 					Name:           types.RuntimeName("Name"),
 					RuntimeVersion: aws.String("RuntimeVersion"),
 				},
@@ -134,7 +134,7 @@ func Test_runtimeMapper_FromModel(t *testing.T) {
 			actual := (*runtimeMapper)(nil).FromModel(ctx, tt.args.v)
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 		})
 	}
 }

@@ -65,10 +65,12 @@ func (r *functionRepositoryForFS) SetBaseDir(ctx context.Context, dir string) {
 	r.baseDir = dir
 }
 
-func (r *functionRepositoryForFS) List(ctx context.Context, apiID string) ([]model.Function, error) {
+func (r *functionRepositoryForFS) List(ctx context.Context, apiID string) (res []model.Function, err error) {
+	defer wrap(&err)
+
 	es, err := os.ReadDir(filepath.Join(r.BaseDir(ctx), dirNameFunctions))
 	if err != nil {
-		return nil, &model.LibError{Err: err}
+		return nil, err
 	}
 
 	var mu sync.Mutex
@@ -109,16 +111,18 @@ func (r *functionRepositoryForFS) List(ctx context.Context, apiID string) ([]mod
 	return fns, nil
 }
 
-func (r *functionRepositoryForFS) Get(ctx context.Context, apiID string, name string) (*model.Function, error) {
+func (r *functionRepositoryForFS) Get(ctx context.Context, apiID string, name string) (res *model.Function, err error) {
+	defer wrap(&err)
+
 	dir := filepath.Join(r.BaseDir(ctx), dirNameFunctions, name)
 	metadata, err := os.ReadFile(filepath.Join(dir, fileNameFunctionMetadata))
 	if err != nil {
-		return nil, &model.LibError{Err: err}
+		return nil, err
 	}
 
 	fn := new(model.Function)
 	if err := json.Unmarshal(metadata, fn); err != nil {
-		return nil, &model.LibError{Err: err}
+		return nil, err
 	}
 
 	switch {
@@ -126,14 +130,14 @@ func (r *functionRepositoryForFS) Get(ctx context.Context, apiID string, name st
 		// VTL runtime
 		requestMappingTemplate, err := os.ReadFile(filepath.Join(dir, fileNameFunctionVTLRequestMappingTemplate))
 		if err != nil {
-			return nil, &model.LibError{Err: err}
+			return nil, err
 		}
 
 		fn.RequestMappingTemplate = ptr.Pointer(string(requestMappingTemplate))
 
 		responseMappingTemplate, err := os.ReadFile(filepath.Join(dir, fileNameFunctionVTLResponseMappingTemplate))
 		if err != nil {
-			return nil, &model.LibError{Err: err}
+			return nil, err
 		}
 
 		fn.ResponseMappingTemplate = ptr.Pointer(string(responseMappingTemplate))
@@ -141,69 +145,73 @@ func (r *functionRepositoryForFS) Get(ctx context.Context, apiID string, name st
 		// AppSync JS runtime
 		code, err := os.ReadFile(filepath.Join(dir, fileNameFunctionAppSyncJSCode))
 		if err != nil {
-			return nil, &model.LibError{Err: err}
+			return nil, err
 		}
 
 		fn.Code = ptr.Pointer(string(code))
 	default:
 		// invalid runtime
-		return nil, &model.LibError{Err: fmt.Errorf("%w: runtime %s", model.ErrInvalidValue, fn.Runtime.Name)}
+		return nil, fmt.Errorf("%w: runtime %s", model.ErrInvalidValue, fn.Runtime.Name)
 	}
 
 	return fn, nil
 }
 
-func (r *functionRepositoryForFS) Save(ctx context.Context, apiID string, function *model.Function) (*model.Function, error) {
+func (r *functionRepositoryForFS) Save(ctx context.Context, apiID string, function *model.Function) (res *model.Function, err error) {
+	defer wrap(&err)
+
 	if function == nil {
-		return nil, &model.LibError{Err: fmt.Errorf("%w: missing arguments in save function method", model.ErrNilValue)}
+		return nil, fmt.Errorf("%w: missing arguments in save function method", model.ErrNilValue)
 	}
 
 	if function.Name == nil {
-		return nil, &model.LibError{Err: fmt.Errorf("%w: missing name", model.ErrNilValue)}
+		return nil, fmt.Errorf("%w: missing name", model.ErrNilValue)
 	}
 
 	dir := filepath.Join(r.BaseDir(ctx), dirNameFunctions, *function.Name)
 	if !xfilepath.Exist(dir) {
 		if err := os.MkdirAll(dir, 0o755); err != nil {
-			return nil, &model.LibError{Err: err}
+			return nil, err
 		}
 	}
 
 	metadata, err := json.MarshalIndent(function, "", "  ")
 	if err != nil {
-		return nil, &model.LibError{Err: err}
+		return nil, err
 	}
 
 	if err := os.WriteFile(filepath.Join(dir, fileNameFunctionMetadata), metadata, 0o644); err != nil {
-		return nil, &model.LibError{Err: err}
+		return nil, err
 	}
 
 	switch {
 	case function.Runtime == nil:
 		// VTL runtime
 		if err := os.WriteFile(filepath.Join(dir, fileNameFunctionVTLRequestMappingTemplate), []byte(ptr.ToValue(function.RequestMappingTemplate)), 0o644); err != nil {
-			return nil, &model.LibError{Err: err}
+			return nil, err
 		}
 
 		if err := os.WriteFile(filepath.Join(dir, fileNameFunctionVTLResponseMappingTemplate), []byte(ptr.ToValue(function.ResponseMappingTemplate)), 0o644); err != nil {
-			return nil, &model.LibError{Err: err}
+			return nil, err
 		}
 	case function.Runtime.Name == model.RuntimeNameAppsyncJs:
 		// AppSync JS runtime
 		if err := os.WriteFile(filepath.Join(dir, fileNameFunctionAppSyncJSCode), []byte(ptr.ToValue(function.Code)), 0o644); err != nil {
-			return nil, &model.LibError{Err: err}
+			return nil, err
 		}
 	default:
 		// invalid runtime
-		return nil, &model.LibError{Err: fmt.Errorf("%w: runtime %s", model.ErrInvalidValue, function.Runtime.Name)}
+		return nil, fmt.Errorf("%w: runtime %s", model.ErrInvalidValue, function.Runtime.Name)
 	}
 
 	return function, nil
 }
 
-func (r *functionRepositoryForFS) Delete(ctx context.Context, apiID string, name string) error {
+func (r *functionRepositoryForFS) Delete(ctx context.Context, apiID string, name string) (err error) {
+	defer wrap(&err)
+
 	if err := os.RemoveAll(filepath.Join(r.BaseDir(ctx), dirNameFunctions, name)); err != nil {
-		return &model.LibError{Err: err}
+		return err
 	}
 
 	return nil

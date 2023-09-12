@@ -61,7 +61,9 @@ func NewPullUseCase(repo repository.Repository) PullUseCase {
 	}
 }
 
-func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (*PullOutput, error) {
+func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (res *PullOutput, err error) {
+	defer wrap(&err)
+
 	apiID := params.APIID
 
 	uc.trackerRepository.InProgress(ctx, "fetching schema")

@@ -66,12 +66,14 @@ func NewPullCommand(repo repository.Repository, optFns ...func(o *options)) Pull
 	}
 }
 
-func (c *pullCommand) Execute(ctx context.Context, args ...string) error {
+func (c *pullCommand) Execute(ctx context.Context, args ...string) (err error) {
+	defer wrap(&err)
+
 	cmd := c.command()
 	cmd.SetArgs(args)
 
 	if err := cmd.ExecuteContext(ctx); err != nil {
-		return &commandError{Err: err}
+		return err
 	}
 
 	return nil
@@ -94,7 +96,9 @@ func (c *pullCommand) command() *cobra.Command {
 		c.cmd = &cobra.Command{
 			Use:   "pull",
 			Short: "Pull resources from AWS AppSync",
-			PreRunE: func(cmd *cobra.Command, args []string) error {
+			PreRunE: func(cmd *cobra.Command, args []string) (err error) {
+				defer wrap(&err)
+
 				ctx := cmd.Context()
 
 				if err := c.awsActivator.ActivateAWS(
@@ -110,7 +114,9 @@ func (c *pullCommand) command() *cobra.Command {
 
 				return nil
 			},
-			RunE: func(cmd *cobra.Command, args []string) error {
+			RunE: func(cmd *cobra.Command, args []string) (err error) {
+				defer wrap(&err)
+
 				ctx := cmd.Context()
 
 				if _, err := c.useCase.Execute(

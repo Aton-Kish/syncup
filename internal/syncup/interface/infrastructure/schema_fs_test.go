@@ -23,6 +23,7 @@ package infrastructure
 import (
 	"context"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
@@ -43,8 +44,7 @@ func Test_schemaRepositoryForFS_Get(t *testing.T) {
 	}
 
 	type expected struct {
-		out   *model.Schema
-		errAs error
+		res   *model.Schema
 		errIs error
 	}
 
@@ -63,8 +63,7 @@ func Test_schemaRepositoryForFS_Get(t *testing.T) {
 				apiID: "apiID",
 			},
 			expected: expected{
-				out:   &schema,
-				errAs: nil,
+				res:   &schema,
 				errIs: nil,
 			},
 		},
@@ -77,8 +76,7 @@ func Test_schemaRepositoryForFS_Get(t *testing.T) {
 				apiID: "apiID",
 			},
 			expected: expected{
-				out:   nil,
-				errAs: &model.LibError{},
+				res:   nil,
 				errIs: nil,
 			},
 		},
@@ -97,14 +95,13 @@ func Test_schemaRepositoryForFS_Get(t *testing.T) {
 			actual, err := r.Get(ctx, tt.args.apiID)
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 
-			if tt.expected.errAs == nil && tt.expected.errIs == nil {
+			if strings.HasPrefix(tt.name, "happy") {
 				assert.NoError(t, err)
 			} else {
-				if tt.expected.errAs != nil {
-					assert.ErrorAs(t, err, &tt.expected.errAs)
-				}
+				var le *model.LibError
+				assert.ErrorAs(t, err, &le)
 
 				if tt.expected.errIs != nil {
 					assert.ErrorIs(t, err, tt.expected.errIs)
@@ -128,8 +125,7 @@ func Test_schemaRepositoryForFS_Save(t *testing.T) {
 	}
 
 	type expected struct {
-		out   *model.Schema
-		errAs error
+		res   *model.Schema
 		errIs error
 	}
 
@@ -149,8 +145,7 @@ func Test_schemaRepositoryForFS_Save(t *testing.T) {
 				schema: &schema,
 			},
 			expected: expected{
-				out:   &schema,
-				errAs: nil,
+				res:   &schema,
 				errIs: nil,
 			},
 		},
@@ -164,8 +159,7 @@ func Test_schemaRepositoryForFS_Save(t *testing.T) {
 				schema: &schema,
 			},
 			expected: expected{
-				out:   &schema,
-				errAs: nil,
+				res:   &schema,
 				errIs: nil,
 			},
 		},
@@ -179,8 +173,7 @@ func Test_schemaRepositoryForFS_Save(t *testing.T) {
 				schema: nil,
 			},
 			expected: expected{
-				out:   nil,
-				errAs: &model.LibError{},
+				res:   nil,
 				errIs: model.ErrNilValue,
 			},
 		},
@@ -199,14 +192,13 @@ func Test_schemaRepositoryForFS_Save(t *testing.T) {
 			actual, err := r.Save(ctx, tt.args.apiID, tt.args.schema)
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 
-			if tt.expected.errAs == nil && tt.expected.errIs == nil {
+			if strings.HasPrefix(tt.name, "happy") {
 				assert.NoError(t, err)
 			} else {
-				if tt.expected.errAs != nil {
-					assert.ErrorAs(t, err, &tt.expected.errAs)
-				}
+				var le *model.LibError
+				assert.ErrorAs(t, err, &le)
 
 				if tt.expected.errIs != nil {
 					assert.ErrorIs(t, err, tt.expected.errIs)

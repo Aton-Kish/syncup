@@ -47,7 +47,9 @@ func NewMFATokenProviderRepository() repository.MFATokenProviderRepository {
 }
 
 func (r *mfaTokenProviderRepository) Get(ctx context.Context) model.MFATokenProvider {
-	return func() (string, error) {
+	return func() (res string, err error) {
+		defer wrap(&err)
+
 		token, err := r.survey.Password(
 			ctx,
 			&survey.Password{
@@ -56,7 +58,7 @@ func (r *mfaTokenProviderRepository) Get(ctx context.Context) model.MFATokenProv
 			survey.WithValidator(r.tokenValidator(ctx)),
 		)
 		if err != nil {
-			return "", &model.LibError{Err: err}
+			return "", err
 		}
 
 		return token, nil

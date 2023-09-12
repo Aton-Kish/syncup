@@ -47,7 +47,9 @@ func NewFunctionRepositoryForAppSync() repository.FunctionRepository {
 	return &functionRepositoryForAppSync{}
 }
 
-func (r *functionRepositoryForAppSync) ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptions)) error {
+func (r *functionRepositoryForAppSync) ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptions)) (err error) {
+	defer wrap(&err)
+
 	c, err := activatedAWSClients(ctx, optFns...)
 	if err != nil {
 		return err
@@ -58,7 +60,9 @@ func (r *functionRepositoryForAppSync) ActivateAWS(ctx context.Context, optFns .
 	return nil
 }
 
-func (r *functionRepositoryForAppSync) List(ctx context.Context, apiID string) ([]model.Function, error) {
+func (r *functionRepositoryForAppSync) List(ctx context.Context, apiID string) (res []model.Function, err error) {
+	defer wrap(&err)
+
 	fns := make([]model.Function, 0)
 
 	var token *string
@@ -71,7 +75,7 @@ func (r *functionRepositoryForAppSync) List(ctx context.Context, apiID string) (
 			},
 		)
 		if err != nil {
-			return nil, &model.LibError{Err: err}
+			return nil, err
 		}
 
 		for _, fn := range out.Functions {
@@ -87,12 +91,12 @@ func (r *functionRepositoryForAppSync) List(ctx context.Context, apiID string) (
 	encountered := make(map[string]bool)
 	for _, fn := range fns {
 		if fn.Name == nil {
-			return nil, &model.LibError{Err: fmt.Errorf("%w: missing name", model.ErrNilValue)}
+			return nil, fmt.Errorf("%w: missing name", model.ErrNilValue)
 		}
 
 		name := *fn.Name
 		if encountered[name] {
-			return nil, &model.LibError{Err: fmt.Errorf("%w: function name %s", model.ErrDuplicateValue, name)}
+			return nil, fmt.Errorf("%w: function name %s", model.ErrDuplicateValue, name)
 		}
 
 		encountered[name] = true
@@ -101,7 +105,9 @@ func (r *functionRepositoryForAppSync) List(ctx context.Context, apiID string) (
 	return fns, nil
 }
 
-func (r *functionRepositoryForAppSync) Get(ctx context.Context, apiID string, name string) (*model.Function, error) {
+func (r *functionRepositoryForAppSync) Get(ctx context.Context, apiID string, name string) (res *model.Function, err error) {
+	defer wrap(&err)
+
 	fns, err := r.List(ctx, apiID)
 	if err != nil {
 		return nil, err
@@ -113,16 +119,18 @@ func (r *functionRepositoryForAppSync) Get(ctx context.Context, apiID string, na
 		}
 	}
 
-	return nil, &model.LibError{Err: model.ErrNotFound}
+	return nil, model.ErrNotFound
 }
 
-func (r *functionRepositoryForAppSync) Save(ctx context.Context, apiID string, function *model.Function) (*model.Function, error) {
+func (r *functionRepositoryForAppSync) Save(ctx context.Context, apiID string, function *model.Function) (res *model.Function, err error) {
+	defer wrap(&err)
+
 	if function == nil {
-		return nil, &model.LibError{Err: fmt.Errorf("%w: missing arguments in save function method", model.ErrNilValue)}
+		return nil, fmt.Errorf("%w: missing arguments in save function method", model.ErrNilValue)
 	}
 
 	if function.Name == nil {
-		return nil, &model.LibError{Err: fmt.Errorf("%w: missing name", model.ErrNilValue)}
+		return nil, fmt.Errorf("%w: missing name", model.ErrNilValue)
 	}
 
 	save := r.update
@@ -130,7 +138,7 @@ func (r *functionRepositoryForAppSync) Save(ctx context.Context, apiID string, f
 		if errors.Is(err, model.ErrNotFound) {
 			save = r.create
 		} else {
-			return nil, &model.LibError{Err: err}
+			return nil, err
 		}
 	}
 
@@ -142,9 +150,11 @@ func (r *functionRepositoryForAppSync) Save(ctx context.Context, apiID string, f
 	return fn, nil
 }
 
-func (r *functionRepositoryForAppSync) create(ctx context.Context, apiID string, function *model.Function) (*model.Function, error) {
+func (r *functionRepositoryForAppSync) create(ctx context.Context, apiID string, function *model.Function) (res *model.Function, err error) {
+	defer wrap(&err)
+
 	if function == nil {
-		return nil, &model.LibError{Err: fmt.Errorf("%w: missing arguments in create function method", model.ErrNilValue)}
+		return nil, fmt.Errorf("%w: missing arguments in create function method", model.ErrNilValue)
 	}
 
 	f := mapper.NewFunctionMapper().FromModel(ctx, function)
@@ -168,20 +178,22 @@ func (r *functionRepositoryForAppSync) create(ctx context.Context, apiID string,
 		},
 	)
 	if err != nil {
-		return nil, &model.LibError{Err: err}
+		return nil, err
 	}
 
 	fn := mapper.NewFunctionMapper().ToModel(ctx, out.FunctionConfiguration)
 	if fn == nil {
-		return nil, &model.LibError{Err: fmt.Errorf("%w: missing function in AppSync CreateFunction API response", model.ErrNilValue)}
+		return nil, fmt.Errorf("%w: missing function in AppSync CreateFunction API response", model.ErrNilValue)
 	}
 
 	return fn, nil
 }
 
-func (r *functionRepositoryForAppSync) update(ctx context.Context, apiID string, function *model.Function) (*model.Function, error) {
+func (r *functionRepositoryForAppSync) update(ctx context.Context, apiID string, function *model.Function) (res *model.Function, err error) {
+	defer wrap(&err)
+
 	if function == nil {
-		return nil, &model.LibError{Err: fmt.Errorf("%w: missing arguments in update function method", model.ErrNilValue)}
+		return nil, fmt.Errorf("%w: missing arguments in update function method", model.ErrNilValue)
 	}
 
 	f := mapper.NewFunctionMapper().FromModel(ctx, function)
@@ -206,18 +218,20 @@ func (r *functionRepositoryForAppSync) update(ctx context.Context, apiID string,
 		},
 	)
 	if err != nil {
-		return nil, &model.LibError{Err: err}
+		return nil, err
 	}
 
 	fn := mapper.NewFunctionMapper().ToModel(ctx, out.FunctionConfiguration)
 	if fn == nil {
-		return nil, &model.LibError{Err: fmt.Errorf("%w: missing function in AppSync UpdateFunction API response", model.ErrNilValue)}
+		return nil, fmt.Errorf("%w: missing function in AppSync UpdateFunction API response", model.ErrNilValue)
 	}
 
 	return fn, nil
 }
 
-func (r *functionRepositoryForAppSync) Delete(ctx context.Context, apiID string, name string) error {
+func (r *functionRepositoryForAppSync) Delete(ctx context.Context, apiID string, name string) (err error) {
+	defer wrap(&err)
+
 	fn, err := r.Get(ctx, apiID, name)
 	if err != nil {
 		return err
@@ -233,7 +247,7 @@ func (r *functionRepositoryForAppSync) Delete(ctx context.Context, apiID string,
 			o.Retryer = retry.AddWithErrorCodes(o.Retryer, (*types.ConcurrentModificationException)(nil).ErrorCode())
 		},
 	); err != nil {
-		return &model.LibError{Err: err}
+		return err
 	}
 
 	return nil

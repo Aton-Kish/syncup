@@ -37,7 +37,7 @@ func Test_functionMapper_ToModel(t *testing.T) {
 	}
 
 	type expected struct {
-		out *model.Function
+		res *model.Function
 	}
 
 	tests := []struct {
@@ -51,7 +51,7 @@ func Test_functionMapper_ToModel(t *testing.T) {
 				v: nil,
 			},
 			expected: expected{
-				out: nil,
+				res: nil,
 			},
 		},
 		{
@@ -82,7 +82,7 @@ func Test_functionMapper_ToModel(t *testing.T) {
 				},
 			},
 			expected: expected{
-				out: &model.Function{
+				res: &model.Function{
 					FunctionId:              ptr.Pointer("FunctionId"),
 					FunctionArn:             ptr.Pointer("FunctionArn"),
 					Name:                    ptr.Pointer("Name"),
@@ -118,7 +118,7 @@ func Test_functionMapper_ToModel(t *testing.T) {
 			actual := (*functionMapper)(nil).ToModel(ctx, tt.args.v)
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 		})
 	}
 }
@@ -129,7 +129,7 @@ func Test_functionMapper_FromModel(t *testing.T) {
 	}
 
 	type expected struct {
-		out *types.FunctionConfiguration
+		res *types.FunctionConfiguration
 	}
 
 	tests := []struct {
@@ -143,7 +143,7 @@ func Test_functionMapper_FromModel(t *testing.T) {
 				v: nil,
 			},
 			expected: expected{
-				out: nil,
+				res: nil,
 			},
 		},
 		{
@@ -174,7 +174,7 @@ func Test_functionMapper_FromModel(t *testing.T) {
 				},
 			},
 			expected: expected{
-				out: &types.FunctionConfiguration{
+				res: &types.FunctionConfiguration{
 					FunctionId:              aws.String("FunctionId"),
 					FunctionArn:             aws.String("FunctionArn"),
 					Name:                    aws.String("Name"),
@@ -210,7 +210,7 @@ func Test_functionMapper_FromModel(t *testing.T) {
 			actual := (*functionMapper)(nil).FromModel(ctx, tt.args.v)
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 		})
 	}
 }

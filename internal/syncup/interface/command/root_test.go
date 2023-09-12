@@ -23,6 +23,7 @@ package command
 import (
 	"bytes"
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
@@ -35,7 +36,6 @@ func Test_rootCommand_Execute(t *testing.T) {
 	}
 
 	type expected struct {
-		errAs error
 		errIs error
 	}
 
@@ -50,7 +50,6 @@ func Test_rootCommand_Execute(t *testing.T) {
 				args: []string{},
 			},
 			expected: expected{
-				errAs: nil,
 				errIs: nil,
 			},
 		},
@@ -60,7 +59,6 @@ func Test_rootCommand_Execute(t *testing.T) {
 				args: []string{"-v"},
 			},
 			expected: expected{
-				errAs: nil,
 				errIs: nil,
 			},
 		},
@@ -91,16 +89,15 @@ func Test_rootCommand_Execute(t *testing.T) {
 			err := c.Execute(ctx, tt.args.args...)
 
 			// Assert
-			if tt.expected.errAs == nil && tt.expected.errIs == nil {
+			if strings.HasPrefix(tt.name, "happy") {
 				assert.NoError(t, err)
 
 				assert.Equal(t, 0, stdin.Len())
 				assert.Equal(t, 0, stdout.Len())
 				assert.Greater(t, stderr.Len(), 0)
 			} else {
-				if tt.expected.errAs != nil {
-					assert.ErrorAs(t, err, &tt.expected.errAs)
-				}
+				var ce *commandError
+				assert.ErrorAs(t, err, &ce)
 
 				if tt.expected.errIs != nil {
 					assert.ErrorIs(t, err, tt.expected.errIs)

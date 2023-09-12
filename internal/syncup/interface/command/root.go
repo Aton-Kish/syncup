@@ -51,12 +51,14 @@ func NewRootCommand(repo repository.Repository, optFns ...func(o *options)) Root
 	}
 }
 
-func (c *rootCommand) Execute(ctx context.Context, args ...string) error {
+func (c *rootCommand) Execute(ctx context.Context, args ...string) (err error) {
+	defer wrap(&err)
+
 	cmd := c.command()
 	cmd.SetArgs(args)
 
 	if err := cmd.ExecuteContext(ctx); err != nil {
-		return &commandError{Err: err}
+		return err
 	}
 
 	return nil
@@ -78,7 +80,9 @@ func (c *rootCommand) command() *cobra.Command {
 			Use:     "syncup",
 			Short:   "Sync up with AWS AppSync",
 			Version: fmt.Sprintf("%s, build %s (%s/%s)", c.version.Version, c.version.GitCommit, c.version.OS, c.version.Arch),
-			RunE: func(cmd *cobra.Command, args []string) error {
+			RunE: func(cmd *cobra.Command, args []string) (err error) {
+				defer wrap(&err)
+
 				if err := cmd.Help(); err != nil {
 					return err
 				}

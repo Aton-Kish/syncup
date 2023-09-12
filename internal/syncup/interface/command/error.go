@@ -20,6 +20,20 @@
 
 package command
 
+import (
+	"errors"
+)
+
+func wrap(errp *error) {
+	if errp == nil || *errp == nil {
+		return
+	}
+
+	if ce := new(commandError); !errors.As(*errp, &ce) {
+		*errp = &commandError{Err: *errp}
+	}
+}
+
 type commandError struct {
 	Err error
 }

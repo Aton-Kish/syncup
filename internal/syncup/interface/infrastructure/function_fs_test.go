@@ -23,6 +23,7 @@ package infrastructure
 import (
 	"context"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	ptr "github.com/Aton-Kish/goptr"
@@ -48,8 +49,7 @@ func Test_functionRepositoryForFS_List(t *testing.T) {
 	}
 
 	type expected struct {
-		out   []model.Function
-		errAs error
+		res   []model.Function
 		errIs error
 	}
 
@@ -68,11 +68,10 @@ func Test_functionRepositoryForFS_List(t *testing.T) {
 				apiID: "apiID",
 			},
 			expected: expected{
-				out: []model.Function{
+				res: []model.Function{
 					functionVTL_2018_05_29,
 					functionAPPSYNC_JS_1_0_0,
 				},
-				errAs: nil,
 				errIs: nil,
 			},
 		},
@@ -85,8 +84,7 @@ func Test_functionRepositoryForFS_List(t *testing.T) {
 				apiID: "apiID",
 			},
 			expected: expected{
-				out:   nil,
-				errAs: &model.LibError{},
+				res:   nil,
 				errIs: nil,
 			},
 		},
@@ -105,14 +103,13 @@ func Test_functionRepositoryForFS_List(t *testing.T) {
 			actual, err := r.List(ctx, tt.args.apiID)
 
 			// Assert
-			assert.ElementsMatch(t, tt.expected.out, actual)
+			assert.ElementsMatch(t, tt.expected.res, actual)
 
-			if tt.expected.errAs == nil && tt.expected.errIs == nil {
+			if strings.HasPrefix(tt.name, "happy") {
 				assert.NoError(t, err)
 			} else {
-				if tt.expected.errAs != nil {
-					assert.ErrorAs(t, err, &tt.expected.errAs)
-				}
+				var le *model.LibError
+				assert.ErrorAs(t, err, &le)
 
 				if tt.expected.errIs != nil {
 					assert.ErrorIs(t, err, tt.expected.errIs)
@@ -140,8 +137,7 @@ func Test_functionRepositoryForFS_Get(t *testing.T) {
 	}
 
 	type expected struct {
-		out   *model.Function
-		errAs error
+		res   *model.Function
 		errIs error
 	}
 
@@ -161,8 +157,7 @@ func Test_functionRepositoryForFS_Get(t *testing.T) {
 				name:  "VTL_2018-05-29",
 			},
 			expected: expected{
-				out:   &functionVTL_2018_05_29,
-				errAs: nil,
+				res:   &functionVTL_2018_05_29,
 				errIs: nil,
 			},
 		},
@@ -176,8 +171,7 @@ func Test_functionRepositoryForFS_Get(t *testing.T) {
 				name:  "APPSYNC_JS_1.0.0",
 			},
 			expected: expected{
-				out:   &functionAPPSYNC_JS_1_0_0,
-				errAs: nil,
+				res:   &functionAPPSYNC_JS_1_0_0,
 				errIs: nil,
 			},
 		},
@@ -191,8 +185,7 @@ func Test_functionRepositoryForFS_Get(t *testing.T) {
 				name:  "invalidName",
 			},
 			expected: expected{
-				out:   nil,
-				errAs: &model.LibError{},
+				res:   nil,
 				errIs: nil,
 			},
 		},
@@ -211,14 +204,13 @@ func Test_functionRepositoryForFS_Get(t *testing.T) {
 			actual, err := r.Get(ctx, tt.args.apiID, tt.args.name)
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 
-			if tt.expected.errAs == nil && tt.expected.errIs == nil {
+			if strings.HasPrefix(tt.name, "happy") {
 				assert.NoError(t, err)
 			} else {
-				if tt.expected.errAs != nil {
-					assert.ErrorAs(t, err, &tt.expected.errAs)
-				}
+				var le *model.LibError
+				assert.ErrorAs(t, err, &le)
 
 				if tt.expected.errIs != nil {
 					assert.ErrorIs(t, err, tt.expected.errIs)
@@ -246,8 +238,7 @@ func Test_functionRepositoryForFS_Save(t *testing.T) {
 	}
 
 	type expected struct {
-		out   *model.Function
-		errAs error
+		res   *model.Function
 		errIs error
 	}
 
@@ -267,8 +258,7 @@ func Test_functionRepositoryForFS_Save(t *testing.T) {
 				function: &functionVTL_2018_05_29,
 			},
 			expected: expected{
-				out:   &functionVTL_2018_05_29,
-				errAs: nil,
+				res:   &functionVTL_2018_05_29,
 				errIs: nil,
 			},
 		},
@@ -282,8 +272,7 @@ func Test_functionRepositoryForFS_Save(t *testing.T) {
 				function: &functionAPPSYNC_JS_1_0_0,
 			},
 			expected: expected{
-				out:   &functionAPPSYNC_JS_1_0_0,
-				errAs: nil,
+				res:   &functionAPPSYNC_JS_1_0_0,
 				errIs: nil,
 			},
 		},
@@ -297,8 +286,7 @@ func Test_functionRepositoryForFS_Save(t *testing.T) {
 				function: &functionVTL_2018_05_29,
 			},
 			expected: expected{
-				out:   &functionVTL_2018_05_29,
-				errAs: nil,
+				res:   &functionVTL_2018_05_29,
 				errIs: nil,
 			},
 		},
@@ -312,8 +300,7 @@ func Test_functionRepositoryForFS_Save(t *testing.T) {
 				function: &functionAPPSYNC_JS_1_0_0,
 			},
 			expected: expected{
-				out:   &functionAPPSYNC_JS_1_0_0,
-				errAs: nil,
+				res:   &functionAPPSYNC_JS_1_0_0,
 				errIs: nil,
 			},
 		},
@@ -327,8 +314,7 @@ func Test_functionRepositoryForFS_Save(t *testing.T) {
 				function: nil,
 			},
 			expected: expected{
-				out:   nil,
-				errAs: &model.LibError{},
+				res:   nil,
 				errIs: model.ErrNilValue,
 			},
 		},
@@ -342,8 +328,7 @@ func Test_functionRepositoryForFS_Save(t *testing.T) {
 				function: &model.Function{},
 			},
 			expected: expected{
-				out:   nil,
-				errAs: &model.LibError{},
+				res:   nil,
 				errIs: model.ErrNilValue,
 			},
 		},
@@ -362,8 +347,7 @@ func Test_functionRepositoryForFS_Save(t *testing.T) {
 				},
 			},
 			expected: expected{
-				out:   nil,
-				errAs: &model.LibError{},
+				res:   nil,
 				errIs: model.ErrInvalidValue,
 			},
 		},
@@ -382,14 +366,13 @@ func Test_functionRepositoryForFS_Save(t *testing.T) {
 			actual, err := r.Save(ctx, tt.args.apiID, tt.args.function)
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 
-			if tt.expected.errAs == nil && tt.expected.errIs == nil {
+			if strings.HasPrefix(tt.name, "happy") {
 				assert.NoError(t, err)
 			} else {
-				if tt.expected.errAs != nil {
-					assert.ErrorAs(t, err, &tt.expected.errAs)
-				}
+				var le *model.LibError
+				assert.ErrorAs(t, err, &le)
 
 				if tt.expected.errIs != nil {
 					assert.ErrorIs(t, err, tt.expected.errIs)
@@ -417,7 +400,6 @@ func Test_functionRepositoryForFS_Delete(t *testing.T) {
 	}
 
 	type expected struct {
-		errAs error
 		errIs error
 	}
 
@@ -437,7 +419,6 @@ func Test_functionRepositoryForFS_Delete(t *testing.T) {
 				name:  *functionVTL_2018_05_29.Name,
 			},
 			expected: expected{
-				errAs: nil,
 				errIs: nil,
 			},
 		},
@@ -451,7 +432,6 @@ func Test_functionRepositoryForFS_Delete(t *testing.T) {
 				name:  *functionAPPSYNC_JS_1_0_0.Name,
 			},
 			expected: expected{
-				errAs: nil,
 				errIs: nil,
 			},
 		},
@@ -465,7 +445,6 @@ func Test_functionRepositoryForFS_Delete(t *testing.T) {
 				name:  "notExistName",
 			},
 			expected: expected{
-				errAs: nil,
 				errIs: nil,
 			},
 		},
@@ -490,12 +469,11 @@ func Test_functionRepositoryForFS_Delete(t *testing.T) {
 			err = r.Delete(ctx, tt.args.apiID, tt.args.name)
 
 			// Assert
-			if tt.expected.errAs == nil && tt.expected.errIs == nil {
+			if strings.HasPrefix(tt.name, "happy") {
 				assert.NoError(t, err)
 			} else {
-				if tt.expected.errAs != nil {
-					assert.ErrorAs(t, err, &tt.expected.errAs)
-				}
+				var le *model.LibError
+				assert.ErrorAs(t, err, &le)
 
 				if tt.expected.errIs != nil {
 					assert.ErrorIs(t, err, tt.expected.errIs)

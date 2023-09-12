@@ -37,7 +37,7 @@ func Test_syncConfigMapper_ToModel(t *testing.T) {
 	}
 
 	type expected struct {
-		out *model.SyncConfig
+		res *model.SyncConfig
 	}
 
 	tests := []struct {
@@ -51,7 +51,7 @@ func Test_syncConfigMapper_ToModel(t *testing.T) {
 				v: nil,
 			},
 			expected: expected{
-				out: nil,
+				res: nil,
 			},
 		},
 		{
@@ -66,7 +66,7 @@ func Test_syncConfigMapper_ToModel(t *testing.T) {
 				},
 			},
 			expected: expected{
-				out: &model.SyncConfig{
+				res: &model.SyncConfig{
 					ConflictHandler:   model.ConflictHandlerType("ConflictHandler"),
 					ConflictDetection: model.ConflictDetectionType("ConflictDetection"),
 					LambdaConflictHandlerConfig: &model.LambdaConflictHandlerConfig{
@@ -86,7 +86,7 @@ func Test_syncConfigMapper_ToModel(t *testing.T) {
 			actual := (*syncConfigMapper)(nil).ToModel(ctx, tt.args.v)
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 		})
 	}
 }
@@ -97,7 +97,7 @@ func Test_syncConfigMapper_FromModel(t *testing.T) {
 	}
 
 	type expected struct {
-		out *types.SyncConfig
+		res *types.SyncConfig
 	}
 
 	tests := []struct {
@@ -111,7 +111,7 @@ func Test_syncConfigMapper_FromModel(t *testing.T) {
 				v: nil,
 			},
 			expected: expected{
-				out: nil,
+				res: nil,
 			},
 		},
 		{
@@ -126,7 +126,7 @@ func Test_syncConfigMapper_FromModel(t *testing.T) {
 				},
 			},
 			expected: expected{
-				out: &types.SyncConfig{
+				res: &types.SyncConfig{
 					ConflictDetection: types.ConflictDetectionType("ConflictDetection"),
 					ConflictHandler:   types.ConflictHandlerType("ConflictHandler"),
 					LambdaConflictHandlerConfig: &types.LambdaConflictHandlerConfig{
@@ -146,7 +146,7 @@ func Test_syncConfigMapper_FromModel(t *testing.T) {
 			actual := (*syncConfigMapper)(nil).FromModel(ctx, tt.args.v)
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 		})
 	}
 }
@@ -157,7 +157,7 @@ func Test_lambdaConflictHandlerConfigMapper_ToModel(t *testing.T) {
 	}
 
 	type expected struct {
-		out *model.LambdaConflictHandlerConfig
+		res *model.LambdaConflictHandlerConfig
 	}
 
 	tests := []struct {
@@ -171,7 +171,7 @@ func Test_lambdaConflictHandlerConfigMapper_ToModel(t *testing.T) {
 				v: nil,
 			},
 			expected: expected{
-				out: nil,
+				res: nil,
 			},
 		},
 		{
@@ -182,7 +182,7 @@ func Test_lambdaConflictHandlerConfigMapper_ToModel(t *testing.T) {
 				},
 			},
 			expected: expected{
-				out: &model.LambdaConflictHandlerConfig{
+				res: &model.LambdaConflictHandlerConfig{
 					LambdaConflictHandlerArn: ptr.Pointer("LambdaConflictHandlerArn"),
 				},
 			},
@@ -198,7 +198,7 @@ func Test_lambdaConflictHandlerConfigMapper_ToModel(t *testing.T) {
 			actual := (*lambdaConflictHandlerConfigMapper)(nil).ToModel(ctx, tt.args.v)
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 		})
 	}
 }
@@ -209,7 +209,7 @@ func Test_lambdaConflictHandlerConfigMapper_FromModel(t *testing.T) {
 	}
 
 	type expected struct {
-		out *types.LambdaConflictHandlerConfig
+		res *types.LambdaConflictHandlerConfig
 	}
 
 	tests := []struct {
@@ -223,7 +223,7 @@ func Test_lambdaConflictHandlerConfigMapper_FromModel(t *testing.T) {
 				v: nil,
 			},
 			expected: expected{
-				out: nil,
+				res: nil,
 			},
 		},
 		{
@@ -234,7 +234,7 @@ func Test_lambdaConflictHandlerConfigMapper_FromModel(t *testing.T) {
 				},
 			},
 			expected: expected{
-				out: &types.LambdaConflictHandlerConfig{
+				res: &types.LambdaConflictHandlerConfig{
 					LambdaConflictHandlerArn: ptr.Pointer("LambdaConflictHandlerArn"),
 				},
 			},
@@ -250,7 +250,7 @@ func Test_lambdaConflictHandlerConfigMapper_FromModel(t *testing.T) {
 			actual := (*lambdaConflictHandlerConfigMapper)(nil).FromModel(ctx, tt.args.v)
 
 			// Assert
-			assert.Equal(t, tt.expected.out, actual)
+			assert.Equal(t, tt.expected.res, actual)
 		})
 	}
 }

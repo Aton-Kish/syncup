@@ -18,56 +18,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package xfilepath
+package console
 
 import (
-	"path/filepath"
-	"testing"
+	"errors"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 )
 
-func TestExist(t *testing.T) {
-	type args struct {
-		name string
+func wrap(errp *error) {
+	if errp == nil || *errp == nil {
+		return
 	}
 
-	type expected struct {
-		res bool
-	}
-
-	tests := []struct {
-		name     string
-		args     args
-		expected expected
-	}{
-		{
-			name: "happy path: exist",
-			args: args{
-				name: t.TempDir(),
-			},
-			expected: expected{
-				res: true,
-			},
-		},
-		{
-			name: "happy path: not exist",
-			args: args{
-				name: filepath.Join(t.TempDir(), "notExist"),
-			},
-			expected: expected{
-				res: false,
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Act
-			actual := Exist(tt.args.name)
-
-			// Assert
-			assert.Equal(t, tt.expected.res, actual)
-		})
+	if le := new(model.LibError); !errors.As(*errp, &le) {
+		*errp = &model.LibError{Err: *errp}
 	}
 }

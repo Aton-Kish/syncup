@@ -54,8 +54,8 @@ var (
 	awsActivateOnce sync.Once
 )
 
-func activatedAWSClients(ctx context.Context, optFns ...func(o *model.AWSOptions)) (*awsClients, error) {
-	var err error
+func activatedAWSClients(ctx context.Context, optFns ...func(o *model.AWSOptions)) (res *awsClients, err error) {
+	defer wrap(&err)
 
 	awsActivateOnce.Do(func() {
 		o := model.NewAWSOptions(optFns...)
@@ -70,7 +70,6 @@ func activatedAWSClients(ctx context.Context, optFns ...func(o *model.AWSOptions
 			}),
 		)
 		if err != nil {
-			err = &model.LibError{Err: err}
 			return
 		}
 
@@ -82,13 +81,11 @@ func activatedAWSClients(ctx context.Context, optFns ...func(o *model.AWSOptions
 					fco.FileCacheDir = filepath.Join(home, ".aws", "cli", "cache")
 				},
 			); err != nil {
-				err = &model.LibError{Err: err}
 				return
 			}
 		}
 
 		if _, err = cfg.Credentials.Retrieve(ctx); err != nil {
-			err = &model.LibError{Err: err}
 			return
 		}
 
