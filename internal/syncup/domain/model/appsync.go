@@ -37,6 +37,28 @@ type Function struct {
 	Code                    *string     `json:"-"`
 }
 
+type Resolver struct {
+	TypeName                *string         `json:"typeName,omitempty"`
+	FieldName               *string         `json:"fieldName,omitempty"`
+	DataSourceName          *string         `json:"dataSourceName,omitempty"`
+	ResolverArn             *string         `json:"-"`
+	RequestMappingTemplate  *string         `json:"-"`
+	ResponseMappingTemplate *string         `json:"-"`
+	Kind                    ResolverKind    `json:"kind,omitempty"`
+	PipelineConfig          *PipelineConfig `json:"pipelineConfig,omitempty"`
+	SyncConfig              *SyncConfig     `json:"syncConfig,omitempty"`
+	CachingConfig           *CachingConfig  `json:"cachingConfig,omitempty"`
+	MaxBatchSize            int32           `json:"maxBatchSize"`
+	Runtime                 *Runtime        `json:"runtime,omitempty"`
+	Code                    *string         `json:"-"`
+}
+
+type ResolverKind string
+
+type PipelineConfig struct {
+	Functions []string `json:"functions,omitempty"`
+}
+
 type SyncConfig struct {
 	ConflictHandler             ConflictHandlerType          `json:"conflictHandler,omitempty"`
 	ConflictDetection           ConflictDetectionType        `json:"conflictDetection,omitempty"`
@@ -49,6 +71,11 @@ type ConflictHandlerType string
 
 type LambdaConflictHandlerConfig struct {
 	LambdaConflictHandlerArn *string `json:"lambdaConflictHandlerArn,omitempty"`
+}
+
+type CachingConfig struct {
+	Ttl         int64    `json:"ttl"`
+	CachingKeys []string `json:"cachingKeys,omitempty"`
 }
 
 type Runtime struct {
