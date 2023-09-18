@@ -24,6 +24,7 @@ import (
 	"context"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 
 	ptr "github.com/Aton-Kish/goptr"
@@ -690,6 +691,8 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
+			var mu sync.Mutex
+
 			mockResolverService := mock_service.NewMockResolverService(ctrl)
 			mockTrackerRepository := mock_repository.NewMockTrackerRepository(ctrl)
 			mockSchemaRepositoryForAppSync := mock_repository.NewMockSchemaRepository(ctrl)
@@ -748,8 +751,10 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				EXPECT().
 				Save(ctx, gomock.Any(), gomock.Any()).
 				DoAndReturn(func(ctx context.Context, apiID string, function *model.Function) (*model.Function, error) {
+					mu.Lock()
 					r := tt.mockFunctionRepositoryForFSSave.returns[tt.mockFunctionRepositoryForFSSave.calls]
 					tt.mockFunctionRepositoryForFSSave.calls++
+					mu.Unlock()
 					return r.res, r.err
 				}).
 				MaxTimes(len(tt.mockFunctionRepositoryForFSSave.returns))
@@ -768,8 +773,10 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				EXPECT().
 				ResolvePipelineConfigFunctionNames(ctx, gomock.Any(), gomock.Any()).
 				DoAndReturn(func(ctx context.Context, resolver *model.Resolver, functions []model.Function) error {
+					mu.Lock()
 					r := tt.mockResolverServiceResolvePipelineConfigFunctionNames.returns[tt.mockResolverServiceResolvePipelineConfigFunctionNames.calls]
 					tt.mockResolverServiceResolvePipelineConfigFunctionNames.calls++
+					mu.Unlock()
 					return r.err
 				}).
 				MaxTimes(len(tt.mockResolverServiceResolvePipelineConfigFunctionNames.returns))
@@ -778,8 +785,10 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				EXPECT().
 				Save(ctx, gomock.Any(), gomock.Any()).
 				DoAndReturn(func(ctx context.Context, apiID string, resolver *model.Resolver) (*model.Resolver, error) {
+					mu.Lock()
 					r := tt.mockResolverRepositoryForFSSave.returns[tt.mockResolverRepositoryForFSSave.calls]
 					tt.mockResolverRepositoryForFSSave.calls++
+					mu.Unlock()
 					return r.res, r.err
 				}).
 				MaxTimes(len(tt.mockResolverRepositoryForFSSave.returns))

@@ -26,6 +26,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -424,6 +425,8 @@ func Test_resolverRepositoryForAppSync_List(t *testing.T) {
 			// Arrange
 			ctx := context.Background()
 
+			var mu sync.Mutex
+
 			cfg, err := config.LoadDefaultConfig(
 				ctx,
 				config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("key", "secret", "session")),
@@ -437,8 +440,10 @@ func Test_resolverRepositoryForAppSync_List(t *testing.T) {
 									tt.mockAppSyncClientListTypes.calls++
 									return smithymiddleware.FinalizeOutput{Result: r.res}, smithymiddleware.Metadata{}, r.err
 								case "ListResolvers":
+									mu.Lock()
 									r := tt.mockAppSyncClientListResolvers.returns[tt.mockAppSyncClientListResolvers.calls]
 									tt.mockAppSyncClientListResolvers.calls++
+									mu.Unlock()
 									return smithymiddleware.FinalizeOutput{Result: r.res}, smithymiddleware.Metadata{}, r.err
 								default:
 									t.Fatal("unexpected operation")
@@ -464,7 +469,7 @@ func Test_resolverRepositoryForAppSync_List(t *testing.T) {
 			actual, err := r.List(ctx, tt.args.apiID)
 
 			// Assert
-			assert.Equal(t, tt.expected.res, actual)
+			assert.ElementsMatch(t, tt.expected.res, actual)
 
 			if strings.HasPrefix(tt.name, "happy") {
 				assert.NoError(t, err)
