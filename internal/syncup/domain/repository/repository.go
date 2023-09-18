@@ -52,4 +52,7 @@ type Repository interface {
 
 	FunctionRepositoryForAppSync() FunctionRepository
 	FunctionRepositoryForFS() FunctionRepository
+
+	ResolverRepositoryForAppSync() ResolverRepository
+	ResolverRepositoryForFS() ResolverRepository
 }
