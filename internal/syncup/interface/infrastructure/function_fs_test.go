@@ -305,7 +305,7 @@ func Test_functionRepositoryForFS_Save(t *testing.T) {
 			},
 		},
 		{
-			name: "edge path: nil schema",
+			name: "edge path: nil function",
 			fields: fields{
 				baseDir: t.TempDir(),
 			},
