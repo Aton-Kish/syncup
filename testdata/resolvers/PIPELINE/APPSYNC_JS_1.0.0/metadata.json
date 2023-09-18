@@ -4,7 +4,7 @@
   "dataSourceName": "DataSourceName",
   "kind": "PIPELINE",
   "pipelineConfig": {
-    "functionNames": ["FunctionName1", "FunctionName2"]
+    "functionNames": ["VTL_2018-05-29", "APPSYNC_JS_1.0.0"]
   },
   "syncConfig": {
     "conflictHandler": "ConflictHandler",
