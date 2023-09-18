@@ -30,6 +30,7 @@ import (
 
 	ptr "github.com/Aton-Kish/goptr"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
+	"github.com/Aton-Kish/syncup/internal/syncup/domain/service"
 )
 
 type PullInput struct {
@@ -44,20 +45,26 @@ type PullUseCase interface {
 }
 
 type pullUseCase struct {
+	resolverService              service.ResolverService
 	trackerRepository            repository.TrackerRepository
 	schemaRepositoryForAppSync   repository.SchemaRepository
 	schemaRepositoryForFS        repository.SchemaRepository
 	functionRepositoryForAppSync repository.FunctionRepository
 	functionRepositoryForFS      repository.FunctionRepository
+	resolverRepositoryForAppSync repository.ResolverRepository
+	resolverRepositoryForFS      repository.ResolverRepository
 }
 
 func NewPullUseCase(repo repository.Repository) PullUseCase {
 	return &pullUseCase{
+		resolverService:              service.NewResolverService(repo),
 		trackerRepository:            repo.TrackerRepository(),
 		schemaRepositoryForAppSync:   repo.SchemaRepositoryForAppSync(),
 		schemaRepositoryForFS:        repo.SchemaRepositoryForFS(),
 		functionRepositoryForAppSync: repo.FunctionRepositoryForAppSync(),
 		functionRepositoryForFS:      repo.FunctionRepositoryForFS(),
+		resolverRepositoryForAppSync: repo.ResolverRepositoryForAppSync(),
+		resolverRepositoryForFS:      repo.ResolverRepositoryForFS(),
 	}
 }
 
@@ -89,6 +96,8 @@ func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (res *Pul
 		return nil, err
 	}
 
+	uc.trackerRepository.InProgress(ctx, "saving functions")
+
 	var mu sync.Mutex
 	var wg sync.WaitGroup
 	errs := make([]error, 0)
@@ -117,6 +126,54 @@ func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (res *Pul
 	if err := errors.Join(errs...); err != nil {
 		return nil, err
 	}
+
+	uc.trackerRepository.Success(ctx, "saved all functions")
+
+	uc.trackerRepository.InProgress(ctx, "fetching resolvers")
+
+	rslvs, err := uc.resolverRepositoryForAppSync.List(ctx, apiID)
+	if err != nil {
+		uc.trackerRepository.Failed(ctx, "failed to fetch resolvers")
+		return nil, err
+	}
+
+	uc.trackerRepository.InProgress(ctx, "saving resolvers")
+
+	for _, rslv := range rslvs {
+		rslv := rslv
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			if err := uc.resolverService.ResolvePipelineConfigFunctionNames(ctx, &rslv, fns); err != nil {
+				mu.Lock()
+				errs = append(errs, err)
+				mu.Unlock()
+
+				uc.trackerRepository.Failed(ctx, fmt.Sprintf("failed to save resolver %s.%s", ptr.ToValue(rslv.TypeName), ptr.ToValue(rslv.FieldName)))
+				return
+			}
+
+			if _, err := uc.resolverRepositoryForFS.Save(ctx, apiID, &rslv); err != nil {
+				mu.Lock()
+				errs = append(errs, err)
+				mu.Unlock()
+
+				uc.trackerRepository.Failed(ctx, fmt.Sprintf("failed to save resolver %s.%s", ptr.ToValue(rslv.TypeName), ptr.ToValue(rslv.FieldName)))
+				return
+			}
+
+			uc.trackerRepository.Success(ctx, fmt.Sprintf("saved resolver %s.%s", ptr.ToValue(rslv.TypeName), ptr.ToValue(rslv.FieldName)))
+		}()
+	}
+
+	wg.Wait()
+
+	if err := errors.Join(errs...); err != nil {
+		return nil, err
+	}
+
+	uc.trackerRepository.Success(ctx, "saved all resolvers")
 
 	return &PullOutput{}, nil
 }

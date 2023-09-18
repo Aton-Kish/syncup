@@ -28,31 +28,10 @@ import (
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 )
 
-type AWSActivator interface {
-	ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptions)) error
-}
-
-type BaseDirProvider interface {
-	BaseDir(ctx context.Context) string
-	SetBaseDir(ctx context.Context, dir string)
-}
-
-type Repository interface {
-	AWSActivator
-	BaseDirProvider
-
-	Version() *model.Version
-
-	TrackerRepository() TrackerRepository
-
-	MFATokenProviderRepository() MFATokenProviderRepository
-
-	SchemaRepositoryForAppSync() SchemaRepository
-	SchemaRepositoryForFS() SchemaRepository
-
-	FunctionRepositoryForAppSync() FunctionRepository
-	FunctionRepositoryForFS() FunctionRepository
-
-	ResolverRepositoryForAppSync() ResolverRepository
-	ResolverRepositoryForFS() ResolverRepository
+type ResolverRepository interface {
+	List(ctx context.Context, apiID string) ([]model.Resolver, error)
+	ListByTypeName(ctx context.Context, apiID string, typeName string) ([]model.Resolver, error)
+	Get(ctx context.Context, apiID string, typeName string, fieldName string) (*model.Resolver, error)
+	Save(ctx context.Context, apiID string, resolver *model.Resolver) (*model.Resolver, error)
+	Delete(ctx context.Context, apiID string, typeName string, fieldName string) error
 }

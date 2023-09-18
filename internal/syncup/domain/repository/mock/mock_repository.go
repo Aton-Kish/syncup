@@ -202,6 +202,34 @@ func (mr *MockRepositoryMockRecorder) MFATokenProviderRepository() *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MFATokenProviderRepository", reflect.TypeOf((*MockRepository)(nil).MFATokenProviderRepository))
 }
 
+// ResolverRepositoryForAppSync mocks base method.
+func (m *MockRepository) ResolverRepositoryForAppSync() repository.ResolverRepository {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResolverRepositoryForAppSync")
+	ret0, _ := ret[0].(repository.ResolverRepository)
+	return ret0
+}
+
+// ResolverRepositoryForAppSync indicates an expected call of ResolverRepositoryForAppSync.
+func (mr *MockRepositoryMockRecorder) ResolverRepositoryForAppSync() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolverRepositoryForAppSync", reflect.TypeOf((*MockRepository)(nil).ResolverRepositoryForAppSync))
+}
+
+// ResolverRepositoryForFS mocks base method.
+func (m *MockRepository) ResolverRepositoryForFS() repository.ResolverRepository {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResolverRepositoryForFS")
+	ret0, _ := ret[0].(repository.ResolverRepository)
+	return ret0
+}
+
+// ResolverRepositoryForFS indicates an expected call of ResolverRepositoryForFS.
+func (mr *MockRepositoryMockRecorder) ResolverRepositoryForFS() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolverRepositoryForFS", reflect.TypeOf((*MockRepository)(nil).ResolverRepositoryForFS))
+}
+
 // SchemaRepositoryForAppSync mocks base method.
 func (m *MockRepository) SchemaRepositoryForAppSync() repository.SchemaRepository {
 	m.ctrl.T.Helper()

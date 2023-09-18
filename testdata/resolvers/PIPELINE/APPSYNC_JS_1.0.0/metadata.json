@@ -1,0 +1,25 @@
+{
+  "typeName": "PIPELINE",
+  "fieldName": "APPSYNC_JS_1.0.0",
+  "dataSourceName": "DataSourceName",
+  "kind": "PIPELINE",
+  "pipelineConfig": {
+    "functionNames": ["VTL_2018-05-29", "APPSYNC_JS_1.0.0"]
+  },
+  "syncConfig": {
+    "conflictHandler": "ConflictHandler",
+    "conflictDetection": "ConflictDetection",
+    "lambdaConflictHandlerConfig": {
+      "lambdaConflictHandlerArn": "LambdaConflictHandlerArn"
+    }
+  },
+  "cachingConfig": {
+    "ttl": 3600,
+    "cachingKeys": ["CachingKey1", "CachingKey2"]
+  },
+  "maxBatchSize": 0,
+  "runtime": {
+    "name": "APPSYNC_JS",
+    "runtimeVersion": "1.0.0"
+  }
+}

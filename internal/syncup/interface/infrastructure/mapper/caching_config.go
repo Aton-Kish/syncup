@@ -18,41 +18,42 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-//go:generate mockgen -source=$GOFILE -destination=./mock/mock_$GOFILE
-
-package repository
+package mapper
 
 import (
 	"context"
 
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
+	"github.com/aws/aws-sdk-go-v2/service/appsync/types"
 )
 
-type AWSActivator interface {
-	ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptions)) error
+type cachingConfigMapper struct{}
+
+var (
+	_ interface {
+		ToModel(ctx context.Context, v *types.CachingConfig) *model.CachingConfig
+		FromModel(ctx context.Context, v *model.CachingConfig) *types.CachingConfig
+	} = (*cachingConfigMapper)(nil)
+)
+
+func (*cachingConfigMapper) ToModel(ctx context.Context, v *types.CachingConfig) *model.CachingConfig {
+	if v == nil {
+		return nil
+	}
+
+	return &model.CachingConfig{
+		Ttl:         v.Ttl,
+		CachingKeys: v.CachingKeys,
+	}
 }
 
-type BaseDirProvider interface {
-	BaseDir(ctx context.Context) string
-	SetBaseDir(ctx context.Context, dir string)
-}
+func (*cachingConfigMapper) FromModel(ctx context.Context, v *model.CachingConfig) *types.CachingConfig {
+	if v == nil {
+		return nil
+	}
 
-type Repository interface {
-	AWSActivator
-	BaseDirProvider
-
-	Version() *model.Version
-
-	TrackerRepository() TrackerRepository
-
-	MFATokenProviderRepository() MFATokenProviderRepository
-
-	SchemaRepositoryForAppSync() SchemaRepository
-	SchemaRepositoryForFS() SchemaRepository
-
-	FunctionRepositoryForAppSync() FunctionRepository
-	FunctionRepositoryForFS() FunctionRepository
-
-	ResolverRepositoryForAppSync() ResolverRepository
-	ResolverRepositoryForFS() ResolverRepository
+	return &types.CachingConfig{
+		Ttl:         v.Ttl,
+		CachingKeys: v.CachingKeys,
+	}
 }

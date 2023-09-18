@@ -18,41 +18,40 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-//go:generate mockgen -source=$GOFILE -destination=./mock/mock_$GOFILE
-
-package repository
+package mapper
 
 import (
 	"context"
 
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
+	"github.com/aws/aws-sdk-go-v2/service/appsync/types"
 )
 
-type AWSActivator interface {
-	ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptions)) error
+type pipelineConfigMapper struct{}
+
+var (
+	_ interface {
+		ToModel(ctx context.Context, v *types.PipelineConfig) *model.PipelineConfig
+		FromModel(ctx context.Context, v *model.PipelineConfig) *types.PipelineConfig
+	} = (*pipelineConfigMapper)(nil)
+)
+
+func (*pipelineConfigMapper) ToModel(ctx context.Context, v *types.PipelineConfig) *model.PipelineConfig {
+	if v == nil {
+		return nil
+	}
+
+	return &model.PipelineConfig{
+		Functions: v.Functions,
+	}
 }
 
-type BaseDirProvider interface {
-	BaseDir(ctx context.Context) string
-	SetBaseDir(ctx context.Context, dir string)
-}
+func (*pipelineConfigMapper) FromModel(ctx context.Context, v *model.PipelineConfig) *types.PipelineConfig {
+	if v == nil {
+		return nil
+	}
 
-type Repository interface {
-	AWSActivator
-	BaseDirProvider
-
-	Version() *model.Version
-
-	TrackerRepository() TrackerRepository
-
-	MFATokenProviderRepository() MFATokenProviderRepository
-
-	SchemaRepositoryForAppSync() SchemaRepository
-	SchemaRepositoryForFS() SchemaRepository
-
-	FunctionRepositoryForAppSync() FunctionRepository
-	FunctionRepositoryForFS() FunctionRepository
-
-	ResolverRepositoryForAppSync() ResolverRepository
-	ResolverRepositoryForFS() ResolverRepository
+	return &types.PipelineConfig{
+		Functions: v.Functions,
+	}
 }

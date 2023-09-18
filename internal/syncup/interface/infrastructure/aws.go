@@ -43,6 +43,14 @@ type appsyncClient interface {
 	CreateFunction(ctx context.Context, params *appsync.CreateFunctionInput, optFns ...func(*appsync.Options)) (*appsync.CreateFunctionOutput, error)
 	UpdateFunction(ctx context.Context, params *appsync.UpdateFunctionInput, optFns ...func(*appsync.Options)) (*appsync.UpdateFunctionOutput, error)
 	DeleteFunction(ctx context.Context, params *appsync.DeleteFunctionInput, optFns ...func(*appsync.Options)) (*appsync.DeleteFunctionOutput, error)
+
+	ListResolvers(ctx context.Context, params *appsync.ListResolversInput, optFns ...func(*appsync.Options)) (*appsync.ListResolversOutput, error)
+	GetResolver(ctx context.Context, params *appsync.GetResolverInput, optFns ...func(*appsync.Options)) (*appsync.GetResolverOutput, error)
+	CreateResolver(ctx context.Context, params *appsync.CreateResolverInput, optFns ...func(*appsync.Options)) (*appsync.CreateResolverOutput, error)
+	UpdateResolver(ctx context.Context, params *appsync.UpdateResolverInput, optFns ...func(*appsync.Options)) (*appsync.UpdateResolverOutput, error)
+	DeleteResolver(ctx context.Context, params *appsync.DeleteResolverInput, optFns ...func(*appsync.Options)) (*appsync.DeleteResolverOutput, error)
+
+	ListTypes(ctx context.Context, params *appsync.ListTypesInput, optFns ...func(*appsync.Options)) (*appsync.ListTypesOutput, error)
 }
 
 type awsClients struct {

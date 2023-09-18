@@ -18,41 +18,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-//go:generate mockgen -source=$GOFILE -destination=./mock/mock_$GOFILE
-
-package repository
+package service
 
 import (
-	"context"
+	"errors"
 
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 )
 
-type AWSActivator interface {
-	ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptions)) error
-}
+func wrap(errp *error) {
+	if errp == nil || *errp == nil {
+		return
+	}
 
-type BaseDirProvider interface {
-	BaseDir(ctx context.Context) string
-	SetBaseDir(ctx context.Context, dir string)
-}
-
-type Repository interface {
-	AWSActivator
-	BaseDirProvider
-
-	Version() *model.Version
-
-	TrackerRepository() TrackerRepository
-
-	MFATokenProviderRepository() MFATokenProviderRepository
-
-	SchemaRepositoryForAppSync() SchemaRepository
-	SchemaRepositoryForFS() SchemaRepository
-
-	FunctionRepositoryForAppSync() FunctionRepository
-	FunctionRepositoryForFS() FunctionRepository
-
-	ResolverRepositoryForAppSync() ResolverRepository
-	ResolverRepositoryForFS() ResolverRepository
+	if le := new(model.LibError); !errors.As(*errp, &le) {
+		*errp = &model.LibError{Err: *errp}
+	}
 }

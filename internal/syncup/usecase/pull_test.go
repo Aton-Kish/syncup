@@ -24,11 +24,13 @@ import (
 	"context"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 
 	ptr "github.com/Aton-Kish/goptr"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	mock_repository "github.com/Aton-Kish/syncup/internal/syncup/domain/repository/mock"
+	mock_service "github.com/Aton-Kish/syncup/internal/syncup/domain/service/mock"
 	"github.com/Aton-Kish/syncup/internal/testhelpers"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -38,10 +40,26 @@ func Test_pullUseCase_Execute(t *testing.T) {
 	testdataBaseDir := "../../../testdata"
 	schema := model.Schema(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "schema/schema.graphqls")))
 	functionVTL_2018_05_29 := testhelpers.MustUnmarshalJSON[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/metadata.json")))
+	functionVTL_2018_05_29.FunctionId = ptr.Pointer("VTL_2018-05-29")
 	functionVTL_2018_05_29.RequestMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/request.vtl"))))
 	functionVTL_2018_05_29.ResponseMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/response.vtl"))))
 	functionAPPSYNC_JS_1_0_0 := testhelpers.MustUnmarshalJSON[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/APPSYNC_JS_1.0.0/metadata.json")))
+	functionAPPSYNC_JS_1_0_0.FunctionId = ptr.Pointer("APPSYNC_JS_1.0.0")
 	functionAPPSYNC_JS_1_0_0.Code = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/APPSYNC_JS_1.0.0/code.js"))))
+	resolverUNIT_VTL_2018_05_29 := testhelpers.MustUnmarshalJSON[model.Resolver](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "resolvers/UNIT/VTL_2018-05-29/metadata.json")))
+	resolverUNIT_VTL_2018_05_29.RequestMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "resolvers/UNIT/VTL_2018-05-29/request.vtl"))))
+	resolverUNIT_VTL_2018_05_29.ResponseMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "resolvers/UNIT/VTL_2018-05-29/response.vtl"))))
+	resolverUNIT_APPSYNC_JS_1_0_0 := testhelpers.MustUnmarshalJSON[model.Resolver](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "resolvers/UNIT/APPSYNC_JS_1.0.0/metadata.json")))
+	resolverUNIT_APPSYNC_JS_1_0_0.Code = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "resolvers/UNIT/APPSYNC_JS_1.0.0/code.js"))))
+	resolverPIPELINE_VTL_2018_05_29 := testhelpers.MustUnmarshalJSON[model.Resolver](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "resolvers/PIPELINE/VTL_2018-05-29/metadata.json")))
+	resolverPIPELINE_VTL_2018_05_29.PipelineConfig.FunctionNames = nil
+	resolverPIPELINE_VTL_2018_05_29.PipelineConfig.Functions = []string{"VTL_2018-05-29", "APPSYNC_JS_1.0.0"}
+	resolverPIPELINE_VTL_2018_05_29.RequestMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "resolvers/PIPELINE/VTL_2018-05-29/request.vtl"))))
+	resolverPIPELINE_VTL_2018_05_29.ResponseMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "resolvers/PIPELINE/VTL_2018-05-29/response.vtl"))))
+	resolverPIPELINE_APPSYNC_JS_1_0_0 := testhelpers.MustUnmarshalJSON[model.Resolver](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "resolvers/PIPELINE/APPSYNC_JS_1.0.0/metadata.json")))
+	resolverPIPELINE_APPSYNC_JS_1_0_0.PipelineConfig.FunctionNames = nil
+	resolverPIPELINE_APPSYNC_JS_1_0_0.PipelineConfig.Functions = []string{"VTL_2018-05-29", "APPSYNC_JS_1.0.0"}
+	resolverPIPELINE_APPSYNC_JS_1_0_0.Code = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "resolvers/PIPELINE/APPSYNC_JS_1.0.0/code.js"))))
 
 	type args struct {
 		params *PullInput
@@ -83,19 +101,48 @@ func Test_pullUseCase_Execute(t *testing.T) {
 		returns []mockFunctionRepositoryForFSSaveReturn
 	}
 
+	type mockResolverRepositoryForAppSyncListReturn struct {
+		res []model.Resolver
+		err error
+	}
+	type mockResolverRepositoryForAppSyncList struct {
+		calls   int
+		returns []mockResolverRepositoryForAppSyncListReturn
+	}
+
+	type mockResolverServiceResolvePipelineConfigFunctionNamesReturn struct {
+		err error
+	}
+	type mockResolverServiceResolvePipelineConfigFunctionNames struct {
+		calls   int
+		returns []mockResolverServiceResolvePipelineConfigFunctionNamesReturn
+	}
+
+	type mockResolverRepositoryForFSSaveReturn struct {
+		res *model.Resolver
+		err error
+	}
+	type mockResolverRepositoryForFSSave struct {
+		calls   int
+		returns []mockResolverRepositoryForFSSaveReturn
+	}
+
 	type expected struct {
 		res   *PullOutput
 		errIs error
 	}
 
 	tests := []struct {
-		name                                 string
-		args                                 args
-		mockSchemaRepositoryForAppSyncGet    mockSchemaRepositoryForAppSyncGet
-		mockSchemaRepositoryForFSSave        mockSchemaRepositoryForFSSave
-		mockFunctionRepositoryForAppSyncList mockFunctionRepositoryForAppSyncList
-		mockFunctionRepositoryForFSSave      mockFunctionRepositoryForFSSave
-		expected                             expected
+		name                                                  string
+		args                                                  args
+		mockSchemaRepositoryForAppSyncGet                     mockSchemaRepositoryForAppSyncGet
+		mockSchemaRepositoryForFSSave                         mockSchemaRepositoryForFSSave
+		mockFunctionRepositoryForAppSyncList                  mockFunctionRepositoryForAppSyncList
+		mockFunctionRepositoryForFSSave                       mockFunctionRepositoryForFSSave
+		mockResolverRepositoryForAppSyncList                  mockResolverRepositoryForAppSyncList
+		mockResolverServiceResolvePipelineConfigFunctionNames mockResolverServiceResolvePipelineConfigFunctionNames
+		mockResolverRepositoryForFSSave                       mockResolverRepositoryForFSSave
+		expected                                              expected
 	}{
 		{
 			name: "happy path",
@@ -143,6 +190,55 @@ func Test_pullUseCase_Execute(t *testing.T) {
 					},
 				},
 			},
+			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
+				returns: []mockResolverRepositoryForAppSyncListReturn{
+					{
+						res: []model.Resolver{
+							resolverUNIT_VTL_2018_05_29,
+							resolverUNIT_APPSYNC_JS_1_0_0,
+							resolverPIPELINE_VTL_2018_05_29,
+							resolverPIPELINE_APPSYNC_JS_1_0_0,
+						},
+						err: nil,
+					},
+				},
+			},
+			mockResolverServiceResolvePipelineConfigFunctionNames: mockResolverServiceResolvePipelineConfigFunctionNames{
+				returns: []mockResolverServiceResolvePipelineConfigFunctionNamesReturn{
+					{
+						err: nil,
+					},
+					{
+						err: nil,
+					},
+					{
+						err: nil,
+					},
+					{
+						err: nil,
+					},
+				},
+			},
+			mockResolverRepositoryForFSSave: mockResolverRepositoryForFSSave{
+				returns: []mockResolverRepositoryForFSSaveReturn{
+					{
+						res: &resolverUNIT_VTL_2018_05_29,
+						err: nil,
+					},
+					{
+						res: &resolverUNIT_APPSYNC_JS_1_0_0,
+						err: nil,
+					},
+					{
+						res: &resolverPIPELINE_VTL_2018_05_29,
+						err: nil,
+					},
+					{
+						res: &resolverPIPELINE_APPSYNC_JS_1_0_0,
+						err: nil,
+					},
+				},
+			},
 			expected: expected{
 				res:   &PullOutput{},
 				errIs: nil,
@@ -172,13 +268,22 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			mockFunctionRepositoryForFSSave: mockFunctionRepositoryForFSSave{
 				returns: []mockFunctionRepositoryForFSSaveReturn{},
 			},
+			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
+				returns: []mockResolverRepositoryForAppSyncListReturn{},
+			},
+			mockResolverServiceResolvePipelineConfigFunctionNames: mockResolverServiceResolvePipelineConfigFunctionNames{
+				returns: []mockResolverServiceResolvePipelineConfigFunctionNamesReturn{},
+			},
+			mockResolverRepositoryForFSSave: mockResolverRepositoryForFSSave{
+				returns: []mockResolverRepositoryForFSSaveReturn{},
+			},
 			expected: expected{
 				res:   nil,
 				errIs: nil,
 			},
 		},
 		{
-			name: "edge path: SchemaRepositoryForFSSave.Save() error",
+			name: "edge path: SchemaRepositoryForFS.Save() error",
 			args: args{
 				params: &PullInput{
 					APIID: "APIID",
@@ -206,13 +311,22 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			mockFunctionRepositoryForFSSave: mockFunctionRepositoryForFSSave{
 				returns: []mockFunctionRepositoryForFSSaveReturn{},
 			},
+			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
+				returns: []mockResolverRepositoryForAppSyncListReturn{},
+			},
+			mockResolverServiceResolvePipelineConfigFunctionNames: mockResolverServiceResolvePipelineConfigFunctionNames{
+				returns: []mockResolverServiceResolvePipelineConfigFunctionNamesReturn{},
+			},
+			mockResolverRepositoryForFSSave: mockResolverRepositoryForFSSave{
+				returns: []mockResolverRepositoryForFSSaveReturn{},
+			},
 			expected: expected{
 				res:   nil,
 				errIs: nil,
 			},
 		},
 		{
-			name: "edge path: FunctionRepositoryForFSSave.List() error",
+			name: "edge path: FunctionRepositoryForFS.List() error",
 			args: args{
 				params: &PullInput{
 					APIID: "APIID",
@@ -245,13 +359,22 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			mockFunctionRepositoryForFSSave: mockFunctionRepositoryForFSSave{
 				returns: []mockFunctionRepositoryForFSSaveReturn{},
 			},
+			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
+				returns: []mockResolverRepositoryForAppSyncListReturn{},
+			},
+			mockResolverServiceResolvePipelineConfigFunctionNames: mockResolverServiceResolvePipelineConfigFunctionNames{
+				returns: []mockResolverServiceResolvePipelineConfigFunctionNamesReturn{},
+			},
+			mockResolverRepositoryForFSSave: mockResolverRepositoryForFSSave{
+				returns: []mockResolverRepositoryForFSSaveReturn{},
+			},
 			expected: expected{
 				res:   nil,
 				errIs: nil,
 			},
 		},
 		{
-			name: "edge path: FunctionRepositoryForFSSave.Save() error",
+			name: "edge path: FunctionRepositoryForFS.Save() error",
 			args: args{
 				params: &PullInput{
 					APIID: "APIID",
@@ -296,6 +419,263 @@ func Test_pullUseCase_Execute(t *testing.T) {
 					},
 				},
 			},
+			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
+				returns: []mockResolverRepositoryForAppSyncListReturn{},
+			},
+			mockResolverServiceResolvePipelineConfigFunctionNames: mockResolverServiceResolvePipelineConfigFunctionNames{
+				returns: []mockResolverServiceResolvePipelineConfigFunctionNamesReturn{},
+			},
+			mockResolverRepositoryForFSSave: mockResolverRepositoryForFSSave{
+				returns: []mockResolverRepositoryForFSSaveReturn{},
+			},
+			expected: expected{
+				res:   nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "edge path: ResolverRepositoryForAppSync.List() error",
+			args: args{
+				params: &PullInput{
+					APIID: "APIID",
+				},
+			},
+			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
+				returns: []mockSchemaRepositoryForAppSyncGetReturn{
+					{
+						res: &schema,
+						err: nil,
+					},
+				},
+			},
+			mockSchemaRepositoryForFSSave: mockSchemaRepositoryForFSSave{
+				returns: []mockSchemaRepositoryForFSSaveReturn{
+					{
+						res: &schema,
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForAppSyncList: mockFunctionRepositoryForAppSyncList{
+				returns: []mockFunctionRepositoryForAppSyncListReturn{
+					{
+						res: []model.Function{
+							functionVTL_2018_05_29,
+							functionAPPSYNC_JS_1_0_0,
+						},
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForFSSave: mockFunctionRepositoryForFSSave{
+				returns: []mockFunctionRepositoryForFSSaveReturn{
+					{
+						res: &functionVTL_2018_05_29,
+						err: nil,
+					},
+					{
+						res: &functionAPPSYNC_JS_1_0_0,
+						err: nil,
+					},
+				},
+			},
+			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
+				returns: []mockResolverRepositoryForAppSyncListReturn{
+					{
+						res: nil,
+						err: &model.LibError{},
+					},
+				},
+			},
+			mockResolverServiceResolvePipelineConfigFunctionNames: mockResolverServiceResolvePipelineConfigFunctionNames{
+				returns: []mockResolverServiceResolvePipelineConfigFunctionNamesReturn{},
+			},
+			mockResolverRepositoryForFSSave: mockResolverRepositoryForFSSave{
+				returns: []mockResolverRepositoryForFSSaveReturn{},
+			},
+			expected: expected{
+				res:   nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "edge path: ResolverService.ResolvePipelineConfigFunctionNames() error",
+			args: args{
+				params: &PullInput{
+					APIID: "APIID",
+				},
+			},
+			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
+				returns: []mockSchemaRepositoryForAppSyncGetReturn{
+					{
+						res: &schema,
+						err: nil,
+					},
+				},
+			},
+			mockSchemaRepositoryForFSSave: mockSchemaRepositoryForFSSave{
+				returns: []mockSchemaRepositoryForFSSaveReturn{
+					{
+						res: &schema,
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForAppSyncList: mockFunctionRepositoryForAppSyncList{
+				returns: []mockFunctionRepositoryForAppSyncListReturn{
+					{
+						res: []model.Function{
+							functionVTL_2018_05_29,
+							functionAPPSYNC_JS_1_0_0,
+						},
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForFSSave: mockFunctionRepositoryForFSSave{
+				returns: []mockFunctionRepositoryForFSSaveReturn{
+					{
+						res: &functionVTL_2018_05_29,
+						err: nil,
+					},
+					{
+						res: &functionAPPSYNC_JS_1_0_0,
+						err: nil,
+					},
+				},
+			},
+			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
+				returns: []mockResolverRepositoryForAppSyncListReturn{
+					{
+						res: []model.Resolver{
+							resolverUNIT_VTL_2018_05_29,
+							resolverUNIT_APPSYNC_JS_1_0_0,
+							resolverPIPELINE_VTL_2018_05_29,
+							resolverPIPELINE_APPSYNC_JS_1_0_0,
+						},
+						err: nil,
+					},
+				},
+			},
+			mockResolverServiceResolvePipelineConfigFunctionNames: mockResolverServiceResolvePipelineConfigFunctionNames{
+				returns: []mockResolverServiceResolvePipelineConfigFunctionNamesReturn{
+					{
+						err: &model.LibError{},
+					},
+					{
+						err: &model.LibError{},
+					},
+					{
+						err: &model.LibError{},
+					},
+					{
+						err: &model.LibError{},
+					},
+				},
+			},
+			mockResolverRepositoryForFSSave: mockResolverRepositoryForFSSave{
+				returns: []mockResolverRepositoryForFSSaveReturn{},
+			},
+			expected: expected{
+				res:   nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "edge path: ResolverRepositoryForFS.Save() error",
+			args: args{
+				params: &PullInput{
+					APIID: "APIID",
+				},
+			},
+			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
+				returns: []mockSchemaRepositoryForAppSyncGetReturn{
+					{
+						res: &schema,
+						err: nil,
+					},
+				},
+			},
+			mockSchemaRepositoryForFSSave: mockSchemaRepositoryForFSSave{
+				returns: []mockSchemaRepositoryForFSSaveReturn{
+					{
+						res: &schema,
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForAppSyncList: mockFunctionRepositoryForAppSyncList{
+				returns: []mockFunctionRepositoryForAppSyncListReturn{
+					{
+						res: []model.Function{
+							functionVTL_2018_05_29,
+							functionAPPSYNC_JS_1_0_0,
+						},
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForFSSave: mockFunctionRepositoryForFSSave{
+				returns: []mockFunctionRepositoryForFSSaveReturn{
+					{
+						res: &functionVTL_2018_05_29,
+						err: nil,
+					},
+					{
+						res: &functionAPPSYNC_JS_1_0_0,
+						err: nil,
+					},
+				},
+			},
+			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
+				returns: []mockResolverRepositoryForAppSyncListReturn{
+					{
+						res: []model.Resolver{
+							resolverUNIT_VTL_2018_05_29,
+							resolverUNIT_APPSYNC_JS_1_0_0,
+							resolverPIPELINE_VTL_2018_05_29,
+							resolverPIPELINE_APPSYNC_JS_1_0_0,
+						},
+						err: nil,
+					},
+				},
+			},
+			mockResolverServiceResolvePipelineConfigFunctionNames: mockResolverServiceResolvePipelineConfigFunctionNames{
+				returns: []mockResolverServiceResolvePipelineConfigFunctionNamesReturn{
+					{
+						err: nil,
+					},
+					{
+						err: nil,
+					},
+					{
+						err: nil,
+					},
+					{
+						err: nil,
+					},
+				},
+			},
+			mockResolverRepositoryForFSSave: mockResolverRepositoryForFSSave{
+				returns: []mockResolverRepositoryForFSSaveReturn{
+					{
+						res: nil,
+						err: &model.LibError{},
+					},
+					{
+						res: nil,
+						err: &model.LibError{},
+					},
+					{
+						res: nil,
+						err: &model.LibError{},
+					},
+					{
+						res: nil,
+						err: &model.LibError{},
+					},
+				},
+			},
 			expected: expected{
 				res:   nil,
 				errIs: nil,
@@ -311,11 +691,16 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
+			var mu sync.Mutex
+
+			mockResolverService := mock_service.NewMockResolverService(ctrl)
 			mockTrackerRepository := mock_repository.NewMockTrackerRepository(ctrl)
 			mockSchemaRepositoryForAppSync := mock_repository.NewMockSchemaRepository(ctrl)
 			mockSchemaRepositoryForFS := mock_repository.NewMockSchemaRepository(ctrl)
 			mockFunctionRepositoryForAppSync := mock_repository.NewMockFunctionRepository(ctrl)
 			mockFunctionRepositoryForFS := mock_repository.NewMockFunctionRepository(ctrl)
+			mockResolverRepositoryForAppSync := mock_repository.NewMockResolverRepository(ctrl)
+			mockResolverRepositoryForFS := mock_repository.NewMockResolverRepository(ctrl)
 
 			mockTrackerRepository.
 				EXPECT().
@@ -366,18 +751,57 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				EXPECT().
 				Save(ctx, gomock.Any(), gomock.Any()).
 				DoAndReturn(func(ctx context.Context, apiID string, function *model.Function) (*model.Function, error) {
+					mu.Lock()
 					r := tt.mockFunctionRepositoryForFSSave.returns[tt.mockFunctionRepositoryForFSSave.calls]
 					tt.mockFunctionRepositoryForFSSave.calls++
+					mu.Unlock()
 					return r.res, r.err
 				}).
-				Times(len(tt.mockFunctionRepositoryForFSSave.returns))
+				MaxTimes(len(tt.mockFunctionRepositoryForFSSave.returns))
+
+			mockResolverRepositoryForAppSync.
+				EXPECT().
+				List(ctx, gomock.Any()).
+				DoAndReturn(func(ctx context.Context, apiID string) ([]model.Resolver, error) {
+					r := tt.mockResolverRepositoryForAppSyncList.returns[tt.mockResolverRepositoryForAppSyncList.calls]
+					tt.mockResolverRepositoryForAppSyncList.calls++
+					return r.res, r.err
+				}).
+				Times(len(tt.mockResolverRepositoryForAppSyncList.returns))
+
+			mockResolverService.
+				EXPECT().
+				ResolvePipelineConfigFunctionNames(ctx, gomock.Any(), gomock.Any()).
+				DoAndReturn(func(ctx context.Context, resolver *model.Resolver, functions []model.Function) error {
+					mu.Lock()
+					r := tt.mockResolverServiceResolvePipelineConfigFunctionNames.returns[tt.mockResolverServiceResolvePipelineConfigFunctionNames.calls]
+					tt.mockResolverServiceResolvePipelineConfigFunctionNames.calls++
+					mu.Unlock()
+					return r.err
+				}).
+				MaxTimes(len(tt.mockResolverServiceResolvePipelineConfigFunctionNames.returns))
+
+			mockResolverRepositoryForFS.
+				EXPECT().
+				Save(ctx, gomock.Any(), gomock.Any()).
+				DoAndReturn(func(ctx context.Context, apiID string, resolver *model.Resolver) (*model.Resolver, error) {
+					mu.Lock()
+					r := tt.mockResolverRepositoryForFSSave.returns[tt.mockResolverRepositoryForFSSave.calls]
+					tt.mockResolverRepositoryForFSSave.calls++
+					mu.Unlock()
+					return r.res, r.err
+				}).
+				MaxTimes(len(tt.mockResolverRepositoryForFSSave.returns))
 
 			uc := &pullUseCase{
+				resolverService:              mockResolverService,
 				trackerRepository:            mockTrackerRepository,
 				schemaRepositoryForAppSync:   mockSchemaRepositoryForAppSync,
 				schemaRepositoryForFS:        mockSchemaRepositoryForFS,
 				functionRepositoryForAppSync: mockFunctionRepositoryForAppSync,
 				functionRepositoryForFS:      mockFunctionRepositoryForFS,
+				resolverRepositoryForAppSync: mockResolverRepositoryForAppSync,
+				resolverRepositoryForFS:      mockResolverRepositoryForFS,
 			}
 
 			// Act
