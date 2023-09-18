@@ -1,0 +1,21 @@
+{
+  "typeName": "PIPELINE",
+  "fieldName": "VTL_2018-05-29",
+  "dataSourceName": "DataSourceName",
+  "kind": "PIPELINE",
+  "pipelineConfig": {
+    "functionNames": ["FunctionName1", "FunctionName2"]
+  },
+  "syncConfig": {
+    "conflictHandler": "ConflictHandler",
+    "conflictDetection": "ConflictDetection",
+    "lambdaConflictHandlerConfig": {
+      "lambdaConflictHandlerArn": "LambdaConflictHandlerArn"
+    }
+  },
+  "cachingConfig": {
+    "ttl": 3600,
+    "cachingKeys": ["CachingKey1", "CachingKey2"]
+  },
+  "maxBatchSize": 0
+}
