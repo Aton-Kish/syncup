@@ -96,6 +96,8 @@ func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (res *Pul
 		return nil, err
 	}
 
+	uc.trackerRepository.InProgress(ctx, "saving functions")
+
 	var mu sync.Mutex
 	var wg sync.WaitGroup
 	errs := make([]error, 0)
@@ -125,6 +127,8 @@ func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (res *Pul
 		return nil, err
 	}
 
+	uc.trackerRepository.Success(ctx, "saved all functions")
+
 	uc.trackerRepository.InProgress(ctx, "fetching resolvers")
 
 	rslvs, err := uc.resolverRepositoryForAppSync.List(ctx, apiID)
@@ -132,6 +136,8 @@ func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (res *Pul
 		uc.trackerRepository.Failed(ctx, "failed to fetch resolvers")
 		return nil, err
 	}
+
+	uc.trackerRepository.InProgress(ctx, "saving resolvers")
 
 	for _, rslv := range rslvs {
 		rslv := rslv
@@ -166,6 +172,8 @@ func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (res *Pul
 	if err := errors.Join(errs...); err != nil {
 		return nil, err
 	}
+
+	uc.trackerRepository.Success(ctx, "saved all resolvers")
 
 	return &PullOutput{}, nil
 }
