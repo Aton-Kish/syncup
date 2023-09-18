@@ -56,7 +56,8 @@ type Resolver struct {
 type ResolverKind string
 
 type PipelineConfig struct {
-	Functions []string `json:"functions,omitempty"`
+	Functions     []string `json:"-"`
+	FunctionNames []string `json:"functionNames"`
 }
 
 type SyncConfig struct {
