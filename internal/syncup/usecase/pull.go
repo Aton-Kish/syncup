@@ -29,6 +29,7 @@ import (
 	"sync"
 
 	ptr "github.com/Aton-Kish/goptr"
+	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/service"
 )
@@ -71,7 +72,24 @@ func NewPullUseCase(repo repository.Repository) PullUseCase {
 func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (res *PullOutput, err error) {
 	defer wrap(&err)
 
-	apiID := params.APIID
+	if _, err := uc.pullSchema(ctx, params.APIID); err != nil {
+		return nil, err
+	}
+
+	fns, err := uc.pullFunctions(ctx, params.APIID)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err := uc.pullResolvers(ctx, params.APIID, fns); err != nil {
+		return nil, err
+	}
+
+	return &PullOutput{}, nil
+}
+
+func (uc *pullUseCase) pullSchema(ctx context.Context, apiID string) (res *model.Schema, err error) {
+	defer wrap(&err)
 
 	uc.trackerRepository.InProgress(ctx, "fetching schema")
 
@@ -88,9 +106,15 @@ func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (res *Pul
 
 	uc.trackerRepository.Success(ctx, "saved schema")
 
+	return schema, nil
+}
+
+func (uc *pullUseCase) pullFunctions(ctx context.Context, apiID string) (res []model.Function, err error) {
+	defer wrap(&err)
+
 	uc.trackerRepository.InProgress(ctx, "fetching functions")
 
-	fns, err := uc.functionRepositoryForAppSync.List(ctx, apiID)
+	functions, err := uc.functionRepositoryForAppSync.List(ctx, apiID)
 	if err != nil {
 		uc.trackerRepository.Failed(ctx, "failed to fetch functions")
 		return nil, err
@@ -102,7 +126,7 @@ func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (res *Pul
 	var wg sync.WaitGroup
 	errs := make([]error, 0)
 
-	for _, fn := range fns {
+	for _, fn := range functions {
 		fn := fn
 		wg.Add(1)
 		go func() {
@@ -129,6 +153,12 @@ func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (res *Pul
 
 	uc.trackerRepository.Success(ctx, "saved all functions")
 
+	return functions, nil
+}
+
+func (uc *pullUseCase) pullResolvers(ctx context.Context, apiID string, functions []model.Function) (res []model.Resolver, err error) {
+	defer wrap(&err)
+
 	uc.trackerRepository.InProgress(ctx, "fetching resolvers")
 
 	rslvs, err := uc.resolverRepositoryForAppSync.List(ctx, apiID)
@@ -139,13 +169,17 @@ func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (res *Pul
 
 	uc.trackerRepository.InProgress(ctx, "saving resolvers")
 
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+	errs := make([]error, 0)
+
 	for _, rslv := range rslvs {
 		rslv := rslv
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 
-			if err := uc.resolverService.ResolvePipelineConfigFunctionNames(ctx, &rslv, fns); err != nil {
+			if err := uc.resolverService.ResolvePipelineConfigFunctionNames(ctx, &rslv, functions); err != nil {
 				mu.Lock()
 				errs = append(errs, err)
 				mu.Unlock()
@@ -175,5 +209,5 @@ func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (res *Pul
 
 	uc.trackerRepository.Success(ctx, "saved all resolvers")
 
-	return &PullOutput{}, nil
+	return rslvs, nil
 }
