@@ -31,6 +31,8 @@ import (
 )
 
 type ResolverService interface {
+	Difference(ctx context.Context, resolvers1, resolvers2 []model.Resolver) ([]model.Resolver, error)
+
 	ResolvePipelineConfigFunctionIDs(ctx context.Context, resolver *model.Resolver, functions []model.Function) error
 	ResolvePipelineConfigFunctionNames(ctx context.Context, resolver *model.Resolver, functions []model.Function) error
 }
@@ -40,6 +42,40 @@ type resolverService struct {
 
 func NewResolverService(repo repository.Repository) ResolverService {
 	return &resolverService{}
+}
+
+func (s *resolverService) Difference(ctx context.Context, resolvers1, resolvers2 []model.Resolver) (res []model.Resolver, err error) {
+	defer wrap(&err)
+
+	encountered := make(map[string]bool)
+	for _, rslv := range resolvers2 {
+		if rslv.TypeName == nil {
+			return nil, fmt.Errorf("%w: missing type name", model.ErrNilValue)
+		}
+
+		if rslv.FieldName == nil {
+			return nil, fmt.Errorf("%w: missing field name", model.ErrNilValue)
+		}
+
+		encountered[fmt.Sprintf("%s.%s", *rslv.TypeName, *rslv.FieldName)] = true
+	}
+
+	diff := make([]model.Resolver, 0)
+	for _, rslv := range resolvers1 {
+		if rslv.TypeName == nil {
+			return nil, fmt.Errorf("%w: missing type name", model.ErrNilValue)
+		}
+
+		if rslv.FieldName == nil {
+			return nil, fmt.Errorf("%w: missing field name", model.ErrNilValue)
+		}
+
+		if !encountered[fmt.Sprintf("%s.%s", *rslv.TypeName, *rslv.FieldName)] {
+			diff = append(diff, rslv)
+		}
+	}
+
+	return diff, nil
 }
 
 func (s *resolverService) ResolvePipelineConfigFunctionIDs(ctx context.Context, resolver *model.Resolver, functions []model.Function) (err error) {

@@ -35,6 +35,21 @@ func (m *MockResolverService) EXPECT() *MockResolverServiceMockRecorder {
 	return m.recorder
 }
 
+// Difference mocks base method.
+func (m *MockResolverService) Difference(ctx context.Context, resolvers1, resolvers2 []model.Resolver) ([]model.Resolver, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Difference", ctx, resolvers1, resolvers2)
+	ret0, _ := ret[0].([]model.Resolver)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Difference indicates an expected call of Difference.
+func (mr *MockResolverServiceMockRecorder) Difference(ctx, resolvers1, resolvers2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockResolverService)(nil).Difference), ctx, resolvers1, resolvers2)
+}
+
 // ResolvePipelineConfigFunctionIDs mocks base method.
 func (m *MockResolverService) ResolvePipelineConfigFunctionIDs(ctx context.Context, resolver *model.Resolver, functions []model.Function) error {
 	m.ctrl.T.Helper()

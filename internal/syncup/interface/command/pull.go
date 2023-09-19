@@ -34,8 +34,9 @@ type pullFlags struct {
 	region  string
 	profile string
 
-	apiID   string
-	baseDir string
+	apiID                 string
+	deleteExtraneousFiles bool
+	baseDir               string
 }
 
 type PullCommand interface {
@@ -122,7 +123,8 @@ func (c *pullCommand) command() *cobra.Command {
 				if _, err := c.useCase.Execute(
 					ctx,
 					&usecase.PullInput{
-						APIID: c.flags.apiID,
+						APIID:                 c.flags.apiID,
+						DeleteExtraneousFiles: c.flags.deleteExtraneousFiles,
 					},
 				); err != nil {
 					return err
@@ -138,6 +140,7 @@ func (c *pullCommand) command() *cobra.Command {
 
 		c.cmd.Flags().StringVar(&c.flags.apiID, "api-id", "", "The API ID of AWS AppSync.")
 		_ = c.cmd.MarkFlagRequired("api-id")
+		c.cmd.Flags().BoolVar(&c.flags.deleteExtraneousFiles, "delete", false, "Delete extraneous resources from file system.")
 		c.cmd.Flags().StringVar(&c.flags.baseDir, "dir", "", "The directory in which the resources will be saved (instead of current directory).")
 
 		c.cmd.SetIn(c.options.stdio.in)

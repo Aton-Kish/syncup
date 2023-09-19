@@ -29,12 +29,14 @@ import (
 	"sync"
 
 	ptr "github.com/Aton-Kish/goptr"
+	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/service"
 )
 
 type PullInput struct {
-	APIID string
+	APIID                 string
+	DeleteExtraneousFiles bool
 }
 
 type PullOutput struct {
@@ -45,6 +47,7 @@ type PullUseCase interface {
 }
 
 type pullUseCase struct {
+	functionService              service.FunctionService
 	resolverService              service.ResolverService
 	trackerRepository            repository.TrackerRepository
 	schemaRepositoryForAppSync   repository.SchemaRepository
@@ -57,6 +60,7 @@ type pullUseCase struct {
 
 func NewPullUseCase(repo repository.Repository) PullUseCase {
 	return &pullUseCase{
+		functionService:              service.NewFunctionService(repo),
 		resolverService:              service.NewResolverService(repo),
 		trackerRepository:            repo.TrackerRepository(),
 		schemaRepositoryForAppSync:   repo.SchemaRepositoryForAppSync(),
@@ -71,7 +75,37 @@ func NewPullUseCase(repo repository.Repository) PullUseCase {
 func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (res *PullOutput, err error) {
 	defer wrap(&err)
 
-	apiID := params.APIID
+	if _, err := uc.pullSchema(ctx, params.APIID); err != nil {
+		return nil, err
+	}
+
+	fns, err := uc.pullFunctions(ctx, params.APIID)
+	if err != nil {
+		return nil, err
+	}
+
+	if params.DeleteExtraneousFiles {
+		if err := uc.deleteExtraneousFunctions(ctx, params.APIID, fns); err != nil {
+			return nil, err
+		}
+	}
+
+	rslvs, err := uc.pullResolvers(ctx, params.APIID, fns)
+	if err != nil {
+		return nil, err
+	}
+
+	if params.DeleteExtraneousFiles {
+		if err := uc.deleteExtraneousResolvers(ctx, params.APIID, rslvs); err != nil {
+			return nil, err
+		}
+	}
+
+	return &PullOutput{}, nil
+}
+
+func (uc *pullUseCase) pullSchema(ctx context.Context, apiID string) (res *model.Schema, err error) {
+	defer wrap(&err)
 
 	uc.trackerRepository.InProgress(ctx, "fetching schema")
 
@@ -88,9 +122,15 @@ func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (res *Pul
 
 	uc.trackerRepository.Success(ctx, "saved schema")
 
+	return schema, nil
+}
+
+func (uc *pullUseCase) pullFunctions(ctx context.Context, apiID string) (res []model.Function, err error) {
+	defer wrap(&err)
+
 	uc.trackerRepository.InProgress(ctx, "fetching functions")
 
-	fns, err := uc.functionRepositoryForAppSync.List(ctx, apiID)
+	functions, err := uc.functionRepositoryForAppSync.List(ctx, apiID)
 	if err != nil {
 		uc.trackerRepository.Failed(ctx, "failed to fetch functions")
 		return nil, err
@@ -102,7 +142,7 @@ func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (res *Pul
 	var wg sync.WaitGroup
 	errs := make([]error, 0)
 
-	for _, fn := range fns {
+	for _, fn := range functions {
 		fn := fn
 		wg.Add(1)
 		go func() {
@@ -129,6 +169,69 @@ func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (res *Pul
 
 	uc.trackerRepository.Success(ctx, "saved all functions")
 
+	return functions, nil
+}
+
+func (uc *pullUseCase) deleteExtraneousFunctions(ctx context.Context, apiID string, functions []model.Function) (err error) {
+	defer wrap(&err)
+
+	uc.trackerRepository.InProgress(ctx, "loading functions")
+
+	fsFns, err := uc.functionRepositoryForFS.List(ctx, apiID)
+	if err != nil {
+		uc.trackerRepository.Failed(ctx, "failed to load functions")
+		return err
+	}
+
+	extraneousFns, err := uc.functionService.Difference(ctx, fsFns, functions)
+	if err != nil {
+		uc.trackerRepository.Failed(ctx, "failed to retrieve extraneous functions")
+		return err
+	}
+
+	if len(extraneousFns) == 0 {
+		return nil
+	}
+
+	uc.trackerRepository.InProgress(ctx, "deleting extraneous functions")
+
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+	errs := make([]error, 0)
+
+	for _, fn := range extraneousFns {
+		fn := fn
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			if err := uc.functionRepositoryForFS.Delete(ctx, apiID, *fn.Name); err != nil {
+				mu.Lock()
+				errs = append(errs, err)
+				mu.Unlock()
+
+				uc.trackerRepository.Failed(ctx, fmt.Sprintf("failed to delete extraneous function %s", ptr.ToValue(fn.Name)))
+				return
+			}
+
+			uc.trackerRepository.Success(ctx, fmt.Sprintf("deleted extraneous function %s", ptr.ToValue(fn.Name)))
+		}()
+	}
+
+	wg.Wait()
+
+	if err := errors.Join(errs...); err != nil {
+		return err
+	}
+
+	uc.trackerRepository.Success(ctx, "deleted all extraneous functions")
+
+	return nil
+}
+
+func (uc *pullUseCase) pullResolvers(ctx context.Context, apiID string, functions []model.Function) (res []model.Resolver, err error) {
+	defer wrap(&err)
+
 	uc.trackerRepository.InProgress(ctx, "fetching resolvers")
 
 	rslvs, err := uc.resolverRepositoryForAppSync.List(ctx, apiID)
@@ -139,13 +242,17 @@ func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (res *Pul
 
 	uc.trackerRepository.InProgress(ctx, "saving resolvers")
 
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+	errs := make([]error, 0)
+
 	for _, rslv := range rslvs {
 		rslv := rslv
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 
-			if err := uc.resolverService.ResolvePipelineConfigFunctionNames(ctx, &rslv, fns); err != nil {
+			if err := uc.resolverService.ResolvePipelineConfigFunctionNames(ctx, &rslv, functions); err != nil {
 				mu.Lock()
 				errs = append(errs, err)
 				mu.Unlock()
@@ -175,5 +282,62 @@ func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (res *Pul
 
 	uc.trackerRepository.Success(ctx, "saved all resolvers")
 
-	return &PullOutput{}, nil
+	return rslvs, nil
+}
+
+func (uc *pullUseCase) deleteExtraneousResolvers(ctx context.Context, apiID string, resolvers []model.Resolver) (err error) {
+	defer wrap(&err)
+
+	uc.trackerRepository.InProgress(ctx, "loading resolvers")
+
+	fsRslvs, err := uc.resolverRepositoryForFS.List(ctx, apiID)
+	if err != nil {
+		uc.trackerRepository.Failed(ctx, "failed to load resolvers")
+		return err
+	}
+
+	extraneousRslvs, err := uc.resolverService.Difference(ctx, fsRslvs, resolvers)
+	if err != nil {
+		uc.trackerRepository.Failed(ctx, "failed to retrieve extraneous resolvers")
+		return err
+	}
+
+	if len(extraneousRslvs) == 0 {
+		return nil
+	}
+
+	uc.trackerRepository.InProgress(ctx, "deleting extraneous resolvers")
+
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+	errs := make([]error, 0)
+
+	for _, rslv := range extraneousRslvs {
+		rslv := rslv
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			if err := uc.resolverRepositoryForFS.Delete(ctx, apiID, *rslv.TypeName, *rslv.FieldName); err != nil {
+				mu.Lock()
+				errs = append(errs, err)
+				mu.Unlock()
+
+				uc.trackerRepository.Failed(ctx, fmt.Sprintf("failed to delete extraneous resolver %s.%s", ptr.ToValue(rslv.TypeName), ptr.ToValue(rslv.FieldName)))
+				return
+			}
+
+			uc.trackerRepository.Success(ctx, fmt.Sprintf("deleted extraneous resolver %s.%s", ptr.ToValue(rslv.TypeName), ptr.ToValue(rslv.FieldName)))
+		}()
+	}
+
+	wg.Wait()
+
+	if err := errors.Join(errs...); err != nil {
+		return err
+	}
+
+	uc.trackerRepository.Success(ctx, "deleted all extraneous resolvers")
+
+	return nil
 }

@@ -22,13 +22,128 @@ package service
 
 import (
 	"context"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	ptr "github.com/Aton-Kish/goptr"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
+	"github.com/Aton-Kish/syncup/internal/testhelpers"
 	"github.com/stretchr/testify/assert"
 )
+
+func Test_resolverService_Difference(t *testing.T) {
+	testdataBaseDir := "../../../../testdata"
+	resolverUNIT_VTL_2018_05_29 := testhelpers.MustUnmarshalJSON[model.Resolver](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "resolvers/UNIT/VTL_2018-05-29/metadata.json")))
+	resolverUNIT_VTL_2018_05_29.RequestMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "resolvers/UNIT/VTL_2018-05-29/request.vtl"))))
+	resolverUNIT_VTL_2018_05_29.ResponseMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "resolvers/UNIT/VTL_2018-05-29/response.vtl"))))
+	resolverUNIT_APPSYNC_JS_1_0_0 := testhelpers.MustUnmarshalJSON[model.Resolver](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "resolvers/UNIT/APPSYNC_JS_1.0.0/metadata.json")))
+	resolverUNIT_APPSYNC_JS_1_0_0.Code = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "resolvers/UNIT/APPSYNC_JS_1.0.0/code.js"))))
+	resolverPIPELINE_VTL_2018_05_29 := testhelpers.MustUnmarshalJSON[model.Resolver](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "resolvers/PIPELINE/VTL_2018-05-29/metadata.json")))
+	resolverPIPELINE_VTL_2018_05_29.RequestMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "resolvers/PIPELINE/VTL_2018-05-29/request.vtl"))))
+	resolverPIPELINE_VTL_2018_05_29.ResponseMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "resolvers/PIPELINE/VTL_2018-05-29/response.vtl"))))
+	resolverPIPELINE_APPSYNC_JS_1_0_0 := testhelpers.MustUnmarshalJSON[model.Resolver](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "resolvers/PIPELINE/APPSYNC_JS_1.0.0/metadata.json")))
+	resolverPIPELINE_APPSYNC_JS_1_0_0.Code = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "resolvers/PIPELINE/APPSYNC_JS_1.0.0/code.js"))))
+
+	type args struct {
+		resolvers1 []model.Resolver
+		resolvers2 []model.Resolver
+	}
+
+	type expected struct {
+		res   []model.Resolver
+		errIs error
+	}
+
+	tests := []struct {
+		name     string
+		args     args
+		expected expected
+	}{
+		{
+			name: "happy path: no differences",
+			args: args{
+				resolvers1: []model.Resolver{
+					resolverUNIT_VTL_2018_05_29,
+					resolverUNIT_APPSYNC_JS_1_0_0,
+				},
+				resolvers2: []model.Resolver{
+					resolverUNIT_VTL_2018_05_29,
+					resolverUNIT_APPSYNC_JS_1_0_0,
+				},
+			},
+			expected: expected{
+				res:   []model.Resolver{},
+				errIs: nil,
+			},
+		},
+		{
+			name: "happy path: some differences",
+			args: args{
+				resolvers1: []model.Resolver{
+					resolverUNIT_VTL_2018_05_29,
+					resolverUNIT_APPSYNC_JS_1_0_0,
+				},
+				resolvers2: []model.Resolver{
+					resolverUNIT_VTL_2018_05_29,
+					resolverPIPELINE_VTL_2018_05_29,
+				},
+			},
+			expected: expected{
+				res: []model.Resolver{
+					resolverUNIT_APPSYNC_JS_1_0_0,
+				},
+				errIs: nil,
+			},
+		},
+		{
+			name: "happy path: everything is different",
+			args: args{
+				resolvers1: []model.Resolver{
+					resolverUNIT_VTL_2018_05_29,
+					resolverUNIT_APPSYNC_JS_1_0_0,
+				},
+				resolvers2: []model.Resolver{
+					resolverPIPELINE_VTL_2018_05_29,
+					resolverPIPELINE_APPSYNC_JS_1_0_0,
+				},
+			},
+			expected: expected{
+				res: []model.Resolver{
+					resolverUNIT_VTL_2018_05_29,
+					resolverUNIT_APPSYNC_JS_1_0_0,
+				},
+				errIs: nil,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange
+			ctx := context.Background()
+
+			s := &resolverService{}
+
+			// Act
+			actual, err := s.Difference(ctx, tt.args.resolvers1, tt.args.resolvers2)
+
+			// Assert
+			assert.Equal(t, tt.expected.res, actual)
+
+			if strings.HasPrefix(tt.name, "happy") {
+				assert.NoError(t, err)
+			} else {
+				var le *model.LibError
+				assert.ErrorAs(t, err, &le)
+
+				if tt.expected.errIs != nil {
+					assert.ErrorIs(t, err, tt.expected.errIs)
+				}
+			}
+		})
+	}
+}
 
 func Test_resolverService_ResolvePipelineConfigFunctionIDs(t *testing.T) {
 	type args struct {
