@@ -123,8 +123,8 @@ func (c *pullCommand) command() *cobra.Command {
 				if _, err := c.useCase.Execute(
 					ctx,
 					&usecase.PullInput{
-						APIID:                 c.flags.apiID,
-						DeleteExtraneousFiles: c.flags.deleteExtraneousFiles,
+						APIID:                     c.flags.apiID,
+						DeleteExtraneousResources: c.flags.deleteExtraneousFiles,
 					},
 				); err != nil {
 					return err

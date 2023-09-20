@@ -206,8 +206,8 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			name: "happy path: exist no extraneous files",
 			args: args{
 				params: &PullInput{
-					APIID:                 "APIID",
-					DeleteExtraneousFiles: true,
+					APIID:                     "APIID",
+					DeleteExtraneousResources: true,
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -353,8 +353,8 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			name: "happy path: delete extraneous files",
 			args: args{
 				params: &PullInput{
-					APIID:                 "APIID",
-					DeleteExtraneousFiles: true,
+					APIID:                     "APIID",
+					DeleteExtraneousResources: true,
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -524,8 +524,8 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			name: "happy path: skip deleting extraneous files",
 			args: args{
 				params: &PullInput{
-					APIID:                 "APIID",
-					DeleteExtraneousFiles: false,
+					APIID:                     "APIID",
+					DeleteExtraneousResources: false,
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -643,8 +643,8 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			name: "edge path: SchemaRepositoryForAppSync.Get() error",
 			args: args{
 				params: &PullInput{
-					APIID:                 "APIID",
-					DeleteExtraneousFiles: true,
+					APIID:                     "APIID",
+					DeleteExtraneousResources: true,
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -700,8 +700,8 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			name: "edge path: SchemaRepositoryForFS.Save() error",
 			args: args{
 				params: &PullInput{
-					APIID:                 "APIID",
-					DeleteExtraneousFiles: true,
+					APIID:                     "APIID",
+					DeleteExtraneousResources: true,
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -762,8 +762,8 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			name: "edge path: FunctionRepositoryForFS.List() error",
 			args: args{
 				params: &PullInput{
-					APIID:                 "APIID",
-					DeleteExtraneousFiles: true,
+					APIID:                     "APIID",
+					DeleteExtraneousResources: true,
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -829,8 +829,8 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			name: "edge path: FunctionRepositoryForFS.Save() error",
 			args: args{
 				params: &PullInput{
-					APIID:                 "APIID",
-					DeleteExtraneousFiles: true,
+					APIID:                     "APIID",
+					DeleteExtraneousResources: true,
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -908,8 +908,8 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			name: "edge path: ResolverRepositoryForAppSync.List() error",
 			args: args{
 				params: &PullInput{
-					APIID:                 "APIID",
-					DeleteExtraneousFiles: true,
+					APIID:                     "APIID",
+					DeleteExtraneousResources: true,
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -992,8 +992,8 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			name: "edge path: ResolverService.ResolvePipelineConfigFunctionNames() error",
 			args: args{
 				params: &PullInput{
-					APIID:                 "APIID",
-					DeleteExtraneousFiles: true,
+					APIID:                     "APIID",
+					DeleteExtraneousResources: true,
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -1094,8 +1094,8 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			name: "edge path: ResolverRepositoryForFS.Save() error",
 			args: args{
 				params: &PullInput{
-					APIID:                 "APIID",
-					DeleteExtraneousFiles: true,
+					APIID:                     "APIID",
+					DeleteExtraneousResources: true,
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -1213,8 +1213,8 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			name: "edge path: FunctionRepositoryForFS.List() error",
 			args: args{
 				params: &PullInput{
-					APIID:                 "APIID",
-					DeleteExtraneousFiles: true,
+					APIID:                     "APIID",
+					DeleteExtraneousResources: true,
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -1337,8 +1337,8 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			name: "edge path: FunctionService.Difference() error",
 			args: args{
 				params: &PullInput{
-					APIID:                 "APIID",
-					DeleteExtraneousFiles: true,
+					APIID:                     "APIID",
+					DeleteExtraneousResources: true,
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -1471,8 +1471,8 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			name: "edge path: FunctionRepositoryForFS.Delete() error",
 			args: args{
 				params: &PullInput{
-					APIID:                 "APIID",
-					DeleteExtraneousFiles: true,
+					APIID:                     "APIID",
+					DeleteExtraneousResources: true,
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -1615,8 +1615,8 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			name: "edge path: ResolverRepositoryForFS.List() error",
 			args: args{
 				params: &PullInput{
-					APIID:                 "APIID",
-					DeleteExtraneousFiles: true,
+					APIID:                     "APIID",
+					DeleteExtraneousResources: true,
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -1764,8 +1764,8 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			name: "edge path: ResolverService.Difference() error",
 			args: args{
 				params: &PullInput{
-					APIID:                 "APIID",
-					DeleteExtraneousFiles: true,
+					APIID:                     "APIID",
+					DeleteExtraneousResources: true,
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -1925,8 +1925,8 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			name: "edge path: ResolverRepositoryForFS.Delete() error",
 			args: args{
 				params: &PullInput{
-					APIID:                 "APIID",
-					DeleteExtraneousFiles: true,
+					APIID:                     "APIID",
+					DeleteExtraneousResources: true,
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{

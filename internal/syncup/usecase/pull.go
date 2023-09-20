@@ -35,8 +35,8 @@ import (
 )
 
 type PullInput struct {
-	APIID                 string
-	DeleteExtraneousFiles bool
+	APIID                     string
+	DeleteExtraneousResources bool
 }
 
 type PullOutput struct {
@@ -89,7 +89,7 @@ func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (res *Pul
 		return nil, err
 	}
 
-	if params.DeleteExtraneousFiles {
+	if params.DeleteExtraneousResources {
 		if err := uc.deleteExtraneousFunctions(ctx, params.APIID, fns); err != nil {
 			return nil, err
 		}
