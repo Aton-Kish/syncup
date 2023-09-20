@@ -101,32 +101,6 @@ func Test_pullUseCase_Execute(t *testing.T) {
 		returns []mockFunctionRepositoryForFSSaveReturn
 	}
 
-	type mockFunctionRepositoryForFSListReturn struct {
-		res []model.Function
-		err error
-	}
-	type mockFunctionRepositoryForFSList struct {
-		calls   int
-		returns []mockFunctionRepositoryForFSListReturn
-	}
-
-	type mockFunctionServiceDifferenceReturn struct {
-		res []model.Function
-		err error
-	}
-	type mockFunctionServiceDifference struct {
-		calls   int
-		returns []mockFunctionServiceDifferenceReturn
-	}
-
-	type mockFunctionRepositoryForFSDeleteReturn struct {
-		err error
-	}
-	type mockFunctionRepositoryForFSDelete struct {
-		calls   int
-		returns []mockFunctionRepositoryForFSDeleteReturn
-	}
-
 	type mockResolverRepositoryForAppSyncListReturn struct {
 		res []model.Resolver
 		err error
@@ -151,6 +125,32 @@ func Test_pullUseCase_Execute(t *testing.T) {
 	type mockResolverRepositoryForFSSave struct {
 		calls   int
 		returns []mockResolverRepositoryForFSSaveReturn
+	}
+
+	type mockFunctionRepositoryForFSListReturn struct {
+		res []model.Function
+		err error
+	}
+	type mockFunctionRepositoryForFSList struct {
+		calls   int
+		returns []mockFunctionRepositoryForFSListReturn
+	}
+
+	type mockFunctionServiceDifferenceReturn struct {
+		res []model.Function
+		err error
+	}
+	type mockFunctionServiceDifference struct {
+		calls   int
+		returns []mockFunctionServiceDifferenceReturn
+	}
+
+	type mockFunctionRepositoryForFSDeleteReturn struct {
+		err error
+	}
+	type mockFunctionRepositoryForFSDelete struct {
+		calls   int
+		returns []mockFunctionRepositoryForFSDeleteReturn
 	}
 
 	type mockResolverRepositoryForFSListReturn struct {
@@ -191,12 +191,12 @@ func Test_pullUseCase_Execute(t *testing.T) {
 		mockSchemaRepositoryForFSSave                         mockSchemaRepositoryForFSSave
 		mockFunctionRepositoryForAppSyncList                  mockFunctionRepositoryForAppSyncList
 		mockFunctionRepositoryForFSSave                       mockFunctionRepositoryForFSSave
-		mockFunctionRepositoryForFSList                       mockFunctionRepositoryForFSList
-		mockFunctionServiceDifference                         mockFunctionServiceDifference
-		mockFunctionRepositoryForFSDelete                     mockFunctionRepositoryForFSDelete
 		mockResolverRepositoryForAppSyncList                  mockResolverRepositoryForAppSyncList
 		mockResolverServiceResolvePipelineConfigFunctionNames mockResolverServiceResolvePipelineConfigFunctionNames
 		mockResolverRepositoryForFSSave                       mockResolverRepositoryForFSSave
+		mockFunctionRepositoryForFSList                       mockFunctionRepositoryForFSList
+		mockFunctionServiceDifference                         mockFunctionServiceDifference
+		mockFunctionRepositoryForFSDelete                     mockFunctionRepositoryForFSDelete
 		mockResolverRepositoryForFSList                       mockResolverRepositoryForFSList
 		mockResolverServiceDifference                         mockResolverServiceDifference
 		mockResolverRepositoryForFSDelete                     mockResolverRepositoryForFSDelete
@@ -249,28 +249,6 @@ func Test_pullUseCase_Execute(t *testing.T) {
 					},
 				},
 			},
-			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
-				returns: []mockFunctionRepositoryForFSListReturn{
-					{
-						res: []model.Function{
-							functionVTL_2018_05_29,
-							functionAPPSYNC_JS_1_0_0,
-						},
-						err: nil,
-					},
-				},
-			},
-			mockFunctionServiceDifference: mockFunctionServiceDifference{
-				returns: []mockFunctionServiceDifferenceReturn{
-					{
-						res: []model.Function{},
-						err: nil,
-					},
-				},
-			},
-			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
-				returns: []mockFunctionRepositoryForFSDeleteReturn{},
-			},
 			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
 				returns: []mockResolverRepositoryForAppSyncListReturn{
 					{
@@ -319,6 +297,28 @@ func Test_pullUseCase_Execute(t *testing.T) {
 						err: nil,
 					},
 				},
+			},
+			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
+				returns: []mockFunctionRepositoryForFSListReturn{
+					{
+						res: []model.Function{
+							functionVTL_2018_05_29,
+							functionAPPSYNC_JS_1_0_0,
+						},
+						err: nil,
+					},
+				},
+			},
+			mockFunctionServiceDifference: mockFunctionServiceDifference{
+				returns: []mockFunctionServiceDifferenceReturn{
+					{
+						res: []model.Function{},
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
+				returns: []mockFunctionRepositoryForFSDeleteReturn{},
 			},
 			mockResolverRepositoryForFSList: mockResolverRepositoryForFSList{
 				returns: []mockResolverRepositoryForFSListReturn{
@@ -396,40 +396,6 @@ func Test_pullUseCase_Execute(t *testing.T) {
 					},
 				},
 			},
-			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
-				returns: []mockFunctionRepositoryForFSListReturn{
-					{
-						res: []model.Function{
-							functionVTL_2018_05_29,
-							functionAPPSYNC_JS_1_0_0,
-							{Name: ptr.Pointer("ExtraneousFunction1")},
-							{Name: ptr.Pointer("ExtraneousFunction2")},
-						},
-						err: nil,
-					},
-				},
-			},
-			mockFunctionServiceDifference: mockFunctionServiceDifference{
-				returns: []mockFunctionServiceDifferenceReturn{
-					{
-						res: []model.Function{
-							{Name: ptr.Pointer("ExtraneousFunction1")},
-							{Name: ptr.Pointer("ExtraneousFunction2")},
-						},
-						err: nil,
-					},
-				},
-			},
-			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
-				returns: []mockFunctionRepositoryForFSDeleteReturn{
-					{
-						err: nil,
-					},
-					{
-						err: nil,
-					},
-				},
-			},
 			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
 				returns: []mockResolverRepositoryForAppSyncListReturn{
 					{
@@ -475,6 +441,40 @@ func Test_pullUseCase_Execute(t *testing.T) {
 					},
 					{
 						res: &resolverPIPELINE_APPSYNC_JS_1_0_0,
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
+				returns: []mockFunctionRepositoryForFSListReturn{
+					{
+						res: []model.Function{
+							functionVTL_2018_05_29,
+							functionAPPSYNC_JS_1_0_0,
+							{Name: ptr.Pointer("ExtraneousFunction1")},
+							{Name: ptr.Pointer("ExtraneousFunction2")},
+						},
+						err: nil,
+					},
+				},
+			},
+			mockFunctionServiceDifference: mockFunctionServiceDifference{
+				returns: []mockFunctionServiceDifferenceReturn{
+					{
+						res: []model.Function{
+							{Name: ptr.Pointer("ExtraneousFunction1")},
+							{Name: ptr.Pointer("ExtraneousFunction2")},
+						},
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
+				returns: []mockFunctionRepositoryForFSDeleteReturn{
+					{
+						err: nil,
+					},
+					{
 						err: nil,
 					},
 				},
@@ -567,15 +567,6 @@ func Test_pullUseCase_Execute(t *testing.T) {
 					},
 				},
 			},
-			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
-				returns: []mockFunctionRepositoryForFSListReturn{},
-			},
-			mockFunctionServiceDifference: mockFunctionServiceDifference{
-				returns: []mockFunctionServiceDifferenceReturn{},
-			},
-			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
-				returns: []mockFunctionRepositoryForFSDeleteReturn{},
-			},
 			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
 				returns: []mockResolverRepositoryForAppSyncListReturn{
 					{
@@ -625,6 +616,15 @@ func Test_pullUseCase_Execute(t *testing.T) {
 					},
 				},
 			},
+			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
+				returns: []mockFunctionRepositoryForFSListReturn{},
+			},
+			mockFunctionServiceDifference: mockFunctionServiceDifference{
+				returns: []mockFunctionServiceDifferenceReturn{},
+			},
+			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
+				returns: []mockFunctionRepositoryForFSDeleteReturn{},
+			},
 			mockResolverRepositoryForFSList: mockResolverRepositoryForFSList{
 				returns: []mockResolverRepositoryForFSListReturn{},
 			},
@@ -664,15 +664,6 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			mockFunctionRepositoryForFSSave: mockFunctionRepositoryForFSSave{
 				returns: []mockFunctionRepositoryForFSSaveReturn{},
 			},
-			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
-				returns: []mockFunctionRepositoryForFSListReturn{},
-			},
-			mockFunctionServiceDifference: mockFunctionServiceDifference{
-				returns: []mockFunctionServiceDifferenceReturn{},
-			},
-			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
-				returns: []mockFunctionRepositoryForFSDeleteReturn{},
-			},
 			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
 				returns: []mockResolverRepositoryForAppSyncListReturn{},
 			},
@@ -681,6 +672,15 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			},
 			mockResolverRepositoryForFSSave: mockResolverRepositoryForFSSave{
 				returns: []mockResolverRepositoryForFSSaveReturn{},
+			},
+			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
+				returns: []mockFunctionRepositoryForFSListReturn{},
+			},
+			mockFunctionServiceDifference: mockFunctionServiceDifference{
+				returns: []mockFunctionServiceDifferenceReturn{},
+			},
+			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
+				returns: []mockFunctionRepositoryForFSDeleteReturn{},
 			},
 			mockResolverRepositoryForFSList: mockResolverRepositoryForFSList{
 				returns: []mockResolverRepositoryForFSListReturn{},
@@ -726,15 +726,6 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			mockFunctionRepositoryForFSSave: mockFunctionRepositoryForFSSave{
 				returns: []mockFunctionRepositoryForFSSaveReturn{},
 			},
-			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
-				returns: []mockFunctionRepositoryForFSListReturn{},
-			},
-			mockFunctionServiceDifference: mockFunctionServiceDifference{
-				returns: []mockFunctionServiceDifferenceReturn{},
-			},
-			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
-				returns: []mockFunctionRepositoryForFSDeleteReturn{},
-			},
 			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
 				returns: []mockResolverRepositoryForAppSyncListReturn{},
 			},
@@ -743,6 +734,15 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			},
 			mockResolverRepositoryForFSSave: mockResolverRepositoryForFSSave{
 				returns: []mockResolverRepositoryForFSSaveReturn{},
+			},
+			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
+				returns: []mockFunctionRepositoryForFSListReturn{},
+			},
+			mockFunctionServiceDifference: mockFunctionServiceDifference{
+				returns: []mockFunctionServiceDifferenceReturn{},
+			},
+			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
+				returns: []mockFunctionRepositoryForFSDeleteReturn{},
 			},
 			mockResolverRepositoryForFSList: mockResolverRepositoryForFSList{
 				returns: []mockResolverRepositoryForFSListReturn{},
@@ -793,15 +793,6 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			mockFunctionRepositoryForFSSave: mockFunctionRepositoryForFSSave{
 				returns: []mockFunctionRepositoryForFSSaveReturn{},
 			},
-			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
-				returns: []mockFunctionRepositoryForFSListReturn{},
-			},
-			mockFunctionServiceDifference: mockFunctionServiceDifference{
-				returns: []mockFunctionServiceDifferenceReturn{},
-			},
-			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
-				returns: []mockFunctionRepositoryForFSDeleteReturn{},
-			},
 			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
 				returns: []mockResolverRepositoryForAppSyncListReturn{},
 			},
@@ -810,6 +801,15 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			},
 			mockResolverRepositoryForFSSave: mockResolverRepositoryForFSSave{
 				returns: []mockResolverRepositoryForFSSaveReturn{},
+			},
+			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
+				returns: []mockFunctionRepositoryForFSListReturn{},
+			},
+			mockFunctionServiceDifference: mockFunctionServiceDifference{
+				returns: []mockFunctionServiceDifferenceReturn{},
+			},
+			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
+				returns: []mockFunctionRepositoryForFSDeleteReturn{},
 			},
 			mockResolverRepositoryForFSList: mockResolverRepositoryForFSList{
 				returns: []mockResolverRepositoryForFSListReturn{},
@@ -872,6 +872,15 @@ func Test_pullUseCase_Execute(t *testing.T) {
 					},
 				},
 			},
+			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
+				returns: []mockResolverRepositoryForAppSyncListReturn{},
+			},
+			mockResolverServiceResolvePipelineConfigFunctionNames: mockResolverServiceResolvePipelineConfigFunctionNames{
+				returns: []mockResolverServiceResolvePipelineConfigFunctionNamesReturn{},
+			},
+			mockResolverRepositoryForFSSave: mockResolverRepositoryForFSSave{
+				returns: []mockResolverRepositoryForFSSaveReturn{},
+			},
 			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
 				returns: []mockFunctionRepositoryForFSListReturn{},
 			},
@@ -880,297 +889,6 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			},
 			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
 				returns: []mockFunctionRepositoryForFSDeleteReturn{},
-			},
-			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
-				returns: []mockResolverRepositoryForAppSyncListReturn{},
-			},
-			mockResolverServiceResolvePipelineConfigFunctionNames: mockResolverServiceResolvePipelineConfigFunctionNames{
-				returns: []mockResolverServiceResolvePipelineConfigFunctionNamesReturn{},
-			},
-			mockResolverRepositoryForFSSave: mockResolverRepositoryForFSSave{
-				returns: []mockResolverRepositoryForFSSaveReturn{},
-			},
-			mockResolverRepositoryForFSList: mockResolverRepositoryForFSList{
-				returns: []mockResolverRepositoryForFSListReturn{},
-			},
-			mockResolverServiceDifference: mockResolverServiceDifference{
-				returns: []mockResolverServiceDifferenceReturn{},
-			},
-			mockResolverRepositoryForFSDelete: mockResolverRepositoryForFSDelete{
-				returns: []mockResolverRepositoryForFSDeleteReturn{},
-			},
-			expected: expected{
-				res:   nil,
-				errIs: nil,
-			},
-		},
-		{
-			name: "edge path: FunctionRepositoryForFS.List() error",
-			args: args{
-				params: &PullInput{
-					APIID:                 "APIID",
-					DeleteExtraneousFiles: true,
-				},
-			},
-			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
-				returns: []mockSchemaRepositoryForAppSyncGetReturn{
-					{
-						res: &schema,
-						err: nil,
-					},
-				},
-			},
-			mockSchemaRepositoryForFSSave: mockSchemaRepositoryForFSSave{
-				returns: []mockSchemaRepositoryForFSSaveReturn{
-					{
-						res: &schema,
-						err: nil,
-					},
-				},
-			},
-			mockFunctionRepositoryForAppSyncList: mockFunctionRepositoryForAppSyncList{
-				returns: []mockFunctionRepositoryForAppSyncListReturn{
-					{
-						res: []model.Function{
-							functionVTL_2018_05_29,
-							functionAPPSYNC_JS_1_0_0,
-						},
-						err: nil,
-					},
-				},
-			},
-			mockFunctionRepositoryForFSSave: mockFunctionRepositoryForFSSave{
-				returns: []mockFunctionRepositoryForFSSaveReturn{
-					{
-						res: &functionVTL_2018_05_29,
-						err: nil,
-					},
-					{
-						res: &functionAPPSYNC_JS_1_0_0,
-						err: nil,
-					},
-				},
-			},
-			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
-				returns: []mockFunctionRepositoryForFSListReturn{
-					{
-						res: nil,
-						err: &model.LibError{},
-					},
-				},
-			},
-			mockFunctionServiceDifference: mockFunctionServiceDifference{
-				returns: []mockFunctionServiceDifferenceReturn{},
-			},
-			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
-				returns: []mockFunctionRepositoryForFSDeleteReturn{},
-			},
-			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
-				returns: []mockResolverRepositoryForAppSyncListReturn{},
-			},
-			mockResolverServiceResolvePipelineConfigFunctionNames: mockResolverServiceResolvePipelineConfigFunctionNames{
-				returns: []mockResolverServiceResolvePipelineConfigFunctionNamesReturn{},
-			},
-			mockResolverRepositoryForFSSave: mockResolverRepositoryForFSSave{
-				returns: []mockResolverRepositoryForFSSaveReturn{},
-			},
-			mockResolverRepositoryForFSList: mockResolverRepositoryForFSList{
-				returns: []mockResolverRepositoryForFSListReturn{},
-			},
-			mockResolverServiceDifference: mockResolverServiceDifference{
-				returns: []mockResolverServiceDifferenceReturn{},
-			},
-			mockResolverRepositoryForFSDelete: mockResolverRepositoryForFSDelete{
-				returns: []mockResolverRepositoryForFSDeleteReturn{},
-			},
-			expected: expected{
-				res:   nil,
-				errIs: nil,
-			},
-		},
-		{
-			name: "edge path: FunctionService.Difference() error",
-			args: args{
-				params: &PullInput{
-					APIID:                 "APIID",
-					DeleteExtraneousFiles: true,
-				},
-			},
-			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
-				returns: []mockSchemaRepositoryForAppSyncGetReturn{
-					{
-						res: &schema,
-						err: nil,
-					},
-				},
-			},
-			mockSchemaRepositoryForFSSave: mockSchemaRepositoryForFSSave{
-				returns: []mockSchemaRepositoryForFSSaveReturn{
-					{
-						res: &schema,
-						err: nil,
-					},
-				},
-			},
-			mockFunctionRepositoryForAppSyncList: mockFunctionRepositoryForAppSyncList{
-				returns: []mockFunctionRepositoryForAppSyncListReturn{
-					{
-						res: []model.Function{
-							functionVTL_2018_05_29,
-							functionAPPSYNC_JS_1_0_0,
-						},
-						err: nil,
-					},
-				},
-			},
-			mockFunctionRepositoryForFSSave: mockFunctionRepositoryForFSSave{
-				returns: []mockFunctionRepositoryForFSSaveReturn{
-					{
-						res: &functionVTL_2018_05_29,
-						err: nil,
-					},
-					{
-						res: &functionAPPSYNC_JS_1_0_0,
-						err: nil,
-					},
-				},
-			},
-			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
-				returns: []mockFunctionRepositoryForFSListReturn{
-					{
-						res: []model.Function{
-							functionVTL_2018_05_29,
-							functionAPPSYNC_JS_1_0_0,
-							{Name: ptr.Pointer("ExtraneousFunction1")},
-							{Name: ptr.Pointer("ExtraneousFunction2")},
-						},
-						err: nil,
-					},
-				},
-			},
-			mockFunctionServiceDifference: mockFunctionServiceDifference{
-				returns: []mockFunctionServiceDifferenceReturn{
-					{
-						res: nil,
-						err: &model.LibError{},
-					},
-				},
-			},
-			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
-				returns: []mockFunctionRepositoryForFSDeleteReturn{},
-			},
-			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
-				returns: []mockResolverRepositoryForAppSyncListReturn{},
-			},
-			mockResolverServiceResolvePipelineConfigFunctionNames: mockResolverServiceResolvePipelineConfigFunctionNames{
-				returns: []mockResolverServiceResolvePipelineConfigFunctionNamesReturn{},
-			},
-			mockResolverRepositoryForFSSave: mockResolverRepositoryForFSSave{
-				returns: []mockResolverRepositoryForFSSaveReturn{},
-			},
-			mockResolverRepositoryForFSList: mockResolverRepositoryForFSList{
-				returns: []mockResolverRepositoryForFSListReturn{},
-			},
-			mockResolverServiceDifference: mockResolverServiceDifference{
-				returns: []mockResolverServiceDifferenceReturn{},
-			},
-			mockResolverRepositoryForFSDelete: mockResolverRepositoryForFSDelete{
-				returns: []mockResolverRepositoryForFSDeleteReturn{},
-			},
-			expected: expected{
-				res:   nil,
-				errIs: nil,
-			},
-		},
-		{
-			name: "edge path: FunctionRepositoryForFS.Delete() error",
-			args: args{
-				params: &PullInput{
-					APIID:                 "APIID",
-					DeleteExtraneousFiles: true,
-				},
-			},
-			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
-				returns: []mockSchemaRepositoryForAppSyncGetReturn{
-					{
-						res: &schema,
-						err: nil,
-					},
-				},
-			},
-			mockSchemaRepositoryForFSSave: mockSchemaRepositoryForFSSave{
-				returns: []mockSchemaRepositoryForFSSaveReturn{
-					{
-						res: &schema,
-						err: nil,
-					},
-				},
-			},
-			mockFunctionRepositoryForAppSyncList: mockFunctionRepositoryForAppSyncList{
-				returns: []mockFunctionRepositoryForAppSyncListReturn{
-					{
-						res: []model.Function{
-							functionVTL_2018_05_29,
-							functionAPPSYNC_JS_1_0_0,
-						},
-						err: nil,
-					},
-				},
-			},
-			mockFunctionRepositoryForFSSave: mockFunctionRepositoryForFSSave{
-				returns: []mockFunctionRepositoryForFSSaveReturn{
-					{
-						res: &functionVTL_2018_05_29,
-						err: nil,
-					},
-					{
-						res: &functionAPPSYNC_JS_1_0_0,
-						err: nil,
-					},
-				},
-			},
-			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
-				returns: []mockFunctionRepositoryForFSListReturn{
-					{
-						res: []model.Function{
-							functionVTL_2018_05_29,
-							functionAPPSYNC_JS_1_0_0,
-							{Name: ptr.Pointer("ExtraneousFunction1")},
-							{Name: ptr.Pointer("ExtraneousFunction2")},
-						},
-						err: nil,
-					},
-				},
-			},
-			mockFunctionServiceDifference: mockFunctionServiceDifference{
-				returns: []mockFunctionServiceDifferenceReturn{
-					{
-						res: []model.Function{
-							{Name: ptr.Pointer("ExtraneousFunction1")},
-							{Name: ptr.Pointer("ExtraneousFunction2")},
-						},
-						err: nil,
-					},
-				},
-			},
-			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
-				returns: []mockFunctionRepositoryForFSDeleteReturn{
-					{
-						err: &model.LibError{},
-					},
-					{
-						err: &model.LibError{},
-					},
-				},
-			},
-			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
-				returns: []mockResolverRepositoryForAppSyncListReturn{},
-			},
-			mockResolverServiceResolvePipelineConfigFunctionNames: mockResolverServiceResolvePipelineConfigFunctionNames{
-				returns: []mockResolverServiceResolvePipelineConfigFunctionNamesReturn{},
-			},
-			mockResolverRepositoryForFSSave: mockResolverRepositoryForFSSave{
-				returns: []mockResolverRepositoryForFSSaveReturn{},
 			},
 			mockResolverRepositoryForFSList: mockResolverRepositoryForFSList{
 				returns: []mockResolverRepositoryForFSListReturn{},
@@ -1233,40 +951,6 @@ func Test_pullUseCase_Execute(t *testing.T) {
 					},
 				},
 			},
-			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
-				returns: []mockFunctionRepositoryForFSListReturn{
-					{
-						res: []model.Function{
-							functionVTL_2018_05_29,
-							functionAPPSYNC_JS_1_0_0,
-							{Name: ptr.Pointer("ExtraneousFunction1")},
-							{Name: ptr.Pointer("ExtraneousFunction2")},
-						},
-						err: nil,
-					},
-				},
-			},
-			mockFunctionServiceDifference: mockFunctionServiceDifference{
-				returns: []mockFunctionServiceDifferenceReturn{
-					{
-						res: []model.Function{
-							{Name: ptr.Pointer("ExtraneousFunction1")},
-							{Name: ptr.Pointer("ExtraneousFunction2")},
-						},
-						err: nil,
-					},
-				},
-			},
-			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
-				returns: []mockFunctionRepositoryForFSDeleteReturn{
-					{
-						err: nil,
-					},
-					{
-						err: nil,
-					},
-				},
-			},
 			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
 				returns: []mockResolverRepositoryForAppSyncListReturn{
 					{
@@ -1280,6 +964,15 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			},
 			mockResolverRepositoryForFSSave: mockResolverRepositoryForFSSave{
 				returns: []mockResolverRepositoryForFSSaveReturn{},
+			},
+			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
+				returns: []mockFunctionRepositoryForFSListReturn{},
+			},
+			mockFunctionServiceDifference: mockFunctionServiceDifference{
+				returns: []mockFunctionServiceDifferenceReturn{},
+			},
+			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
+				returns: []mockFunctionRepositoryForFSDeleteReturn{},
 			},
 			mockResolverRepositoryForFSList: mockResolverRepositoryForFSList{
 				returns: []mockResolverRepositoryForFSListReturn{},
@@ -1342,40 +1035,6 @@ func Test_pullUseCase_Execute(t *testing.T) {
 					},
 				},
 			},
-			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
-				returns: []mockFunctionRepositoryForFSListReturn{
-					{
-						res: []model.Function{
-							functionVTL_2018_05_29,
-							functionAPPSYNC_JS_1_0_0,
-							{Name: ptr.Pointer("ExtraneousFunction1")},
-							{Name: ptr.Pointer("ExtraneousFunction2")},
-						},
-						err: nil,
-					},
-				},
-			},
-			mockFunctionServiceDifference: mockFunctionServiceDifference{
-				returns: []mockFunctionServiceDifferenceReturn{
-					{
-						res: []model.Function{
-							{Name: ptr.Pointer("ExtraneousFunction1")},
-							{Name: ptr.Pointer("ExtraneousFunction2")},
-						},
-						err: nil,
-					},
-				},
-			},
-			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
-				returns: []mockFunctionRepositoryForFSDeleteReturn{
-					{
-						err: nil,
-					},
-					{
-						err: nil,
-					},
-				},
-			},
 			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
 				returns: []mockResolverRepositoryForAppSyncListReturn{
 					{
@@ -1407,6 +1066,15 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			},
 			mockResolverRepositoryForFSSave: mockResolverRepositoryForFSSave{
 				returns: []mockResolverRepositoryForFSSaveReturn{},
+			},
+			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
+				returns: []mockFunctionRepositoryForFSListReturn{},
+			},
+			mockFunctionServiceDifference: mockFunctionServiceDifference{
+				returns: []mockFunctionServiceDifferenceReturn{},
+			},
+			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
+				returns: []mockFunctionRepositoryForFSDeleteReturn{},
 			},
 			mockResolverRepositoryForFSList: mockResolverRepositoryForFSList{
 				returns: []mockResolverRepositoryForFSListReturn{},
@@ -1469,40 +1137,6 @@ func Test_pullUseCase_Execute(t *testing.T) {
 					},
 				},
 			},
-			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
-				returns: []mockFunctionRepositoryForFSListReturn{
-					{
-						res: []model.Function{
-							functionVTL_2018_05_29,
-							functionAPPSYNC_JS_1_0_0,
-							{Name: ptr.Pointer("ExtraneousFunction1")},
-							{Name: ptr.Pointer("ExtraneousFunction2")},
-						},
-						err: nil,
-					},
-				},
-			},
-			mockFunctionServiceDifference: mockFunctionServiceDifference{
-				returns: []mockFunctionServiceDifferenceReturn{
-					{
-						res: []model.Function{
-							{Name: ptr.Pointer("ExtraneousFunction1")},
-							{Name: ptr.Pointer("ExtraneousFunction2")},
-						},
-						err: nil,
-					},
-				},
-			},
-			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
-				returns: []mockFunctionRepositoryForFSDeleteReturn{
-					{
-						err: nil,
-					},
-					{
-						err: nil,
-					},
-				},
-			},
 			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
 				returns: []mockResolverRepositoryForAppSyncListReturn{
 					{
@@ -1548,6 +1182,417 @@ func Test_pullUseCase_Execute(t *testing.T) {
 					},
 					{
 						res: nil,
+						err: &model.LibError{},
+					},
+				},
+			},
+			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
+				returns: []mockFunctionRepositoryForFSListReturn{},
+			},
+			mockFunctionServiceDifference: mockFunctionServiceDifference{
+				returns: []mockFunctionServiceDifferenceReturn{},
+			},
+			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
+				returns: []mockFunctionRepositoryForFSDeleteReturn{},
+			},
+			mockResolverRepositoryForFSList: mockResolverRepositoryForFSList{
+				returns: []mockResolverRepositoryForFSListReturn{},
+			},
+			mockResolverServiceDifference: mockResolverServiceDifference{
+				returns: []mockResolverServiceDifferenceReturn{},
+			},
+			mockResolverRepositoryForFSDelete: mockResolverRepositoryForFSDelete{
+				returns: []mockResolverRepositoryForFSDeleteReturn{},
+			},
+			expected: expected{
+				res:   nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "edge path: FunctionRepositoryForFS.List() error",
+			args: args{
+				params: &PullInput{
+					APIID:                 "APIID",
+					DeleteExtraneousFiles: true,
+				},
+			},
+			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
+				returns: []mockSchemaRepositoryForAppSyncGetReturn{
+					{
+						res: &schema,
+						err: nil,
+					},
+				},
+			},
+			mockSchemaRepositoryForFSSave: mockSchemaRepositoryForFSSave{
+				returns: []mockSchemaRepositoryForFSSaveReturn{
+					{
+						res: &schema,
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForAppSyncList: mockFunctionRepositoryForAppSyncList{
+				returns: []mockFunctionRepositoryForAppSyncListReturn{
+					{
+						res: []model.Function{
+							functionVTL_2018_05_29,
+							functionAPPSYNC_JS_1_0_0,
+						},
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForFSSave: mockFunctionRepositoryForFSSave{
+				returns: []mockFunctionRepositoryForFSSaveReturn{
+					{
+						res: &functionVTL_2018_05_29,
+						err: nil,
+					},
+					{
+						res: &functionAPPSYNC_JS_1_0_0,
+						err: nil,
+					},
+				},
+			},
+			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
+				returns: []mockResolverRepositoryForAppSyncListReturn{
+					{
+						res: []model.Resolver{
+							resolverUNIT_VTL_2018_05_29,
+							resolverUNIT_APPSYNC_JS_1_0_0,
+							resolverPIPELINE_VTL_2018_05_29,
+							resolverPIPELINE_APPSYNC_JS_1_0_0,
+						},
+						err: nil,
+					},
+				},
+			},
+			mockResolverServiceResolvePipelineConfigFunctionNames: mockResolverServiceResolvePipelineConfigFunctionNames{
+				returns: []mockResolverServiceResolvePipelineConfigFunctionNamesReturn{
+					{
+						err: nil,
+					},
+					{
+						err: nil,
+					},
+					{
+						err: nil,
+					},
+					{
+						err: nil,
+					},
+				},
+			},
+			mockResolverRepositoryForFSSave: mockResolverRepositoryForFSSave{
+				returns: []mockResolverRepositoryForFSSaveReturn{
+					{
+						res: &resolverUNIT_VTL_2018_05_29,
+						err: nil,
+					},
+					{
+						res: &resolverUNIT_APPSYNC_JS_1_0_0,
+						err: nil,
+					},
+					{
+						res: &resolverPIPELINE_VTL_2018_05_29,
+						err: nil,
+					},
+					{
+						res: &resolverPIPELINE_APPSYNC_JS_1_0_0,
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
+				returns: []mockFunctionRepositoryForFSListReturn{
+					{
+						res: nil,
+						err: &model.LibError{},
+					},
+				},
+			},
+			mockFunctionServiceDifference: mockFunctionServiceDifference{
+				returns: []mockFunctionServiceDifferenceReturn{},
+			},
+			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
+				returns: []mockFunctionRepositoryForFSDeleteReturn{},
+			},
+			mockResolverRepositoryForFSList: mockResolverRepositoryForFSList{
+				returns: []mockResolverRepositoryForFSListReturn{},
+			},
+			mockResolverServiceDifference: mockResolverServiceDifference{
+				returns: []mockResolverServiceDifferenceReturn{},
+			},
+			mockResolverRepositoryForFSDelete: mockResolverRepositoryForFSDelete{
+				returns: []mockResolverRepositoryForFSDeleteReturn{},
+			},
+			expected: expected{
+				res:   nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "edge path: FunctionService.Difference() error",
+			args: args{
+				params: &PullInput{
+					APIID:                 "APIID",
+					DeleteExtraneousFiles: true,
+				},
+			},
+			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
+				returns: []mockSchemaRepositoryForAppSyncGetReturn{
+					{
+						res: &schema,
+						err: nil,
+					},
+				},
+			},
+			mockSchemaRepositoryForFSSave: mockSchemaRepositoryForFSSave{
+				returns: []mockSchemaRepositoryForFSSaveReturn{
+					{
+						res: &schema,
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForAppSyncList: mockFunctionRepositoryForAppSyncList{
+				returns: []mockFunctionRepositoryForAppSyncListReturn{
+					{
+						res: []model.Function{
+							functionVTL_2018_05_29,
+							functionAPPSYNC_JS_1_0_0,
+						},
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForFSSave: mockFunctionRepositoryForFSSave{
+				returns: []mockFunctionRepositoryForFSSaveReturn{
+					{
+						res: &functionVTL_2018_05_29,
+						err: nil,
+					},
+					{
+						res: &functionAPPSYNC_JS_1_0_0,
+						err: nil,
+					},
+				},
+			},
+			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
+				returns: []mockResolverRepositoryForAppSyncListReturn{
+					{
+						res: []model.Resolver{
+							resolverUNIT_VTL_2018_05_29,
+							resolverUNIT_APPSYNC_JS_1_0_0,
+							resolverPIPELINE_VTL_2018_05_29,
+							resolverPIPELINE_APPSYNC_JS_1_0_0,
+						},
+						err: nil,
+					},
+				},
+			},
+			mockResolverServiceResolvePipelineConfigFunctionNames: mockResolverServiceResolvePipelineConfigFunctionNames{
+				returns: []mockResolverServiceResolvePipelineConfigFunctionNamesReturn{
+					{
+						err: nil,
+					},
+					{
+						err: nil,
+					},
+					{
+						err: nil,
+					},
+					{
+						err: nil,
+					},
+				},
+			},
+			mockResolverRepositoryForFSSave: mockResolverRepositoryForFSSave{
+				returns: []mockResolverRepositoryForFSSaveReturn{
+					{
+						res: &resolverUNIT_VTL_2018_05_29,
+						err: nil,
+					},
+					{
+						res: &resolverUNIT_APPSYNC_JS_1_0_0,
+						err: nil,
+					},
+					{
+						res: &resolverPIPELINE_VTL_2018_05_29,
+						err: nil,
+					},
+					{
+						res: &resolverPIPELINE_APPSYNC_JS_1_0_0,
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
+				returns: []mockFunctionRepositoryForFSListReturn{
+					{
+						res: []model.Function{
+							functionVTL_2018_05_29,
+							functionAPPSYNC_JS_1_0_0,
+							{Name: ptr.Pointer("ExtraneousFunction1")},
+							{Name: ptr.Pointer("ExtraneousFunction2")},
+						},
+						err: nil,
+					},
+				},
+			},
+			mockFunctionServiceDifference: mockFunctionServiceDifference{
+				returns: []mockFunctionServiceDifferenceReturn{
+					{
+						res: nil,
+						err: &model.LibError{},
+					},
+				},
+			},
+			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
+				returns: []mockFunctionRepositoryForFSDeleteReturn{},
+			},
+			mockResolverRepositoryForFSList: mockResolverRepositoryForFSList{
+				returns: []mockResolverRepositoryForFSListReturn{},
+			},
+			mockResolverServiceDifference: mockResolverServiceDifference{
+				returns: []mockResolverServiceDifferenceReturn{},
+			},
+			mockResolverRepositoryForFSDelete: mockResolverRepositoryForFSDelete{
+				returns: []mockResolverRepositoryForFSDeleteReturn{},
+			},
+			expected: expected{
+				res:   nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "edge path: FunctionRepositoryForFS.Delete() error",
+			args: args{
+				params: &PullInput{
+					APIID:                 "APIID",
+					DeleteExtraneousFiles: true,
+				},
+			},
+			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
+				returns: []mockSchemaRepositoryForAppSyncGetReturn{
+					{
+						res: &schema,
+						err: nil,
+					},
+				},
+			},
+			mockSchemaRepositoryForFSSave: mockSchemaRepositoryForFSSave{
+				returns: []mockSchemaRepositoryForFSSaveReturn{
+					{
+						res: &schema,
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForAppSyncList: mockFunctionRepositoryForAppSyncList{
+				returns: []mockFunctionRepositoryForAppSyncListReturn{
+					{
+						res: []model.Function{
+							functionVTL_2018_05_29,
+							functionAPPSYNC_JS_1_0_0,
+						},
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForFSSave: mockFunctionRepositoryForFSSave{
+				returns: []mockFunctionRepositoryForFSSaveReturn{
+					{
+						res: &functionVTL_2018_05_29,
+						err: nil,
+					},
+					{
+						res: &functionAPPSYNC_JS_1_0_0,
+						err: nil,
+					},
+				},
+			},
+			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
+				returns: []mockResolverRepositoryForAppSyncListReturn{
+					{
+						res: []model.Resolver{
+							resolverUNIT_VTL_2018_05_29,
+							resolverUNIT_APPSYNC_JS_1_0_0,
+							resolverPIPELINE_VTL_2018_05_29,
+							resolverPIPELINE_APPSYNC_JS_1_0_0,
+						},
+						err: nil,
+					},
+				},
+			},
+			mockResolverServiceResolvePipelineConfigFunctionNames: mockResolverServiceResolvePipelineConfigFunctionNames{
+				returns: []mockResolverServiceResolvePipelineConfigFunctionNamesReturn{
+					{
+						err: nil,
+					},
+					{
+						err: nil,
+					},
+					{
+						err: nil,
+					},
+					{
+						err: nil,
+					},
+				},
+			},
+			mockResolverRepositoryForFSSave: mockResolverRepositoryForFSSave{
+				returns: []mockResolverRepositoryForFSSaveReturn{
+					{
+						res: &resolverUNIT_VTL_2018_05_29,
+						err: nil,
+					},
+					{
+						res: &resolverUNIT_APPSYNC_JS_1_0_0,
+						err: nil,
+					},
+					{
+						res: &resolverPIPELINE_VTL_2018_05_29,
+						err: nil,
+					},
+					{
+						res: &resolverPIPELINE_APPSYNC_JS_1_0_0,
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
+				returns: []mockFunctionRepositoryForFSListReturn{
+					{
+						res: []model.Function{
+							functionVTL_2018_05_29,
+							functionAPPSYNC_JS_1_0_0,
+							{Name: ptr.Pointer("ExtraneousFunction1")},
+							{Name: ptr.Pointer("ExtraneousFunction2")},
+						},
+						err: nil,
+					},
+				},
+			},
+			mockFunctionServiceDifference: mockFunctionServiceDifference{
+				returns: []mockFunctionServiceDifferenceReturn{
+					{
+						res: []model.Function{
+							{Name: ptr.Pointer("ExtraneousFunction1")},
+							{Name: ptr.Pointer("ExtraneousFunction2")},
+						},
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
+				returns: []mockFunctionRepositoryForFSDeleteReturn{
+					{
+						err: &model.LibError{},
+					},
+					{
 						err: &model.LibError{},
 					},
 				},
@@ -1613,40 +1658,6 @@ func Test_pullUseCase_Execute(t *testing.T) {
 					},
 				},
 			},
-			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
-				returns: []mockFunctionRepositoryForFSListReturn{
-					{
-						res: []model.Function{
-							functionVTL_2018_05_29,
-							functionAPPSYNC_JS_1_0_0,
-							{Name: ptr.Pointer("ExtraneousFunction1")},
-							{Name: ptr.Pointer("ExtraneousFunction2")},
-						},
-						err: nil,
-					},
-				},
-			},
-			mockFunctionServiceDifference: mockFunctionServiceDifference{
-				returns: []mockFunctionServiceDifferenceReturn{
-					{
-						res: []model.Function{
-							{Name: ptr.Pointer("ExtraneousFunction1")},
-							{Name: ptr.Pointer("ExtraneousFunction2")},
-						},
-						err: nil,
-					},
-				},
-			},
-			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
-				returns: []mockFunctionRepositoryForFSDeleteReturn{
-					{
-						err: nil,
-					},
-					{
-						err: nil,
-					},
-				},
-			},
 			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
 				returns: []mockResolverRepositoryForAppSyncListReturn{
 					{
@@ -1692,6 +1703,40 @@ func Test_pullUseCase_Execute(t *testing.T) {
 					},
 					{
 						res: &resolverPIPELINE_APPSYNC_JS_1_0_0,
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
+				returns: []mockFunctionRepositoryForFSListReturn{
+					{
+						res: []model.Function{
+							functionVTL_2018_05_29,
+							functionAPPSYNC_JS_1_0_0,
+							{Name: ptr.Pointer("ExtraneousFunction1")},
+							{Name: ptr.Pointer("ExtraneousFunction2")},
+						},
+						err: nil,
+					},
+				},
+			},
+			mockFunctionServiceDifference: mockFunctionServiceDifference{
+				returns: []mockFunctionServiceDifferenceReturn{
+					{
+						res: []model.Function{
+							{Name: ptr.Pointer("ExtraneousFunction1")},
+							{Name: ptr.Pointer("ExtraneousFunction2")},
+						},
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
+				returns: []mockFunctionRepositoryForFSDeleteReturn{
+					{
+						err: nil,
+					},
+					{
 						err: nil,
 					},
 				},
@@ -1762,40 +1807,6 @@ func Test_pullUseCase_Execute(t *testing.T) {
 					},
 				},
 			},
-			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
-				returns: []mockFunctionRepositoryForFSListReturn{
-					{
-						res: []model.Function{
-							functionVTL_2018_05_29,
-							functionAPPSYNC_JS_1_0_0,
-							{Name: ptr.Pointer("ExtraneousFunction1")},
-							{Name: ptr.Pointer("ExtraneousFunction2")},
-						},
-						err: nil,
-					},
-				},
-			},
-			mockFunctionServiceDifference: mockFunctionServiceDifference{
-				returns: []mockFunctionServiceDifferenceReturn{
-					{
-						res: []model.Function{
-							{Name: ptr.Pointer("ExtraneousFunction1")},
-							{Name: ptr.Pointer("ExtraneousFunction2")},
-						},
-						err: nil,
-					},
-				},
-			},
-			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
-				returns: []mockFunctionRepositoryForFSDeleteReturn{
-					{
-						err: nil,
-					},
-					{
-						err: nil,
-					},
-				},
-			},
 			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
 				returns: []mockResolverRepositoryForAppSyncListReturn{
 					{
@@ -1841,6 +1852,40 @@ func Test_pullUseCase_Execute(t *testing.T) {
 					},
 					{
 						res: &resolverPIPELINE_APPSYNC_JS_1_0_0,
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
+				returns: []mockFunctionRepositoryForFSListReturn{
+					{
+						res: []model.Function{
+							functionVTL_2018_05_29,
+							functionAPPSYNC_JS_1_0_0,
+							{Name: ptr.Pointer("ExtraneousFunction1")},
+							{Name: ptr.Pointer("ExtraneousFunction2")},
+						},
+						err: nil,
+					},
+				},
+			},
+			mockFunctionServiceDifference: mockFunctionServiceDifference{
+				returns: []mockFunctionServiceDifferenceReturn{
+					{
+						res: []model.Function{
+							{Name: ptr.Pointer("ExtraneousFunction1")},
+							{Name: ptr.Pointer("ExtraneousFunction2")},
+						},
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
+				returns: []mockFunctionRepositoryForFSDeleteReturn{
+					{
+						err: nil,
+					},
+					{
 						err: nil,
 					},
 				},
@@ -1923,40 +1968,6 @@ func Test_pullUseCase_Execute(t *testing.T) {
 					},
 				},
 			},
-			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
-				returns: []mockFunctionRepositoryForFSListReturn{
-					{
-						res: []model.Function{
-							functionVTL_2018_05_29,
-							functionAPPSYNC_JS_1_0_0,
-							{Name: ptr.Pointer("ExtraneousFunction1")},
-							{Name: ptr.Pointer("ExtraneousFunction2")},
-						},
-						err: nil,
-					},
-				},
-			},
-			mockFunctionServiceDifference: mockFunctionServiceDifference{
-				returns: []mockFunctionServiceDifferenceReturn{
-					{
-						res: []model.Function{
-							{Name: ptr.Pointer("ExtraneousFunction1")},
-							{Name: ptr.Pointer("ExtraneousFunction2")},
-						},
-						err: nil,
-					},
-				},
-			},
-			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
-				returns: []mockFunctionRepositoryForFSDeleteReturn{
-					{
-						err: nil,
-					},
-					{
-						err: nil,
-					},
-				},
-			},
 			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
 				returns: []mockResolverRepositoryForAppSyncListReturn{
 					{
@@ -2002,6 +2013,40 @@ func Test_pullUseCase_Execute(t *testing.T) {
 					},
 					{
 						res: &resolverPIPELINE_APPSYNC_JS_1_0_0,
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
+				returns: []mockFunctionRepositoryForFSListReturn{
+					{
+						res: []model.Function{
+							functionVTL_2018_05_29,
+							functionAPPSYNC_JS_1_0_0,
+							{Name: ptr.Pointer("ExtraneousFunction1")},
+							{Name: ptr.Pointer("ExtraneousFunction2")},
+						},
+						err: nil,
+					},
+				},
+			},
+			mockFunctionServiceDifference: mockFunctionServiceDifference{
+				returns: []mockFunctionServiceDifferenceReturn{
+					{
+						res: []model.Function{
+							{Name: ptr.Pointer("ExtraneousFunction1")},
+							{Name: ptr.Pointer("ExtraneousFunction2")},
+						},
+						err: nil,
+					},
+				},
+			},
+			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
+				returns: []mockFunctionRepositoryForFSDeleteReturn{
+					{
+						err: nil,
+					},
+					{
 						err: nil,
 					},
 				},

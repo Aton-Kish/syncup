@@ -84,18 +84,16 @@ func (uc *pullUseCase) Execute(ctx context.Context, params *PullInput) (res *Pul
 		return nil, err
 	}
 
-	if params.DeleteExtraneousFiles {
-		if err := uc.deleteExtraneousFunctions(ctx, params.APIID, fns); err != nil {
-			return nil, err
-		}
-	}
-
 	rslvs, err := uc.pullResolvers(ctx, params.APIID, fns)
 	if err != nil {
 		return nil, err
 	}
 
 	if params.DeleteExtraneousFiles {
+		if err := uc.deleteExtraneousFunctions(ctx, params.APIID, fns); err != nil {
+			return nil, err
+		}
+
 		if err := uc.deleteExtraneousResolvers(ctx, params.APIID, rslvs); err != nil {
 			return nil, err
 		}
@@ -172,6 +170,62 @@ func (uc *pullUseCase) pullFunctions(ctx context.Context, apiID string) (res []m
 	return functions, nil
 }
 
+func (uc *pullUseCase) pullResolvers(ctx context.Context, apiID string, functions []model.Function) (res []model.Resolver, err error) {
+	defer wrap(&err)
+
+	uc.trackerRepository.InProgress(ctx, "fetching resolvers")
+
+	rslvs, err := uc.resolverRepositoryForAppSync.List(ctx, apiID)
+	if err != nil {
+		uc.trackerRepository.Failed(ctx, "failed to fetch resolvers")
+		return nil, err
+	}
+
+	uc.trackerRepository.InProgress(ctx, "saving resolvers")
+
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+	errs := make([]error, 0)
+
+	for _, rslv := range rslvs {
+		rslv := rslv
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			if err := uc.resolverService.ResolvePipelineConfigFunctionNames(ctx, &rslv, functions); err != nil {
+				mu.Lock()
+				errs = append(errs, err)
+				mu.Unlock()
+
+				uc.trackerRepository.Failed(ctx, fmt.Sprintf("failed to save resolver %s.%s", ptr.ToValue(rslv.TypeName), ptr.ToValue(rslv.FieldName)))
+				return
+			}
+
+			if _, err := uc.resolverRepositoryForFS.Save(ctx, apiID, &rslv); err != nil {
+				mu.Lock()
+				errs = append(errs, err)
+				mu.Unlock()
+
+				uc.trackerRepository.Failed(ctx, fmt.Sprintf("failed to save resolver %s.%s", ptr.ToValue(rslv.TypeName), ptr.ToValue(rslv.FieldName)))
+				return
+			}
+
+			uc.trackerRepository.Success(ctx, fmt.Sprintf("saved resolver %s.%s", ptr.ToValue(rslv.TypeName), ptr.ToValue(rslv.FieldName)))
+		}()
+	}
+
+	wg.Wait()
+
+	if err := errors.Join(errs...); err != nil {
+		return nil, err
+	}
+
+	uc.trackerRepository.Success(ctx, "saved all resolvers")
+
+	return rslvs, nil
+}
+
 func (uc *pullUseCase) deleteExtraneousFunctions(ctx context.Context, apiID string, functions []model.Function) (err error) {
 	defer wrap(&err)
 
@@ -227,62 +281,6 @@ func (uc *pullUseCase) deleteExtraneousFunctions(ctx context.Context, apiID stri
 	uc.trackerRepository.Success(ctx, "deleted all extraneous functions")
 
 	return nil
-}
-
-func (uc *pullUseCase) pullResolvers(ctx context.Context, apiID string, functions []model.Function) (res []model.Resolver, err error) {
-	defer wrap(&err)
-
-	uc.trackerRepository.InProgress(ctx, "fetching resolvers")
-
-	rslvs, err := uc.resolverRepositoryForAppSync.List(ctx, apiID)
-	if err != nil {
-		uc.trackerRepository.Failed(ctx, "failed to fetch resolvers")
-		return nil, err
-	}
-
-	uc.trackerRepository.InProgress(ctx, "saving resolvers")
-
-	var mu sync.Mutex
-	var wg sync.WaitGroup
-	errs := make([]error, 0)
-
-	for _, rslv := range rslvs {
-		rslv := rslv
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-
-			if err := uc.resolverService.ResolvePipelineConfigFunctionNames(ctx, &rslv, functions); err != nil {
-				mu.Lock()
-				errs = append(errs, err)
-				mu.Unlock()
-
-				uc.trackerRepository.Failed(ctx, fmt.Sprintf("failed to save resolver %s.%s", ptr.ToValue(rslv.TypeName), ptr.ToValue(rslv.FieldName)))
-				return
-			}
-
-			if _, err := uc.resolverRepositoryForFS.Save(ctx, apiID, &rslv); err != nil {
-				mu.Lock()
-				errs = append(errs, err)
-				mu.Unlock()
-
-				uc.trackerRepository.Failed(ctx, fmt.Sprintf("failed to save resolver %s.%s", ptr.ToValue(rslv.TypeName), ptr.ToValue(rslv.FieldName)))
-				return
-			}
-
-			uc.trackerRepository.Success(ctx, fmt.Sprintf("saved resolver %s.%s", ptr.ToValue(rslv.TypeName), ptr.ToValue(rslv.FieldName)))
-		}()
-	}
-
-	wg.Wait()
-
-	if err := errors.Join(errs...); err != nil {
-		return nil, err
-	}
-
-	uc.trackerRepository.Success(ctx, "saved all resolvers")
-
-	return rslvs, nil
 }
 
 func (uc *pullUseCase) deleteExtraneousResolvers(ctx context.Context, apiID string, resolvers []model.Resolver) (err error) {
