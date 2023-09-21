@@ -175,7 +175,7 @@ func (uc *pullUseCase) pullResolvers(ctx context.Context, apiID string, function
 
 	uc.trackerRepository.InProgress(ctx, "fetching resolvers")
 
-	rslvs, err := uc.resolverRepositoryForAppSync.List(ctx, apiID)
+	resolvers, err := uc.resolverRepositoryForAppSync.List(ctx, apiID)
 	if err != nil {
 		uc.trackerRepository.Failed(ctx, "failed to fetch resolvers")
 		return nil, err
@@ -187,7 +187,7 @@ func (uc *pullUseCase) pullResolvers(ctx context.Context, apiID string, function
 	var wg sync.WaitGroup
 	errs := make([]error, 0)
 
-	for _, rslv := range rslvs {
+	for _, rslv := range resolvers {
 		rslv := rslv
 		wg.Add(1)
 		go func() {
@@ -223,7 +223,7 @@ func (uc *pullUseCase) pullResolvers(ctx context.Context, apiID string, function
 
 	uc.trackerRepository.Success(ctx, "saved all resolvers")
 
-	return rslvs, nil
+	return resolvers, nil
 }
 
 func (uc *pullUseCase) deleteExtraneousFunctions(ctx context.Context, apiID string, functions []model.Function) (err error) {
@@ -231,13 +231,13 @@ func (uc *pullUseCase) deleteExtraneousFunctions(ctx context.Context, apiID stri
 
 	uc.trackerRepository.InProgress(ctx, "loading functions")
 
-	fsFns, err := uc.functionRepositoryForFS.List(ctx, apiID)
+	fns, err := uc.functionRepositoryForFS.List(ctx, apiID)
 	if err != nil {
 		uc.trackerRepository.Failed(ctx, "failed to load functions")
 		return err
 	}
 
-	extraneousFns, err := uc.functionService.Difference(ctx, fsFns, functions)
+	extraneousFns, err := uc.functionService.Difference(ctx, fns, functions)
 	if err != nil {
 		uc.trackerRepository.Failed(ctx, "failed to retrieve extraneous functions")
 		return err
@@ -289,13 +289,13 @@ func (uc *pullUseCase) deleteExtraneousResolvers(ctx context.Context, apiID stri
 
 	uc.trackerRepository.InProgress(ctx, "loading resolvers")
 
-	fsRslvs, err := uc.resolverRepositoryForFS.List(ctx, apiID)
+	rslvs, err := uc.resolverRepositoryForFS.List(ctx, apiID)
 	if err != nil {
 		uc.trackerRepository.Failed(ctx, "failed to load resolvers")
 		return err
 	}
 
-	extraneousRslvs, err := uc.resolverService.Difference(ctx, fsRslvs, resolvers)
+	extraneousRslvs, err := uc.resolverService.Difference(ctx, rslvs, resolvers)
 	if err != nil {
 		uc.trackerRepository.Failed(ctx, "failed to retrieve extraneous resolvers")
 		return err
