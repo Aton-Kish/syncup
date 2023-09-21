@@ -113,6 +113,8 @@ func (uc *pullUseCase) pullSchema(ctx context.Context, apiID string) (res *model
 		return nil, err
 	}
 
+	uc.trackerRepository.InProgress(ctx, "saving schema")
+
 	if _, err := uc.schemaRepositoryForFS.Save(ctx, apiID, schema); err != nil {
 		uc.trackerRepository.Failed(ctx, "failed to save schema")
 		return nil, err
