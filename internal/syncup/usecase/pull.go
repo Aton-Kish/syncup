@@ -244,6 +244,7 @@ func (uc *pullUseCase) deleteExtraneousFunctions(ctx context.Context, apiID stri
 	}
 
 	if len(extraneousFns) == 0 {
+		uc.trackerRepository.Success(ctx, "there were no extraneous functions")
 		return nil
 	}
 
@@ -301,6 +302,7 @@ func (uc *pullUseCase) deleteExtraneousResolvers(ctx context.Context, apiID stri
 	}
 
 	if len(extraneousRslvs) == 0 {
+		uc.trackerRepository.Success(ctx, "there were no extraneous resolvers")
 		return nil
 	}
 
