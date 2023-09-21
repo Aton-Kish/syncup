@@ -457,6 +457,9 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 
 func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 	testdataBaseDir := "../../../../testdata"
+	functionVTL_2018_05_29WithoutFunctionId := testhelpers.MustUnmarshalJSON[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/metadata.json")))
+	functionVTL_2018_05_29WithoutFunctionId.RequestMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/request.vtl"))))
+	functionVTL_2018_05_29WithoutFunctionId.ResponseMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/response.vtl"))))
 	functionVTL_2018_05_29 := testhelpers.MustUnmarshalJSON[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/metadata.json")))
 	functionVTL_2018_05_29.FunctionId = ptr.Pointer("FunctionId")
 	functionVTL_2018_05_29.RequestMappingTemplate = ptr.Pointer(string(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/request.vtl"))))
@@ -515,7 +518,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			name: "happy path: create",
 			args: args{
 				apiID:    "apiID",
-				function: &functionVTL_2018_05_29,
+				function: &functionVTL_2018_05_29WithoutFunctionId,
 			},
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
@@ -552,7 +555,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			name: "happy path: update",
 			args: args{
 				apiID:    "apiID",
-				function: &functionVTL_2018_05_29,
+				function: &functionVTL_2018_05_29WithoutFunctionId,
 			},
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
@@ -598,7 +601,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			name: "happy path: create - retries on ConcurrentModificationException",
 			args: args{
 				apiID:    "apiID",
-				function: &functionVTL_2018_05_29,
+				function: &functionVTL_2018_05_29WithoutFunctionId,
 			},
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
@@ -644,7 +647,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			name: "happy path: update - retries on ConcurrentModificationException",
 			args: args{
 				apiID:    "apiID",
-				function: &functionVTL_2018_05_29,
+				function: &functionVTL_2018_05_29WithoutFunctionId,
 			},
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
@@ -699,7 +702,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			name: "edge path: create - exceeds max retry count",
 			args: args{
 				apiID:    "apiID",
-				function: &functionVTL_2018_05_29,
+				function: &functionVTL_2018_05_29WithoutFunctionId,
 			},
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
@@ -757,7 +760,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			name: "edge path: update - exceeds max retry count",
 			args: args{
 				apiID:    "apiID",
-				function: &functionVTL_2018_05_29,
+				function: &functionVTL_2018_05_29WithoutFunctionId,
 			},
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
@@ -864,7 +867,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			name: "edge path: appsync.ListFunctions() error",
 			args: args{
 				apiID:    "apiID",
-				function: &functionVTL_2018_05_29,
+				function: &functionVTL_2018_05_29WithoutFunctionId,
 			},
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
@@ -898,7 +901,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			name: "edge path: appsync.CreateFunction() error",
 			args: args{
 				apiID:    "apiID",
-				function: &functionVTL_2018_05_29,
+				function: &functionVTL_2018_05_29WithoutFunctionId,
 			},
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{
@@ -933,7 +936,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 			name: "edge path: appsync.UpdateFunction() error",
 			args: args{
 				apiID:    "apiID",
-				function: &functionVTL_2018_05_29,
+				function: &functionVTL_2018_05_29WithoutFunctionId,
 			},
 			mockAppSyncClientListFunctions: mockAppSyncClientListFunctions{
 				returns: []mockAppSyncClientListFunctionsReturn{

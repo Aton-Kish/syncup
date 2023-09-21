@@ -134,15 +134,18 @@ func (r *functionRepositoryForAppSync) Save(ctx context.Context, apiID string, f
 	}
 
 	save := r.update
-	if _, err := r.Get(ctx, apiID, *function.Name); err != nil {
+	fnToSave := function
+	if fn, err := r.Get(ctx, apiID, *function.Name); err != nil {
 		if errors.Is(err, model.ErrNotFound) {
 			save = r.create
 		} else {
 			return nil, err
 		}
+	} else {
+		fnToSave = fn
 	}
 
-	fn, err := save(ctx, apiID, function)
+	fn, err := save(ctx, apiID, fnToSave)
 	if err != nil {
 		return nil, err
 	}

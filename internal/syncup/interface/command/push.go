@@ -30,7 +30,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type pullFlags struct {
+type pushFlags struct {
 	region  string
 	profile string
 
@@ -39,35 +39,35 @@ type pullFlags struct {
 	baseDir               string
 }
 
-type PullCommand interface {
+type PushCommand interface {
 	Command
 }
 
-type pullCommand struct {
+type pushCommand struct {
 	options *options
 
-	useCase                    usecase.PullUseCase
+	useCase                    usecase.PushUseCase
 	awsActivator               repository.AWSActivator
 	baseDirProvider            repository.BaseDirProvider
 	mfaTokenProviderRepository repository.MFATokenProviderRepository
 
 	cmd   *cobra.Command
-	flags *pullFlags
+	flags *pushFlags
 	once  sync.Once
 }
 
-func NewPullCommand(repo repository.Repository, optFns ...func(o *options)) PullCommand {
-	return &pullCommand{
+func NewPushCommand(repo repository.Repository, optFns ...func(o *options)) PushCommand {
+	return &pushCommand{
 		options: newOptions(optFns...),
 
-		useCase:                    usecase.NewPullUseCase(repo),
+		useCase:                    usecase.NewPushUseCase(repo),
 		awsActivator:               repo,
 		baseDirProvider:            repo,
 		mfaTokenProviderRepository: repo.MFATokenProviderRepository(),
 	}
 }
 
-func (c *pullCommand) Execute(ctx context.Context, args ...string) (err error) {
+func (c *pushCommand) Execute(ctx context.Context, args ...string) (err error) {
 	defer wrap(&err)
 
 	cmd := c.command()
@@ -80,7 +80,7 @@ func (c *pullCommand) Execute(ctx context.Context, args ...string) (err error) {
 	return nil
 }
 
-func (c *pullCommand) RegisterSubCommands(cmds ...Command) {
+func (c *pushCommand) RegisterSubCommands(cmds ...Command) {
 	subs := make([]*cobra.Command, 0, len(cmds))
 	for _, cmd := range cmds {
 		subs = append(subs, cmd.command())
@@ -90,13 +90,13 @@ func (c *pullCommand) RegisterSubCommands(cmds ...Command) {
 	cmd.AddCommand(subs...)
 }
 
-func (c *pullCommand) command() *cobra.Command {
+func (c *pushCommand) command() *cobra.Command {
 	c.once.Do(func() {
-		c.flags = new(pullFlags)
+		c.flags = new(pushFlags)
 
 		c.cmd = &cobra.Command{
-			Use:   "pull",
-			Short: "Pull resources from AWS AppSync",
+			Use:   "push",
+			Short: "Push resources to AWS AppSync",
 			PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 				defer wrap(&err)
 
@@ -122,7 +122,7 @@ func (c *pullCommand) command() *cobra.Command {
 
 				if _, err := c.useCase.Execute(
 					ctx,
-					&usecase.PullInput{
+					&usecase.PushInput{
 						APIID:                     c.flags.apiID,
 						DeleteExtraneousResources: c.flags.deleteExtraneousFiles,
 					},
@@ -140,8 +140,8 @@ func (c *pullCommand) command() *cobra.Command {
 
 		c.cmd.Flags().StringVar(&c.flags.apiID, "api-id", "", "The API ID of AWS AppSync.")
 		_ = c.cmd.MarkFlagRequired("api-id")
-		c.cmd.Flags().BoolVar(&c.flags.deleteExtraneousFiles, "delete", false, "Delete extraneous resources from file system.")
-		c.cmd.Flags().StringVar(&c.flags.baseDir, "dir", "", "The directory in which the resources will be saved (instead of current directory).")
+		c.cmd.Flags().BoolVar(&c.flags.deleteExtraneousFiles, "delete", false, "Delete extraneous resources from AWS AppSync.")
+		c.cmd.Flags().StringVar(&c.flags.baseDir, "dir", "", "The directory from which the resources will be loaded (instead of current directory).")
 
 		c.cmd.SetIn(c.options.stdio.in)
 		c.cmd.SetOut(c.options.stdio.out)
