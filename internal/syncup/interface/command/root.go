@@ -25,8 +25,10 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/Aton-Kish/syncup/internal/syncup"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
+	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 )
 
@@ -80,6 +82,12 @@ func (c *rootCommand) command() *cobra.Command {
 			Use:     "syncup",
 			Short:   "Sync up with AWS AppSync",
 			Version: fmt.Sprintf("%s, build %s (%s/%s)", c.version.Version, c.version.GitCommit, c.version.OS, c.version.Arch),
+			PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+				ctx := cmd.Context()
+				ctx = syncup.WithRequestID(ctx, uuid.NewString())
+				cmd.SetContext(ctx)
+				return nil
+			},
 			RunE: func(cmd *cobra.Command, args []string) (err error) {
 				defer wrap(&err)
 
