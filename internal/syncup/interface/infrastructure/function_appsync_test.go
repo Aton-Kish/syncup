@@ -43,7 +43,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/appsync/types"
 	smithymiddleware "github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
+	"github.com/hashicorp/golang-lru/v2/expirable"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/sync/singleflight"
 )
 
 func Test_functionRepositoryForAppSync_List(t *testing.T) {
@@ -244,6 +246,9 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 
 			r := &functionRepositoryForAppSync{
 				appsyncClient: mockAppSyncClient,
+
+				cache: expirable.NewLRU[string, []model.Function](cacheSizeFunctionRepositoryForAppSync, nil, cacheTTLFunctionRepositoryForAppSync),
+				sfg:   &singleflight.Group{},
 			}
 
 			// Act
@@ -433,6 +438,9 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 
 			r := &functionRepositoryForAppSync{
 				appsyncClient: mockAppSyncClient,
+
+				cache: expirable.NewLRU[string, []model.Function](cacheSizeFunctionRepositoryForAppSync, nil, cacheTTLFunctionRepositoryForAppSync),
+				sfg:   &singleflight.Group{},
 			}
 
 			// Act
@@ -1021,6 +1029,9 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 
 			r := &functionRepositoryForAppSync{
 				appsyncClient: mockAppSyncClient,
+
+				cache: expirable.NewLRU[string, []model.Function](cacheSizeFunctionRepositoryForAppSync, nil, cacheTTLFunctionRepositoryForAppSync),
+				sfg:   &singleflight.Group{},
 			}
 
 			// Act
@@ -1387,6 +1398,9 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 
 			r := &functionRepositoryForAppSync{
 				appsyncClient: mockAppSyncClient,
+
+				cache: expirable.NewLRU[string, []model.Function](cacheSizeFunctionRepositoryForAppSync, nil, cacheTTLFunctionRepositoryForAppSync),
+				sfg:   &singleflight.Group{},
 			}
 
 			// Act
