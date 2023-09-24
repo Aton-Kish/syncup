@@ -33,13 +33,13 @@ import (
 )
 
 const (
-	defaultDuration = time.Duration(1) * time.Second
+	pollingIntervalSchemaRepositoryForAppSync = time.Duration(1) * time.Second
 )
 
 type schemaRepositoryForAppSync struct {
 	appsyncClient appsyncClient
 
-	duration time.Duration
+	pollingInterval time.Duration
 }
 
 var (
@@ -50,7 +50,7 @@ var (
 
 func NewSchemaRepositoryForAppSync() repository.SchemaRepository {
 	return &schemaRepositoryForAppSync{
-		duration: defaultDuration,
+		pollingInterval: pollingIntervalSchemaRepositoryForAppSync,
 	}
 }
 
@@ -96,7 +96,7 @@ func (r *schemaRepositoryForAppSync) Save(ctx context.Context, apiID string, sch
 		return nil, err
 	}
 
-	ticker := time.NewTicker(r.duration)
+	ticker := time.NewTicker(r.pollingInterval)
 	defer ticker.Stop()
 
 	ch := make(chan error)
