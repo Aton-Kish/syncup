@@ -24,17 +24,31 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
+	"github.com/Aton-Kish/syncup/internal/syncup"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/model"
 	"github.com/Aton-Kish/syncup/internal/syncup/domain/repository"
 	"github.com/Aton-Kish/syncup/internal/syncup/interface/infrastructure/mapper"
 	"github.com/aws/aws-sdk-go-v2/aws/retry"
 	"github.com/aws/aws-sdk-go-v2/service/appsync"
 	"github.com/aws/aws-sdk-go-v2/service/appsync/types"
+	"github.com/hashicorp/golang-lru/v2/expirable"
+	"golang.org/x/sync/singleflight"
+)
+
+const (
+	cacheSizeFunctionRepositoryForAppSync = 0 // unlimited size
+	cacheTTLFunctionRepositoryForAppSync  = time.Duration(1) * time.Minute
+
+	cacheKeyPrefixFunctions = "Functions"
 )
 
 type functionRepositoryForAppSync struct {
 	appsyncClient appsyncClient
+
+	cache *expirable.LRU[string, []model.Function]
+	sfg   *singleflight.Group
 }
 
 var (
@@ -44,7 +58,10 @@ var (
 )
 
 func NewFunctionRepositoryForAppSync() repository.FunctionRepository {
-	return &functionRepositoryForAppSync{}
+	return &functionRepositoryForAppSync{
+		cache: expirable.NewLRU[string, []model.Function](cacheSizeFunctionRepositoryForAppSync, nil, cacheTTLFunctionRepositoryForAppSync),
+		sfg:   &singleflight.Group{},
+	}
 }
 
 func (r *functionRepositoryForAppSync) ActivateAWS(ctx context.Context, optFns ...func(o *model.AWSOptions)) (err error) {
@@ -61,6 +78,36 @@ func (r *functionRepositoryForAppSync) ActivateAWS(ctx context.Context, optFns .
 }
 
 func (r *functionRepositoryForAppSync) List(ctx context.Context, apiID string) (res []model.Function, err error) {
+	defer wrap(&err)
+
+	cacheKey := fmt.Sprintf("%s#%s", cacheKeyPrefixFunctions, syncup.RequestID(ctx))
+	v, err, _ := r.sfg.Do(cacheKey, func() (any, error) {
+		if fns, ok := r.cache.Get(cacheKey); ok {
+			return fns, nil
+		}
+
+		fns, err := r.list(ctx, apiID)
+		if err != nil {
+			return nil, err
+		}
+
+		r.cache.Add(cacheKey, fns)
+
+		return fns, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	fns, ok := v.([]model.Function)
+	if !ok {
+		return nil, fmt.Errorf("%w: expected type []model.Function but got %T", model.ErrInvalidValue, v)
+	}
+
+	return fns, nil
+}
+
+func (r *functionRepositoryForAppSync) list(ctx context.Context, apiID string) (res []model.Function, err error) {
 	defer wrap(&err)
 
 	fns := make([]model.Function, 0)
@@ -149,6 +196,9 @@ func (r *functionRepositoryForAppSync) Save(ctx context.Context, apiID string, f
 	if err != nil {
 		return nil, err
 	}
+
+	cacheKey := fmt.Sprintf("%s#%s", cacheKeyPrefixFunctions, syncup.RequestID(ctx))
+	r.cache.Remove(cacheKey)
 
 	return fn, nil
 }

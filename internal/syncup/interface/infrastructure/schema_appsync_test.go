@@ -172,7 +172,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 	duration := time.Duration(1) * time.Millisecond
 
 	type fields struct {
-		duration time.Duration
+		pollingInterval time.Duration
 	}
 
 	type args struct {
@@ -226,7 +226,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			name:    "happy path: default",
 			timeout: 100 * duration, // not timeout
 			fields: fields{
-				duration: duration,
+				pollingInterval: duration,
 			},
 			args: args{
 				apiID:  "apiID",
@@ -277,7 +277,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			name:    "happy path: retries on ConcurrentModificationException",
 			timeout: 100 * duration, // not timeout
 			fields: fields{
-				duration: duration,
+				pollingInterval: duration,
 			},
 			args: args{
 				apiID:  "apiID",
@@ -337,7 +337,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			name:    "edge path: timeout",
 			timeout: duration, // timeout
 			fields: fields{
-				duration: duration,
+				pollingInterval: duration,
 			},
 			args: args{
 				apiID:  "apiID",
@@ -381,7 +381,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			name:    "edge path: exceeds max retry count",
 			timeout: 100 * duration, // not timeout
 			fields: fields{
-				duration: duration,
+				pollingInterval: duration,
 			},
 			args: args{
 				apiID:  "apiID",
@@ -433,7 +433,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			name:    "edge path: nil schema",
 			timeout: 100 * duration, // not timeout
 			fields: fields{
-				duration: duration,
+				pollingInterval: duration,
 			},
 			args: args{
 				apiID:  "apiID",
@@ -457,7 +457,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			name:    "edge path: appsync.StartSchemaCreation() error",
 			timeout: 100 * duration, // not timeout
 			fields: fields{
-				duration: duration,
+				pollingInterval: duration,
 			},
 			args: args{
 				apiID:  "apiID",
@@ -486,7 +486,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			name:    "edge path: failed to create",
 			timeout: 100 * duration, // not timeout
 			fields: fields{
-				duration: duration,
+				pollingInterval: duration,
 			},
 			args: args{
 				apiID:  "apiID",
@@ -530,7 +530,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			name:    "edge path: invalid schema status",
 			timeout: 100 * duration, // not timeout
 			fields: fields{
-				duration: duration,
+				pollingInterval: duration,
 			},
 			args: args{
 				apiID:  "apiID",
@@ -574,7 +574,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			name:    "edge path: appsync.GetSchemaCreationStatus() error",
 			timeout: 100 * duration, // not timeout
 			fields: fields{
-				duration: duration,
+				pollingInterval: duration,
 			},
 			args: args{
 				apiID:  "apiID",
@@ -616,7 +616,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			name:    "edge path: appsync.GetIntrospectionSchema() error",
 			timeout: 100 * duration, // not timeout
 			fields: fields{
-				duration: duration,
+				pollingInterval: duration,
 			},
 			args: args{
 				apiID:  "apiID",
@@ -706,8 +706,8 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 			mockAppSyncClient := appsync.NewFromConfig(cfg)
 
 			r := &schemaRepositoryForAppSync{
-				appsyncClient: mockAppSyncClient,
-				duration:      tt.fields.duration,
+				appsyncClient:   mockAppSyncClient,
+				pollingInterval: tt.fields.pollingInterval,
 			}
 
 			// Act
