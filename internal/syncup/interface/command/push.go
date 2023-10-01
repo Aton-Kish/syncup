@@ -51,7 +51,7 @@ type pushCommand struct {
 	baseDirProvider            repository.BaseDirProvider
 	mfaTokenProviderRepository repository.MFATokenProviderRepository
 
-	cmd   *cobra.Command
+	cmd   *xcommand
 	flags *pushFlags
 	once  sync.Once
 }
@@ -83,18 +83,28 @@ func (c *pushCommand) Execute(ctx context.Context, args ...string) (err error) {
 func (c *pushCommand) RegisterSubCommands(cmds ...Command) {
 	subs := make([]*cobra.Command, 0, len(cmds))
 	for _, cmd := range cmds {
-		subs = append(subs, cmd.command())
+		subs = append(subs, cmd.command().Command)
 	}
 
 	cmd := c.command()
 	cmd.AddCommand(subs...)
 }
 
-func (c *pushCommand) command() *cobra.Command {
+func (c *pushCommand) GenerateReferences(ctx context.Context, dir string) (err error) {
+	defer wrap(&err)
+
+	cmd := c.command()
+	cmd.InitDefaultVersionFlag()
+	cmd.InitDefaultCompletionCmd()
+
+	return cmd.GenerateReferences(dir)
+}
+
+func (c *pushCommand) command() *xcommand {
 	c.once.Do(func() {
 		c.flags = new(pushFlags)
 
-		c.cmd = &cobra.Command{
+		c.cmd = newCommand(&cobra.Command{
 			Use:   "push",
 			Short: "Push resources to AWS AppSync",
 			PreRunE: func(cmd *cobra.Command, args []string) (err error) {
@@ -133,7 +143,7 @@ func (c *pushCommand) command() *cobra.Command {
 				return nil
 			},
 			SilenceUsage: true,
-		}
+		})
 
 		c.cmd.Flags().StringVar(&c.flags.profile, "profile", "", "Use a specific profile from your AWS credential file.")
 		c.cmd.Flags().StringVar(&c.flags.region, "region", "", "The AWS region to use. Overrides config/env settings.")

@@ -49,7 +49,7 @@ type versionCommand struct {
 
 	version *model.Version
 
-	cmd  *cobra.Command
+	cmd  *xcommand
 	once sync.Once
 }
 
@@ -77,16 +77,26 @@ func (c *versionCommand) Execute(ctx context.Context, args ...string) (err error
 func (c *versionCommand) RegisterSubCommands(cmds ...Command) {
 	subs := make([]*cobra.Command, 0, len(cmds))
 	for _, cmd := range cmds {
-		subs = append(subs, cmd.command())
+		subs = append(subs, cmd.command().Command)
 	}
 
 	cmd := c.command()
 	cmd.AddCommand(subs...)
 }
 
-func (c *versionCommand) command() *cobra.Command {
+func (c *versionCommand) GenerateReferences(ctx context.Context, dir string) (err error) {
+	defer wrap(&err)
+
+	cmd := c.command()
+	cmd.InitDefaultVersionFlag()
+	cmd.InitDefaultCompletionCmd()
+
+	return cmd.GenerateReferences(dir)
+}
+
+func (c *versionCommand) command() *xcommand {
 	c.once.Do(func() {
-		c.cmd = &cobra.Command{
+		c.cmd = newCommand(&cobra.Command{
 			Use:   "version",
 			Short: "Show the syncup version information",
 			RunE: func(cmd *cobra.Command, args []string) (err error) {
@@ -113,7 +123,7 @@ func (c *versionCommand) command() *cobra.Command {
 				return nil
 			},
 			SilenceUsage: true,
-		}
+		})
 
 		c.cmd.SetIn(c.options.stdio.in)
 		c.cmd.SetOut(c.options.stdio.out)
