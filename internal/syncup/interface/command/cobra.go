@@ -33,17 +33,31 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	fileNameReadme = "README.md"
+)
+
 var (
+	templateFuncMap = template.FuncMap{
+		"replace": strings.ReplaceAll,
+		"now":     time.Now,
+	}
+
+	//go:embed template/README.md.gotmpl
+	readmeGoTemplate string
+	readmeTemplate   = template.Must(
+		template.
+			New("readme").
+			Funcs(templateFuncMap).
+			Parse(readmeGoTemplate),
+	)
+
 	//go:embed template/reference.md.gotmpl
 	referenceGoTemplate string
-
-	referenceTemplate = template.Must(
+	referenceTemplate   = template.Must(
 		template.
 			New("reference").
-			Funcs(template.FuncMap{
-				"replace": strings.ReplaceAll,
-				"now":     time.Now,
-			}).
+			Funcs(templateFuncMap).
 			Parse(referenceGoTemplate),
 	)
 )
@@ -56,6 +70,26 @@ func newCommand(cmd *cobra.Command) *xcommand {
 	return &xcommand{
 		Command: cmd,
 	}
+}
+
+func (c *xcommand) GenerateReadme(dir string) error {
+	c.InitDefaultHelpCmd()
+	c.InitDefaultHelpFlag()
+
+	buf := new(bytes.Buffer)
+	if err := readmeTemplate.Execute(buf, c); err != nil {
+		return err
+	}
+
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+
+	if err := os.WriteFile(filepath.Join(dir, fileNameReadme), buf.Bytes(), 0o644); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (c *xcommand) GenerateReference(dir string) error {
@@ -71,8 +105,8 @@ func (c *xcommand) GenerateReference(dir string) error {
 		return err
 	}
 
-	filename := fmt.Sprintf("%s.md", strings.ReplaceAll(c.CommandPath(), " ", "_"))
-	if err := os.WriteFile(filepath.Join(dir, filename), buf.Bytes(), 0o644); err != nil {
+	name := fmt.Sprintf("%s.md", strings.ReplaceAll(c.CommandPath(), " ", "_"))
+	if err := os.WriteFile(filepath.Join(dir, name), buf.Bytes(), 0o644); err != nil {
 		return err
 	}
 

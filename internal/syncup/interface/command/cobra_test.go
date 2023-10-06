@@ -31,6 +31,116 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func Test_xcommand_GenerateReadme(t *testing.T) {
+	type fields struct {
+		Command *cobra.Command
+	}
+
+	type args struct {
+		dir string
+	}
+
+	type expected struct {
+		content string
+		errIs   error
+	}
+
+	tests := []struct {
+		name     string
+		fields   fields
+		args     args
+		expected expected
+	}{
+		{
+			name: "happy path: has children",
+			fields: fields{
+				Command: func() *cobra.Command {
+					cmd := &cobra.Command{
+						Use:   "Use",
+						Short: "Short",
+						RunE: func(cmd *cobra.Command, args []string) error {
+							return nil
+						},
+					}
+
+					sub := &cobra.Command{
+						Use:   "SubUse",
+						Short: "SubShort",
+						RunE: func(cmd *cobra.Command, args []string) error {
+							return nil
+						},
+					}
+
+					cmd.AddCommand(sub)
+
+					return cmd
+				}(),
+			},
+			args: args{
+				dir: t.TempDir(),
+			},
+			expected: expected{
+				content: `# Command reference
+
+<sub><sup>Last updated on ` + time.Now().Format("2006-01-02") + `</sup></sub>
+
+- [Use](Use.md) - Short
+- [Use SubUse](Use_SubUse.md) - SubShort
+`,
+				errIs: nil,
+			},
+		},
+		{
+			name: "happy path: orphan",
+			fields: fields{
+				Command: &cobra.Command{
+					Use:   "Use",
+					Short: "Short",
+				},
+			},
+			args: args{
+				dir: t.TempDir(),
+			},
+			expected: expected{
+				content: `# Command reference
+
+<sub><sup>Last updated on ` + time.Now().Format("2006-01-02") + `</sup></sub>
+
+- [Use](Use.md) - Short
+`,
+				errIs: nil,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange
+			c := &xcommand{
+				Command: tt.fields.Command,
+			}
+
+			// Act
+			err := c.GenerateReadme(tt.args.dir)
+
+			// Assert
+			if strings.HasPrefix(tt.name, "happy") {
+				assert.NoError(t, err)
+
+				data, err := os.ReadFile(filepath.Join(tt.args.dir, fileNameReadme))
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expected.content, string(data))
+			} else {
+				assert.Error(t, err)
+
+				if tt.expected.errIs != nil {
+					assert.ErrorIs(t, err, tt.expected.errIs)
+				}
+			}
+		})
+	}
+}
+
 func Test_xcommand_GenerateReference(t *testing.T) {
 	type fields struct {
 		Command *cobra.Command
