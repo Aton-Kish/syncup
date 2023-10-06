@@ -26,10 +26,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
+	"slices"
 	"strings"
 	"text/template"
 	"time"
 
+	"github.com/Aton-Kish/syncup/internal/xfilepath"
 	"github.com/spf13/cobra"
 )
 
@@ -38,6 +41,8 @@ const (
 )
 
 var (
+	lastUpdatedPattern = regexp.MustCompile(`Last updated on \d{4}-\d{2}-\d{2}`)
+
 	templateFuncMap = template.FuncMap{
 		"replace": strings.ReplaceAll,
 		"now":     time.Now,
@@ -73,40 +78,43 @@ func newCommand(cmd *cobra.Command) *xcommand {
 }
 
 func (c *xcommand) GenerateReadme(dir string) error {
-	c.InitDefaultHelpCmd()
-	c.InitDefaultHelpFlag()
-
-	buf := new(bytes.Buffer)
-	if err := readmeTemplate.Execute(buf, c); err != nil {
-		return err
-	}
-
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return err
-	}
-
-	if err := os.WriteFile(filepath.Join(dir, fileNameReadme), buf.Bytes(), 0o644); err != nil {
-		return err
-	}
-
-	return nil
+	return c.generateDocument(readmeTemplate, dir, fileNameReadme)
 }
 
 func (c *xcommand) GenerateReference(dir string) error {
 	c.InitDefaultHelpCmd()
 	c.InitDefaultHelpFlag()
 
+	return c.generateDocument(referenceTemplate, dir, fmt.Sprintf("%s.md", strings.ReplaceAll(c.CommandPath(), " ", "_")))
+}
+
+func (c *xcommand) generateDocument(tmpl *template.Template, dir string, fileName string) error {
 	buf := new(bytes.Buffer)
-	if err := referenceTemplate.Execute(buf, c); err != nil {
+	if err := tmpl.Execute(buf, c); err != nil {
 		return err
 	}
 
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return err
+	name := filepath.Join(dir, fileName)
+	if xfilepath.Exist(name) {
+		data, err := os.ReadFile(name)
+		if err != nil {
+			return err
+		}
+
+		mask := "Last updated on 2006-01-02"
+		if slices.Equal(lastUpdatedPattern.ReplaceAll(data, []byte(mask)), lastUpdatedPattern.ReplaceAll(buf.Bytes(), []byte(mask))) {
+			// NOTE: no need to generate
+			return nil
+		}
 	}
 
-	name := fmt.Sprintf("%s.md", strings.ReplaceAll(c.CommandPath(), " ", "_"))
-	if err := os.WriteFile(filepath.Join(dir, name), buf.Bytes(), 0o644); err != nil {
+	if !xfilepath.Exist(dir) {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return err
+		}
+	}
+
+	if err := os.WriteFile(name, buf.Bytes(), 0o644); err != nil {
 		return err
 	}
 
