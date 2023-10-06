@@ -89,7 +89,7 @@ tasks:
     preconditions:
       - which pnpm
     env:
-      TARGETS: "**/*.md #node_modules"
+      TARGETS: "**/*.md"
 
   # format
   format:
