@@ -429,6 +429,7 @@ func Test_resolverRepositoryForAppSync_List(t *testing.T) {
 
 			cfg, err := config.LoadDefaultConfig(
 				ctx,
+				config.WithRegion("region"),
 				config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("key", "secret", "session")),
 				config.WithAPIOptions([]func(stack *smithymiddleware.Stack) error{
 					func(stack *smithymiddleware.Stack) error {
@@ -590,6 +591,7 @@ func Test_resolverRepositoryForAppSync_ListByTypeName(t *testing.T) {
 
 			cfg, err := config.LoadDefaultConfig(
 				ctx,
+				config.WithRegion("region"),
 				config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("key", "secret", "session")),
 				config.WithAPIOptions([]func(stack *smithymiddleware.Stack) error{
 					func(stack *smithymiddleware.Stack) error {
@@ -820,6 +822,7 @@ func Test_resolverRepositoryForAppSync_Get(t *testing.T) {
 
 			cfg, err := config.LoadDefaultConfig(
 				ctx,
+				config.WithRegion("region"),
 				config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("key", "secret", "session")),
 				config.WithAPIOptions([]func(stack *smithymiddleware.Stack) error{
 					func(stack *smithymiddleware.Stack) error {
@@ -1360,6 +1363,7 @@ func Test_resolverRepositoryForAppSync_Save(t *testing.T) {
 
 			cfg, err := config.LoadDefaultConfig(
 				ctx,
+				config.WithRegion("region"),
 				config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("key", "secret", "session")),
 				config.WithAPIOptions([]func(stack *smithymiddleware.Stack) error{
 					func(stack *smithymiddleware.Stack) error {
@@ -1563,6 +1567,7 @@ func Test_resolverRepositoryForAppSync_Delete(t *testing.T) {
 
 			cfg, err := config.LoadDefaultConfig(
 				ctx,
+				config.WithRegion("region"),
 				config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("key", "secret", "session")),
 				config.WithAPIOptions([]func(stack *smithymiddleware.Stack) error{
 					func(stack *smithymiddleware.Stack) error {

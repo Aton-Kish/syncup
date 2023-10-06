@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+
+project_name: syncup
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: default
+    main: ./cmd/cli
+    flags:
+      - -trimpath
+    ldflags:
+      - -s
+      - -w
+      - -X github.com/Aton-Kish/syncup/internal/syncup/registry.version={{ .Version }}
+      - -X github.com/Aton-Kish/syncup/internal/syncup/registry.gitCommit={{ .ShortCommit }}
+      - -X github.com/Aton-Kish/syncup/internal/syncup/registry.goVersion={{ .Env.GOVERSION }}
+      - -X github.com/Aton-Kish/syncup/internal/syncup/registry.goOS={{ .Os }}
+      - -X github.com/Aton-Kish/syncup/internal/syncup/registry.goArch={{ .Arch }}
+      - -X github.com/Aton-Kish/syncup/internal/syncup/registry.buildTime={{ .Date }}
+    env:
+      - CGO_ENABLED=0
+
+archives:
+  - id: default
+    builds:
+      - default
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - src: docs
+        dst: .

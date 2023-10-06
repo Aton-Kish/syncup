@@ -218,6 +218,7 @@ func Test_functionRepositoryForAppSync_List(t *testing.T) {
 
 			cfg, err := config.LoadDefaultConfig(
 				ctx,
+				config.WithRegion("region"),
 				config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("key", "secret", "session")),
 				config.WithAPIOptions([]func(stack *smithymiddleware.Stack) error{
 					func(stack *smithymiddleware.Stack) error {
@@ -410,6 +411,7 @@ func Test_functionRepositoryForAppSync_Get(t *testing.T) {
 
 			cfg, err := config.LoadDefaultConfig(
 				ctx,
+				config.WithRegion("region"),
 				config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("key", "secret", "session")),
 				config.WithAPIOptions([]func(stack *smithymiddleware.Stack) error{
 					func(stack *smithymiddleware.Stack) error {
@@ -993,6 +995,7 @@ func Test_functionRepositoryForAppSync_Save(t *testing.T) {
 
 			cfg, err := config.LoadDefaultConfig(
 				ctx,
+				config.WithRegion("region"),
 				config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("key", "secret", "session")),
 				config.WithAPIOptions([]func(stack *smithymiddleware.Stack) error{
 					func(stack *smithymiddleware.Stack) error {
@@ -1366,6 +1369,7 @@ func Test_functionRepositoryForAppSync_Delete(t *testing.T) {
 
 			cfg, err := config.LoadDefaultConfig(
 				ctx,
+				config.WithRegion("region"),
 				config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("key", "secret", "session")),
 				config.WithAPIOptions([]func(stack *smithymiddleware.Stack) error{
 					func(stack *smithymiddleware.Stack) error {

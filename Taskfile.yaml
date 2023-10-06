@@ -17,6 +17,7 @@ tasks:
       - lefthook install
       - go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
       - go install go.uber.org/mock/mockgen@latest
+      - go install github.com/goreleaser/goreleaser@latest
     desc: run go install
     preconditions:
       - which go
@@ -41,6 +42,7 @@ tasks:
       - rm -f $(go env GOPATH)/bin/lefthook
       - rm -f $(go env GOPATH)/bin/golangci-lint
       - rm -f $(go env GOPATH)/bin/mockgen
+      - rm -f $(go env GOPATH)/bin/goreleaser
       - go clean -modcache
     desc: clean go
     preconditions:
@@ -87,7 +89,7 @@ tasks:
     preconditions:
       - which pnpm
     env:
-      TARGETS: "**/*.md #node_modules"
+      TARGETS: "**/*.md"
 
   # format
   format:
@@ -158,3 +160,36 @@ tasks:
         vars:
           OPTIONS: -cover -v
     desc: run go coverage (verbose)
+
+  # build
+  build:
+    cmds:
+      - GOVERSION=$(go env GOVERSION) goreleaser {{ or .SubCommand "build" }} --clean --skip-validate {{ .OPTIONS }}
+    desc: run goreleaser build
+    preconditions:
+      - which go
+      - which goreleaser
+
+  build:snapshot:
+    cmds:
+      - task: build
+        vars:
+          OPTIONS: --snapshot
+    desc: run goreleaser build (snapshot)
+
+  # archive
+  archive:
+    cmds:
+      - task: build
+        vars:
+          SubCommand: release
+          OPTIONS: --skip-publish
+    desc: run goreleaser archive
+
+  archive:snapshot:
+    cmds:
+      - task: build
+        vars:
+          SubCommand: release
+          OPTIONS: --skip-publish --snapshot
+    desc: run goreleaser archive (snapshot)

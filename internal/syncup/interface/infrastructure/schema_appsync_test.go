@@ -119,6 +119,7 @@ func Test_schemaRepositoryForAppSync_Get(t *testing.T) {
 
 			cfg, err := config.LoadDefaultConfig(
 				ctx,
+				config.WithRegion("region"),
 				config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("key", "secret", "session")),
 				config.WithAPIOptions([]func(stack *smithymiddleware.Stack) error{
 					func(stack *smithymiddleware.Stack) error {
@@ -671,6 +672,7 @@ func Test_schemaRepositoryForAppSync_Save(t *testing.T) {
 
 			cfg, err := config.LoadDefaultConfig(
 				ctx,
+				config.WithRegion("region"),
 				config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("key", "secret", "session")),
 				config.WithAPIOptions([]func(stack *smithymiddleware.Stack) error{
 					func(stack *smithymiddleware.Stack) error {
