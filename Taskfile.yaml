@@ -122,7 +122,7 @@ tasks:
   generate:
     cmds:
       - find ./internal/ -name "mock" -type d | xargs rm -rf
-      - go generate ./internal/...
+      - go generate ./...
       - go mod tidy
     desc: run go generate
     preconditions:
