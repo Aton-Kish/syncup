@@ -151,9 +151,9 @@ func Test_xcommand_GenerateReference(t *testing.T) {
 	}
 
 	type expected struct {
-		name      string
-		reference string
-		errIs     error
+		name    string
+		content string
+		errIs   error
 	}
 
 	tests := []struct {
@@ -209,7 +209,7 @@ func Test_xcommand_GenerateReference(t *testing.T) {
 			},
 			expected: expected{
 				name: "RootUse_Use.md",
-				reference: `## ` + "`RootUse Use`" + `
+				content: `## ` + "`RootUse Use`" + `
 
 <sub><sup>Last updated on ` + time.Now().Format("2006-01-02") + `</sup></sub>
 
@@ -265,7 +265,7 @@ Example
 			},
 			expected: expected{
 				name: "Use.md",
-				reference: `## ` + "`Use`" + `
+				content: `## ` + "`Use`" + `
 
 <sub><sup>Last updated on ` + time.Now().Format("2006-01-02") + `</sup></sub>
 
@@ -298,7 +298,7 @@ Short
 
 				data, err := os.ReadFile(filepath.Join(tt.args.dir, tt.expected.name))
 				assert.NoError(t, err)
-				assert.Equal(t, tt.expected.reference, string(data))
+				assert.Equal(t, tt.expected.content, string(data))
 			} else {
 				assert.Error(t, err)
 
