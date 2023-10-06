@@ -160,3 +160,36 @@ tasks:
         vars:
           OPTIONS: -cover -v
     desc: run go coverage (verbose)
+
+  # build
+  build:
+    cmds:
+      - GOVERSION=$(go env GOVERSION) goreleaser {{ or .SubCommand "build" }} --clean --skip-validate {{ .OPTIONS }}
+    desc: run goreleaser build
+    preconditions:
+      - which go
+      - which goreleaser
+
+  build:snapshot:
+    cmds:
+      - task: build
+        vars:
+          OPTIONS: --snapshot
+    desc: run goreleaser build (snapshot)
+
+  # archive
+  archive:
+    cmds:
+      - task: build
+        vars:
+          SubCommand: release
+          OPTIONS: --skip-publish
+    desc: run goreleaser archive
+
+  archive:snapshot:
+    cmds:
+      - task: build
+        vars:
+          SubCommand: release
+          OPTIONS: --skip-publish --snapshot
+    desc: run goreleaser archive (snapshot)
