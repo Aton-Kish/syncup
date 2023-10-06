@@ -1,0 +1,8 @@
+# pnpm
+pnpm-lock.yaml
+
+# Auto generated docs
+docs/reference
+
+# Test data
+testdata

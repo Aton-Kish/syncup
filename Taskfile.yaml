@@ -70,7 +70,7 @@ tasks:
 
   lint:prettier:
     cmds:
-      - pnpm prettier --check --ignore-path .gitignore {{ .OPTIONS }} ${TARGETS}
+      - pnpm prettier --check {{ .OPTIONS }} ${TARGETS}
     desc: run prettier linter
     preconditions:
       - which pnpm
@@ -79,7 +79,10 @@ tasks:
 
   lint:markdown:
     cmds:
-      - pnpm {{ or .COMMAND "markdownlint-cli2" }} ${TARGETS}
+      - |
+        set -f
+        pnpm {{ or .COMMAND "markdownlint-cli2" }} ${TARGETS}
+        set +f
     desc: run markdown linter
     preconditions:
       - which pnpm
