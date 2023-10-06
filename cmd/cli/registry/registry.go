@@ -18,19 +18,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package main
+package registry
 
 import (
 	"context"
-	"os"
 
-	"github.com/Aton-Kish/syncup/cmd/cli/registry"
+	"github.com/Aton-Kish/syncup/internal/syncup/interface/command"
+	"github.com/Aton-Kish/syncup/internal/syncup/registry"
 )
 
-func main() {
-	ctx := context.Background()
-	cmd := registry.RegisterCommands(ctx)
-	if err := cmd.Execute(ctx); err != nil {
-		os.Exit(1)
-	}
+func RegisterCommands(ctx context.Context) command.Command {
+	repo := registry.NewRepository()
+
+	rootCmd := command.NewRootCommand(repo)
+	versionCommand := command.NewVersionCommand(repo)
+	pullCommand := command.NewPullCommand(repo)
+	pushCommand := command.NewPushCommand(repo)
+
+	rootCmd.RegisterSubCommands(versionCommand, pullCommand, pushCommand)
+
+	return rootCmd
 }

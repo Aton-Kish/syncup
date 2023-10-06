@@ -18,19 +18,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+//go:generate go run . -dir ../../../docs/reference
+
 package main
 
 import (
 	"context"
-	"os"
+	"flag"
 
 	"github.com/Aton-Kish/syncup/cmd/cli/registry"
 )
 
 func main() {
+	dir := flag.String("dir", "./docs/reference", "output directory where command references will be generated")
+	flag.Parse()
+
 	ctx := context.Background()
 	cmd := registry.RegisterCommands(ctx)
-	if err := cmd.Execute(ctx); err != nil {
-		os.Exit(1)
+
+	if err := cmd.GenerateReadme(ctx, *dir); err != nil {
+		panic(err)
+	}
+
+	if err := cmd.GenerateReferences(ctx, *dir); err != nil {
+		panic(err)
 	}
 }
