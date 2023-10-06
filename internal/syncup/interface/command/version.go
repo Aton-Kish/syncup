@@ -84,6 +84,15 @@ func (c *versionCommand) RegisterSubCommands(cmds ...Command) {
 	cmd.AddCommand(subs...)
 }
 
+func (c *versionCommand) GenerateReadme(ctx context.Context, dir string) (err error) {
+	defer wrap(&err)
+
+	cmd := c.command()
+	cmd.InitDefaultCompletionCmd()
+
+	return cmd.GenerateReadme(dir)
+}
+
 func (c *versionCommand) GenerateReferences(ctx context.Context, dir string) (err error) {
 	defer wrap(&err)
 

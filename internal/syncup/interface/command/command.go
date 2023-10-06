@@ -27,6 +27,7 @@ import (
 type Command interface {
 	Execute(ctx context.Context, args ...string) error
 	RegisterSubCommands(cmds ...Command)
+	GenerateReadme(ctx context.Context, dir string) error
 	GenerateReferences(ctx context.Context, dir string) error
 
 	command() *xcommand

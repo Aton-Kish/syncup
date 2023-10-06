@@ -90,6 +90,15 @@ func (c *pullCommand) RegisterSubCommands(cmds ...Command) {
 	cmd.AddCommand(subs...)
 }
 
+func (c *pullCommand) GenerateReadme(ctx context.Context, dir string) (err error) {
+	defer wrap(&err)
+
+	cmd := c.command()
+	cmd.InitDefaultCompletionCmd()
+
+	return cmd.GenerateReadme(dir)
+}
+
 func (c *pullCommand) GenerateReferences(ctx context.Context, dir string) (err error) {
 	defer wrap(&err)
 
