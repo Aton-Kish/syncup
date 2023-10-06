@@ -1,6 +1,6 @@
 module github.com/Aton-Kish/syncup
 
-go 1.21.0
+go 1.21.1
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.2.13 // NOTE: pinned to v2.2.13 due to https://github.com/go-survey/survey/issues/368
