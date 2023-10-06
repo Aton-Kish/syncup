@@ -22,13 +22,13 @@ package command
 
 import (
 	"context"
-
-	"github.com/spf13/cobra"
 )
 
 type Command interface {
 	Execute(ctx context.Context, args ...string) error
 	RegisterSubCommands(cmds ...Command)
+	GenerateReadme(ctx context.Context, dir string) error
+	GenerateReferences(ctx context.Context, dir string) error
 
-	command() *cobra.Command
+	command() *xcommand
 }

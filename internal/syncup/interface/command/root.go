@@ -41,7 +41,7 @@ type rootCommand struct {
 
 	version *model.Version
 
-	cmd  *cobra.Command
+	cmd  *xcommand
 	once sync.Once
 }
 
@@ -69,16 +69,35 @@ func (c *rootCommand) Execute(ctx context.Context, args ...string) (err error) {
 func (c *rootCommand) RegisterSubCommands(cmds ...Command) {
 	subs := make([]*cobra.Command, 0, len(cmds))
 	for _, cmd := range cmds {
-		subs = append(subs, cmd.command())
+		subs = append(subs, cmd.command().Command)
 	}
 
 	cmd := c.command()
 	cmd.AddCommand(subs...)
 }
 
-func (c *rootCommand) command() *cobra.Command {
+func (c *rootCommand) GenerateReadme(ctx context.Context, dir string) (err error) {
+	defer wrap(&err)
+
+	cmd := c.command()
+	cmd.InitDefaultCompletionCmd()
+
+	return cmd.GenerateReadme(dir)
+}
+
+func (c *rootCommand) GenerateReferences(ctx context.Context, dir string) (err error) {
+	defer wrap(&err)
+
+	cmd := c.command()
+	cmd.InitDefaultVersionFlag()
+	cmd.InitDefaultCompletionCmd()
+
+	return cmd.GenerateReferences(dir)
+}
+
+func (c *rootCommand) command() *xcommand {
 	c.once.Do(func() {
-		c.cmd = &cobra.Command{
+		c.cmd = newCommand(&cobra.Command{
 			Use:     "syncup",
 			Short:   "Sync up with AWS AppSync",
 			Version: fmt.Sprintf("%s, build %s (%s/%s)", c.version.Version, c.version.GitCommit, c.version.OS, c.version.Arch),
@@ -98,7 +117,7 @@ func (c *rootCommand) command() *cobra.Command {
 				return nil
 			},
 			SilenceUsage: true,
-		}
+		})
 
 		c.cmd.SetIn(c.options.stdio.in)
 		c.cmd.SetOutput(c.options.stdio.err)
