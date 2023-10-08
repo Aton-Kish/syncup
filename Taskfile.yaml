@@ -18,6 +18,7 @@ tasks:
       - go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
       - go install go.uber.org/mock/mockgen@latest
       - go install github.com/goreleaser/goreleaser@latest
+      - go install github.com/git-chglog/git-chglog/cmd/git-chglog@latest
     desc: run go install
     preconditions:
       - which go
@@ -43,6 +44,7 @@ tasks:
       - rm -f $(go env GOPATH)/bin/golangci-lint
       - rm -f $(go env GOPATH)/bin/mockgen
       - rm -f $(go env GOPATH)/bin/goreleaser
+      - rm -f $(go env GOPATH)/bin/git-chglog
       - go clean -modcache
     desc: clean go
     preconditions:
