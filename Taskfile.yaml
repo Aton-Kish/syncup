@@ -195,3 +195,11 @@ tasks:
           SubCommand: release
           OPTIONS: --skip-publish --snapshot
     desc: run goreleaser archive (snapshot)
+
+  # changelog
+  changelog:
+    cmds:
+      - git-chglog --config .chglog/config.yaml --output docs/CHANGELOG.md {{ if .VERSION }}--next-tag {{ .VERSION }}{{ end }}
+    desc: run changelog generator
+    preconditions:
+      - which git-chglog
