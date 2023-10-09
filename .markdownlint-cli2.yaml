@@ -108,4 +108,5 @@ config:
 
 ignores:
   - node_modules
+  - docs/CHANGELOG.md
   - docs/reference
