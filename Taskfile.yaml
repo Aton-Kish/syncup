@@ -203,3 +203,17 @@ tasks:
     desc: run changelog generator
     preconditions:
       - which git-chglog
+
+  # release
+  release:
+    cmds:
+      - task: changelog
+      - git add docs/CHANGELOG.md
+      - 'LEFTHOOK=0 git commit -m "docs: updated CHANGELOG for ${NEXT_VERSION}"'
+      - git tag ${NEXT_VERSION}
+      - git push origin main ${NEXT_VERSION}
+    desc: release a new version
+    preconditions:
+      - which git
+      - '[[ "${NEXT_VERSION}" =~ ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$ ]]'
+      - '[[ "$(git branch --show-current)" == "main" ]]'
