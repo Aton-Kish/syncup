@@ -166,7 +166,7 @@ tasks:
   # build
   build:
     cmds:
-      - GOVERSION=$(go env GOVERSION) goreleaser {{ or .SubCommand "build" }} --clean --skip-validate {{ .OPTIONS }}
+      - GOVERSION=$(go env GOVERSION) goreleaser {{ or .SubCommand "build" }} --clean --skip=validate {{ .OPTIONS }}
     desc: run goreleaser build
     preconditions:
       - which go
@@ -185,7 +185,7 @@ tasks:
       - task: build
         vars:
           SubCommand: release
-          OPTIONS: --skip-publish
+          OPTIONS: --skip=publish
     desc: run goreleaser archive
 
   archive:snapshot:
@@ -193,7 +193,7 @@ tasks:
       - task: build
         vars:
           SubCommand: release
-          OPTIONS: --skip-publish --snapshot
+          OPTIONS: --skip=publish --snapshot
     desc: run goreleaser archive (snapshot)
 
   # changelog

@@ -8,7 +8,7 @@ before:
 
 builds:
   - id: default
-    main: ./cmd/cli
+    main: ./cmd/syncup
     flags:
       - -trimpath
     ldflags:

@@ -26,7 +26,7 @@ import (
 	"context"
 	"flag"
 
-	"github.com/Aton-Kish/syncup/cmd/cli/registry"
+	"github.com/Aton-Kish/syncup/cmd/syncup/registry"
 )
 
 func main() {
