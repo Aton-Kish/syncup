@@ -1,11 +1,11 @@
 <!-- markdownlint-disable MD041 -->
 <div align="center">
-  <img src="https://github.com/Aton-Kish/syncup/raw/main/logo.svg" alt="syncup" title="syncup" width="256" />
+  <img src="../logo.svg" alt="syncup" title="syncup" width="256" />
 </div>
 
-# syncup
+# User Guide
 
-A development workflow tool for syncing up with AWS AppSync.
+The syncup is a development workflow tool for syncing up with AWS AppSync.
 
 ## Why syncup?
 
@@ -36,4 +36,4 @@ go install github.com/Aton-Kish/syncup/cmd/syncup@latest
 
 ## Changelog
 
-Refer to the [CHANGELOG](https://github.com/Aton-Kish/syncup/blob/main/CHANGELOG.md).
+Refer to the [CHANGELOG](../CHANGELOG.md).
