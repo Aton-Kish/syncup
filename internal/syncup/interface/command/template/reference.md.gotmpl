@@ -67,12 +67,12 @@
 {{- println "" -}}
 
 {{- if .HasParent }}
-- [{{ .Parent.CommandPath }}]({{ replace .Parent.CommandPath " " "_" }}.md) - {{ .Parent.Short }}
+- [{{ .Parent.CommandPath }}]({{ replace .Parent.CommandPath " " "-" }}.md) - {{ .Parent.Short }}
 {{- end }}
 
 {{- range .Commands }}
 {{- if and .IsAvailableCommand (not .IsAdditionalHelpTopicCommand) }}
-- [{{ .CommandPath }}]({{ replace .CommandPath " " "_" }}.md) - {{ .Short }}
+- [{{ .CommandPath }}]({{ replace .CommandPath " " "-" }}.md) - {{ .Short }}
 {{- end }}
 {{- end }}
 

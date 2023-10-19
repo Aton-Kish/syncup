@@ -1,6 +1,6 @@
 ## `syncup pull`
 
-<sub><sup>Last updated on 2023-10-06</sup></sub>
+<sub><sup>Last updated on 2023-10-19</sup></sub>
 
 Pull resources from AWS AppSync
 

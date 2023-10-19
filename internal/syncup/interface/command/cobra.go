@@ -85,7 +85,7 @@ func (c *xcommand) GenerateReference(dir string) error {
 	c.InitDefaultHelpCmd()
 	c.InitDefaultHelpFlag()
 
-	return c.generateDocument(referenceTemplate, dir, fmt.Sprintf("%s.md", strings.ReplaceAll(c.CommandPath(), " ", "_")))
+	return c.generateDocument(referenceTemplate, dir, fmt.Sprintf("%s.md", strings.ReplaceAll(c.CommandPath(), " ", "-")))
 }
 
 func (c *xcommand) generateDocument(tmpl *template.Template, dir string, fileName string) error {
