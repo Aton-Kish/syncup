@@ -5,6 +5,9 @@
 
 # syncup
 
+[![MIT License](https://img.shields.io/github/license/Aton-Kish/syncup)](./LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Aton-Kish/syncup)](https://goreportcard.com/report/github.com/Aton-Kish/syncup)
+
 A development workflow tool for syncing up with AWS AppSync.
 
 By combining it with a version control system, you can version-control the AppSync Schema, Resolvers, and Functions, allowing you to quickly restore versions.
@@ -39,7 +42,7 @@ If you think you've found a bug, or something isn't behaving the way you think i
 
 ## Changelog
 
-Refer to the [CHANGELOG](CHANGELOG.md).
+Refer to the [CHANGELOG](./CHANGELOG.md).
 
 ## License
 
