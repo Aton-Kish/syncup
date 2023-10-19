@@ -108,5 +108,6 @@ config:
 
 ignores:
   - node_modules
+  - .github
   - CHANGELOG.md
   - docs/reference
