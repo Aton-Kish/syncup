@@ -1,6 +1,6 @@
 ## `syncup push`
 
-<sub><sup>Last updated on 2023-10-06</sup></sub>
+<sub><sup>Last updated on 2023-10-19</sup></sub>
 
 Push resources to AWS AppSync
 

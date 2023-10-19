@@ -1,6 +1,6 @@
 ## `syncup completion bash`
 
-<sub><sup>Last updated on 2023-10-06</sup></sub>
+<sub><sup>Last updated on 2023-10-19</sup></sub>
 
 Generate the autocompletion script for bash
 
@@ -41,4 +41,4 @@ syncup completion bash
 
 ### See also
 
-- [syncup completion](syncup_completion.md) - Generate the autocompletion script for the specified shell
+- [syncup completion](syncup-completion.md) - Generate the autocompletion script for the specified shell

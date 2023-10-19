@@ -199,7 +199,7 @@ tasks:
   # changelog
   changelog:
     cmds:
-      - git-chglog --config .chglog/config.yaml --output docs/CHANGELOG.md {{ if .NEXT_VERSION }}--next-tag ${NEXT_VERSION}{{ end }}
+      - git-chglog --config .chglog/config.yaml --output CHANGELOG.md {{ if .NEXT_VERSION }}--next-tag ${NEXT_VERSION}{{ end }}
     desc: run changelog generator
     preconditions:
       - which git-chglog

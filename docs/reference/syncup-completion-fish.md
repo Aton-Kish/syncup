@@ -1,6 +1,6 @@
 ## `syncup completion fish`
 
-<sub><sup>Last updated on 2023-10-06</sup></sub>
+<sub><sup>Last updated on 2023-10-19</sup></sub>
 
 Generate the autocompletion script for fish
 
@@ -32,4 +32,4 @@ syncup completion fish [flags]
 
 ### See also
 
-- [syncup completion](syncup_completion.md) - Generate the autocompletion script for the specified shell
+- [syncup completion](syncup-completion.md) - Generate the autocompletion script for the specified shell
