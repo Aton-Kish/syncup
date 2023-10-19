@@ -18,7 +18,7 @@ The syncup provides API snapshot capture and restoration features, helping with 
 
 ### Manually
 
-Download the pre-compiled binaries from [the releases page](https://github.com/Aton-Kish/syncup/releases).
+Download the pre-compiled binaries from the [releases page](https://github.com/Aton-Kish/syncup/releases).
 
 ### `go install`
 

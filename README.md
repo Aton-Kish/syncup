@@ -13,7 +13,7 @@ By combining it with a version control system, you can version-control the AppSy
 
 ### Manually
 
-Download the pre-compiled binaries from [the releases page](https://github.com/Aton-Kish/syncup/releases).
+Download the pre-compiled binaries from the [releases page](https://github.com/Aton-Kish/syncup/releases).
 
 ### `go install`
 
