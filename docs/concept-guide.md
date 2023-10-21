@@ -63,3 +63,7 @@ The requestMappingTemplate field in the AppSync Resolver model format.
 | VTL runtime        | `functions/<function-name>/request.vtl`   | `requestMappingTemplate` field in the AppSync [FunctionConfiguration](https://github.com/aws/aws-sdk-go-v2/blob/a894e2744856c667b35ae096c1a6a48e71f7c8c0/codegen/sdk-codegen/aws-models/appsync.json#L4322-L4396) format.                                                     |
 | VTL runtime        | `functions/<function-name>/response.vtl`  | `responseMappingTemplate` field in the AppSync [FunctionConfiguration](https://github.com/aws/aws-sdk-go-v2/blob/a894e2744856c667b35ae096c1a6a48e71f7c8c0/codegen/sdk-codegen/aws-models/appsync.json#L4322-L4396) format.                                                    |
 | JavaScript runtime | `functions/<function-name>/code.js`       | `code` field in the AppSync [FunctionConfiguration](https://github.com/aws/aws-sdk-go-v2/blob/a894e2744856c667b35ae096c1a6a48e71f7c8c0/codegen/sdk-codegen/aws-models/appsync.json#L4322-L4396) format.                                                                       |
+
+## See also
+
+- [How-to guide](./how-to-guide.md)
