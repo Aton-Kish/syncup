@@ -1,4 +1,6 @@
-# Why syncup?
+# Concept guide
+
+## Why syncup?
 
 AWS AppSync makes it easy to build GraphQL APIs through the management console.
 However, API version-control is not straightforward in this scenario.
