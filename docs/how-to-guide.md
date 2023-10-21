@@ -1,4 +1,4 @@
-# How to syncup
+# How-to guide
 
 Prerequisites:
 
