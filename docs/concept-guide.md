@@ -12,9 +12,9 @@ The syncup provides API snapshot capture and restoration features, helping with 
 ## Compatibility with AWS AppSync
 
 The syncup is compatible with AWS AppSync in most cases.
-However, the only exception is with the identifier for AppSync Function:
-in contrast to AWS AppSync, which uses the Function ID as an identifier, syncup uses the Function Name as an identifier.
-This makes it easier to migrate to another AppSync GraphQL API.
+However, **the only exception is with the identifier for AppSync Function: in contrast to AWS AppSync, which uses the Function ID as an identifier, the syncup uses the Function Name as an identifier.**
+This makes it easier to [migrate to another AppSync GraphQL API](./how-to-guide.md#migrating-to-another-aws-appsync-graphql-api).
+As a trade-off, you'll no longer be able to define AppSync Functions with the same name.
 
 ## Data format
 
