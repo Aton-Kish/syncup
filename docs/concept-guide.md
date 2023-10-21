@@ -7,6 +7,8 @@ However, API version-control is not straightforward in this scenario.
 
 The syncup provides API snapshot capture and restoration features, helping with version management.
 
+![concept](./images/concept.drawio.svg)
+
 ## Compatibility with AWS AppSync
 
 The syncup is compatible with AWS AppSync in most cases.
