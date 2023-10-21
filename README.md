@@ -10,7 +10,7 @@
 
 A development workflow tool for syncing up with AWS AppSync.
 
-By combining it with a version control system, you can version-control the AppSync Schema, Resolvers, and Functions, allowing you to quickly restore versions.
+By combining it with a version control system, you can version control the AppSync Schema, Resolvers, and Functions, allowing you to quickly restore versions.
 
 ## Installation
 
