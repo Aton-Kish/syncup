@@ -30,6 +30,6 @@ assignees: Aton-Kish
 syncup version
 ```
 
-### Additional Info
+### Additional info
 
 <!-- Additional info you want to provide such as logs, system info, environment, etc. -->
