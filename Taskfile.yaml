@@ -208,7 +208,7 @@ tasks:
   release:
     cmds:
       - task: changelog
-      - git add docs/CHANGELOG.md
+      - git add CHANGELOG.md
       - 'LEFTHOOK=0 git commit -m "docs: updated CHANGELOG for ${NEXT_VERSION}"'
       - git tag ${NEXT_VERSION}
       - git push origin main ${NEXT_VERSION}
