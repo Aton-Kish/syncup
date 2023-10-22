@@ -21,14 +21,14 @@ options:
   commit_groups:
     title_maps:
       feat: Features
-      fix: Bug Fixes
+      fix: Bug fixes
       docs: Documentation
       style: Styles
-      refactor: Code Refactoring
-      perf: Performance Improvements
+      refactor: Code refactoring
+      perf: Performance improvements
       test: Tests
       build: Builds
-      ci: Continuous Integration
+      ci: Continuous integration
       chore: Chores
       revert: Reverts
   header:
