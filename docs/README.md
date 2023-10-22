@@ -3,7 +3,7 @@
   <img src="../logo.svg" alt="syncup" title="syncup" width="256" />
 </div>
 
-# User Guide
+# User guide
 
 The syncup is a development workflow tool for syncing up with AWS AppSync.
 
