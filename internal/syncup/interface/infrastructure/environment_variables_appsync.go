@@ -71,7 +71,11 @@ func (r *environmentVariablesRepositoryForAppSync) Get(ctx context.Context, apiI
 		return nil, err
 	}
 
-	vs := model.EnvironmentVariables(out.EnvironmentVariables)
+	vs := make(model.EnvironmentVariables)
+	if out.EnvironmentVariables != nil {
+		vs = out.EnvironmentVariables
+	}
+
 	return vs, nil
 }
 

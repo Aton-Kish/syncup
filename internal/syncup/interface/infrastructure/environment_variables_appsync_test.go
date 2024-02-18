@@ -70,7 +70,27 @@ func Test_environmentVariablesRepositoryForAppSync_Get(t *testing.T) {
 		expected                                           expected
 	}{
 		{
-			name: "happy path",
+			name: "happy path: no variables",
+			args: args{
+				apiID: "apiID",
+			},
+			mockAppSyncClientGetGraphqlApiEnvironmentVariables: mockAppSyncClientGetGraphqlApiEnvironmentVariables{
+				returns: []mockAppSyncClientGetGraphqlApiEnvironmentVariablesReturn{
+					{
+						res: &appsync.GetGraphqlApiEnvironmentVariablesOutput{
+							EnvironmentVariables: nil,
+						},
+						err: nil,
+					},
+				},
+			},
+			expected: expected{
+				res:   model.EnvironmentVariables{},
+				errIs: nil,
+			},
+		},
+		{
+			name: "happy path: some variables",
 			args: args{
 				apiID: "apiID",
 			},
