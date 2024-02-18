@@ -7,6 +7,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 <a name="unreleased"></a>
 ## [Unreleased]
 
+<a name="v0.2.0"></a>
+## [v0.2.0] - 2024-02-18
+
+### Features
+
+- [`6367526`](https://github.com/Aton-Kish/syncup/commit/63675267d58d4d6cf967b565e50e48c6271213f4) support environment variables feature ([#19](https://github.com/Aton-Kish/syncup/issues/19))
+
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2023-10-22
 
@@ -28,6 +35,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Documentation
 
+- [`0f6007b`](https://github.com/Aton-Kish/syncup/commit/0f6007b59536a5f98df8c2d37a4c8564cc630dda) updated CHANGELOG for v0.1.0
 - [`b80b523`](https://github.com/Aton-Kish/syncup/commit/b80b523c049f598a505e9e9d56c667db85bd1866) updated user guide ([#16](https://github.com/Aton-Kish/syncup/issues/16))
 - [`f202628`](https://github.com/Aton-Kish/syncup/commit/f2026283320bc21e3c40d5fea870177269d48906) added documentation ([#15](https://github.com/Aton-Kish/syncup/issues/15))
 - [`0b5bc16`](https://github.com/Aton-Kish/syncup/commit/0b5bc1617f529456ea2e0973b0a17dac37ca7c00) added docs ([#11](https://github.com/Aton-Kish/syncup/issues/11))
@@ -43,4 +51,5 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - [`1ee6874`](https://github.com/Aton-Kish/syncup/commit/1ee6874c6da5eefb52f353676d964ef7b9f26f4e) pull schema ([#3](https://github.com/Aton-Kish/syncup/issues/3))
 - [`cd95896`](https://github.com/Aton-Kish/syncup/commit/cd958963c5b7561647e50f5749651acd4d82e0db) init cli ([#2](https://github.com/Aton-Kish/syncup/issues/2))
 
-[Unreleased]: https://github.com/Aton-Kish/syncup/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Aton-Kish/syncup/compare/v0.2.0...HEAD
+[v0.2.0]: https://github.com/Aton-Kish/syncup/compare/v0.1.0...v0.2.0
