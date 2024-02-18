@@ -3,6 +3,7 @@ pnpm-lock.yaml
 
 # Auto generated docs
 docs/reference
+CHANGELOG.md
 
 # Test data
 testdata
