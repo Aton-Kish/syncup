@@ -38,6 +38,7 @@ import (
 
 func Test_pullUseCase_Execute(t *testing.T) {
 	testdataBaseDir := "../../../testdata"
+	variables := testhelpers.MustUnmarshalJSON[model.EnvironmentVariables](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "environment_variables/env.json")))
 	schema := model.Schema(testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "schema/schema.graphqls")))
 	functionVTL_2018_05_29 := testhelpers.MustUnmarshalJSON[model.Function](t, testhelpers.MustReadFile(t, filepath.Join(testdataBaseDir, "functions/VTL_2018-05-29/metadata.json")))
 	functionVTL_2018_05_29.FunctionId = ptr.Pointer("VTL_2018-05-29")
@@ -63,6 +64,24 @@ func Test_pullUseCase_Execute(t *testing.T) {
 
 	type args struct {
 		params *PullInput
+	}
+
+	type mockEnvironmentVariablesRepositoryForAppSyncGetReturn struct {
+		res model.EnvironmentVariables
+		err error
+	}
+	type mockEnvironmentVariablesRepositoryForAppSyncGet struct {
+		calls   int
+		returns []mockEnvironmentVariablesRepositoryForAppSyncGetReturn
+	}
+
+	type mockEnvironmentVariablesRepositoryForFSSaveReturn struct {
+		res model.EnvironmentVariables
+		err error
+	}
+	type mockEnvironmentVariablesRepositoryForFSSave struct {
+		calls   int
+		returns []mockEnvironmentVariablesRepositoryForFSSaveReturn
 	}
 
 	type mockSchemaRepositoryForAppSyncGetReturn struct {
@@ -187,6 +206,8 @@ func Test_pullUseCase_Execute(t *testing.T) {
 	tests := []struct {
 		name                                                  string
 		args                                                  args
+		mockEnvironmentVariablesRepositoryForAppSyncGet       mockEnvironmentVariablesRepositoryForAppSyncGet
+		mockEnvironmentVariablesRepositoryForFSSave           mockEnvironmentVariablesRepositoryForFSSave
 		mockSchemaRepositoryForAppSyncGet                     mockSchemaRepositoryForAppSyncGet
 		mockSchemaRepositoryForFSSave                         mockSchemaRepositoryForFSSave
 		mockFunctionRepositoryForAppSyncList                  mockFunctionRepositoryForAppSyncList
@@ -208,6 +229,22 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				params: &PullInput{
 					APIID:                     "APIID",
 					DeleteExtraneousResources: true,
+				},
+			},
+			mockEnvironmentVariablesRepositoryForAppSyncGet: mockEnvironmentVariablesRepositoryForAppSyncGet{
+				returns: []mockEnvironmentVariablesRepositoryForAppSyncGetReturn{
+					{
+						res: variables,
+						err: nil,
+					},
+				},
+			},
+			mockEnvironmentVariablesRepositoryForFSSave: mockEnvironmentVariablesRepositoryForFSSave{
+				returns: []mockEnvironmentVariablesRepositoryForFSSaveReturn{
+					{
+						res: variables,
+						err: nil,
+					},
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -355,6 +392,22 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				params: &PullInput{
 					APIID:                     "APIID",
 					DeleteExtraneousResources: true,
+				},
+			},
+			mockEnvironmentVariablesRepositoryForAppSyncGet: mockEnvironmentVariablesRepositoryForAppSyncGet{
+				returns: []mockEnvironmentVariablesRepositoryForAppSyncGetReturn{
+					{
+						res: variables,
+						err: nil,
+					},
+				},
+			},
+			mockEnvironmentVariablesRepositoryForFSSave: mockEnvironmentVariablesRepositoryForFSSave{
+				returns: []mockEnvironmentVariablesRepositoryForFSSaveReturn{
+					{
+						res: variables,
+						err: nil,
+					},
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -528,6 +581,22 @@ func Test_pullUseCase_Execute(t *testing.T) {
 					DeleteExtraneousResources: false,
 				},
 			},
+			mockEnvironmentVariablesRepositoryForAppSyncGet: mockEnvironmentVariablesRepositoryForAppSyncGet{
+				returns: []mockEnvironmentVariablesRepositoryForAppSyncGetReturn{
+					{
+						res: variables,
+						err: nil,
+					},
+				},
+			},
+			mockEnvironmentVariablesRepositoryForFSSave: mockEnvironmentVariablesRepositoryForFSSave{
+				returns: []mockEnvironmentVariablesRepositoryForFSSaveReturn{
+					{
+						res: variables,
+						err: nil,
+					},
+				},
+			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
 				returns: []mockSchemaRepositoryForAppSyncGetReturn{
 					{
@@ -640,11 +709,158 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			},
 		},
 		{
+			name: "edge path: EnvironmentVariablesRepositoryForAppSync.Get() error",
+			args: args{
+				params: &PullInput{
+					APIID:                     "APIID",
+					DeleteExtraneousResources: true,
+				},
+			},
+			mockEnvironmentVariablesRepositoryForAppSyncGet: mockEnvironmentVariablesRepositoryForAppSyncGet{
+				returns: []mockEnvironmentVariablesRepositoryForAppSyncGetReturn{
+					{
+						res: nil,
+						err: &model.LibError{},
+					},
+				},
+			},
+			mockEnvironmentVariablesRepositoryForFSSave: mockEnvironmentVariablesRepositoryForFSSave{
+				returns: []mockEnvironmentVariablesRepositoryForFSSaveReturn{},
+			},
+			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
+				returns: []mockSchemaRepositoryForAppSyncGetReturn{},
+			},
+			mockSchemaRepositoryForFSSave: mockSchemaRepositoryForFSSave{
+				returns: []mockSchemaRepositoryForFSSaveReturn{},
+			},
+			mockFunctionRepositoryForAppSyncList: mockFunctionRepositoryForAppSyncList{
+				returns: []mockFunctionRepositoryForAppSyncListReturn{},
+			},
+			mockFunctionRepositoryForFSSave: mockFunctionRepositoryForFSSave{
+				returns: []mockFunctionRepositoryForFSSaveReturn{},
+			},
+			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
+				returns: []mockResolverRepositoryForAppSyncListReturn{},
+			},
+			mockResolverServiceResolvePipelineConfigFunctionNames: mockResolverServiceResolvePipelineConfigFunctionNames{
+				returns: []mockResolverServiceResolvePipelineConfigFunctionNamesReturn{},
+			},
+			mockResolverRepositoryForFSSave: mockResolverRepositoryForFSSave{
+				returns: []mockResolverRepositoryForFSSaveReturn{},
+			},
+			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
+				returns: []mockFunctionRepositoryForFSListReturn{},
+			},
+			mockFunctionServiceDifference: mockFunctionServiceDifference{
+				returns: []mockFunctionServiceDifferenceReturn{},
+			},
+			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
+				returns: []mockFunctionRepositoryForFSDeleteReturn{},
+			},
+			mockResolverRepositoryForFSList: mockResolverRepositoryForFSList{
+				returns: []mockResolverRepositoryForFSListReturn{},
+			},
+			mockResolverServiceDifference: mockResolverServiceDifference{
+				returns: []mockResolverServiceDifferenceReturn{},
+			},
+			mockResolverRepositoryForFSDelete: mockResolverRepositoryForFSDelete{
+				returns: []mockResolverRepositoryForFSDeleteReturn{},
+			},
+			expected: expected{
+				res:   nil,
+				errIs: nil,
+			},
+		},
+		{
+			name: "edge path: EnvironmentVariablesRepositoryForFS.Save() error",
+			args: args{
+				params: &PullInput{
+					APIID:                     "APIID",
+					DeleteExtraneousResources: true,
+				},
+			},
+			mockEnvironmentVariablesRepositoryForAppSyncGet: mockEnvironmentVariablesRepositoryForAppSyncGet{
+				returns: []mockEnvironmentVariablesRepositoryForAppSyncGetReturn{
+					{
+						res: variables,
+						err: nil,
+					},
+				},
+			},
+			mockEnvironmentVariablesRepositoryForFSSave: mockEnvironmentVariablesRepositoryForFSSave{
+				returns: []mockEnvironmentVariablesRepositoryForFSSaveReturn{
+					{
+						res: nil,
+						err: &model.LibError{},
+					},
+				},
+			},
+			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
+				returns: []mockSchemaRepositoryForAppSyncGetReturn{},
+			},
+			mockSchemaRepositoryForFSSave: mockSchemaRepositoryForFSSave{
+				returns: []mockSchemaRepositoryForFSSaveReturn{},
+			},
+			mockFunctionRepositoryForAppSyncList: mockFunctionRepositoryForAppSyncList{
+				returns: []mockFunctionRepositoryForAppSyncListReturn{},
+			},
+			mockFunctionRepositoryForFSSave: mockFunctionRepositoryForFSSave{
+				returns: []mockFunctionRepositoryForFSSaveReturn{},
+			},
+			mockResolverRepositoryForAppSyncList: mockResolverRepositoryForAppSyncList{
+				returns: []mockResolverRepositoryForAppSyncListReturn{},
+			},
+			mockResolverServiceResolvePipelineConfigFunctionNames: mockResolverServiceResolvePipelineConfigFunctionNames{
+				returns: []mockResolverServiceResolvePipelineConfigFunctionNamesReturn{},
+			},
+			mockResolverRepositoryForFSSave: mockResolverRepositoryForFSSave{
+				returns: []mockResolverRepositoryForFSSaveReturn{},
+			},
+			mockFunctionRepositoryForFSList: mockFunctionRepositoryForFSList{
+				returns: []mockFunctionRepositoryForFSListReturn{},
+			},
+			mockFunctionServiceDifference: mockFunctionServiceDifference{
+				returns: []mockFunctionServiceDifferenceReturn{},
+			},
+			mockFunctionRepositoryForFSDelete: mockFunctionRepositoryForFSDelete{
+				returns: []mockFunctionRepositoryForFSDeleteReturn{},
+			},
+			mockResolverRepositoryForFSList: mockResolverRepositoryForFSList{
+				returns: []mockResolverRepositoryForFSListReturn{},
+			},
+			mockResolverServiceDifference: mockResolverServiceDifference{
+				returns: []mockResolverServiceDifferenceReturn{},
+			},
+			mockResolverRepositoryForFSDelete: mockResolverRepositoryForFSDelete{
+				returns: []mockResolverRepositoryForFSDeleteReturn{},
+			},
+			expected: expected{
+				res:   nil,
+				errIs: nil,
+			},
+		},
+		{
 			name: "edge path: SchemaRepositoryForAppSync.Get() error",
 			args: args{
 				params: &PullInput{
 					APIID:                     "APIID",
 					DeleteExtraneousResources: true,
+				},
+			},
+			mockEnvironmentVariablesRepositoryForAppSyncGet: mockEnvironmentVariablesRepositoryForAppSyncGet{
+				returns: []mockEnvironmentVariablesRepositoryForAppSyncGetReturn{
+					{
+						res: variables,
+						err: nil,
+					},
+				},
+			},
+			mockEnvironmentVariablesRepositoryForFSSave: mockEnvironmentVariablesRepositoryForFSSave{
+				returns: []mockEnvironmentVariablesRepositoryForFSSaveReturn{
+					{
+						res: variables,
+						err: nil,
+					},
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -702,6 +918,22 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				params: &PullInput{
 					APIID:                     "APIID",
 					DeleteExtraneousResources: true,
+				},
+			},
+			mockEnvironmentVariablesRepositoryForAppSyncGet: mockEnvironmentVariablesRepositoryForAppSyncGet{
+				returns: []mockEnvironmentVariablesRepositoryForAppSyncGetReturn{
+					{
+						res: variables,
+						err: nil,
+					},
+				},
+			},
+			mockEnvironmentVariablesRepositoryForFSSave: mockEnvironmentVariablesRepositoryForFSSave{
+				returns: []mockEnvironmentVariablesRepositoryForFSSaveReturn{
+					{
+						res: variables,
+						err: nil,
+					},
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -764,6 +996,22 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				params: &PullInput{
 					APIID:                     "APIID",
 					DeleteExtraneousResources: true,
+				},
+			},
+			mockEnvironmentVariablesRepositoryForAppSyncGet: mockEnvironmentVariablesRepositoryForAppSyncGet{
+				returns: []mockEnvironmentVariablesRepositoryForAppSyncGetReturn{
+					{
+						res: variables,
+						err: nil,
+					},
+				},
+			},
+			mockEnvironmentVariablesRepositoryForFSSave: mockEnvironmentVariablesRepositoryForFSSave{
+				returns: []mockEnvironmentVariablesRepositoryForFSSaveReturn{
+					{
+						res: variables,
+						err: nil,
+					},
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -831,6 +1079,22 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				params: &PullInput{
 					APIID:                     "APIID",
 					DeleteExtraneousResources: true,
+				},
+			},
+			mockEnvironmentVariablesRepositoryForAppSyncGet: mockEnvironmentVariablesRepositoryForAppSyncGet{
+				returns: []mockEnvironmentVariablesRepositoryForAppSyncGetReturn{
+					{
+						res: variables,
+						err: nil,
+					},
+				},
+			},
+			mockEnvironmentVariablesRepositoryForFSSave: mockEnvironmentVariablesRepositoryForFSSave{
+				returns: []mockEnvironmentVariablesRepositoryForFSSaveReturn{
+					{
+						res: variables,
+						err: nil,
+					},
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -910,6 +1174,22 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				params: &PullInput{
 					APIID:                     "APIID",
 					DeleteExtraneousResources: true,
+				},
+			},
+			mockEnvironmentVariablesRepositoryForAppSyncGet: mockEnvironmentVariablesRepositoryForAppSyncGet{
+				returns: []mockEnvironmentVariablesRepositoryForAppSyncGetReturn{
+					{
+						res: variables,
+						err: nil,
+					},
+				},
+			},
+			mockEnvironmentVariablesRepositoryForFSSave: mockEnvironmentVariablesRepositoryForFSSave{
+				returns: []mockEnvironmentVariablesRepositoryForFSSaveReturn{
+					{
+						res: variables,
+						err: nil,
+					},
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -994,6 +1274,22 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				params: &PullInput{
 					APIID:                     "APIID",
 					DeleteExtraneousResources: true,
+				},
+			},
+			mockEnvironmentVariablesRepositoryForAppSyncGet: mockEnvironmentVariablesRepositoryForAppSyncGet{
+				returns: []mockEnvironmentVariablesRepositoryForAppSyncGetReturn{
+					{
+						res: variables,
+						err: nil,
+					},
+				},
+			},
+			mockEnvironmentVariablesRepositoryForFSSave: mockEnvironmentVariablesRepositoryForFSSave{
+				returns: []mockEnvironmentVariablesRepositoryForFSSaveReturn{
+					{
+						res: variables,
+						err: nil,
+					},
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -1096,6 +1392,22 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				params: &PullInput{
 					APIID:                     "APIID",
 					DeleteExtraneousResources: true,
+				},
+			},
+			mockEnvironmentVariablesRepositoryForAppSyncGet: mockEnvironmentVariablesRepositoryForAppSyncGet{
+				returns: []mockEnvironmentVariablesRepositoryForAppSyncGetReturn{
+					{
+						res: variables,
+						err: nil,
+					},
+				},
+			},
+			mockEnvironmentVariablesRepositoryForFSSave: mockEnvironmentVariablesRepositoryForFSSave{
+				returns: []mockEnvironmentVariablesRepositoryForFSSaveReturn{
+					{
+						res: variables,
+						err: nil,
+					},
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -1215,6 +1527,22 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				params: &PullInput{
 					APIID:                     "APIID",
 					DeleteExtraneousResources: true,
+				},
+			},
+			mockEnvironmentVariablesRepositoryForAppSyncGet: mockEnvironmentVariablesRepositoryForAppSyncGet{
+				returns: []mockEnvironmentVariablesRepositoryForAppSyncGetReturn{
+					{
+						res: variables,
+						err: nil,
+					},
+				},
+			},
+			mockEnvironmentVariablesRepositoryForFSSave: mockEnvironmentVariablesRepositoryForFSSave{
+				returns: []mockEnvironmentVariablesRepositoryForFSSaveReturn{
+					{
+						res: variables,
+						err: nil,
+					},
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -1339,6 +1667,22 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				params: &PullInput{
 					APIID:                     "APIID",
 					DeleteExtraneousResources: true,
+				},
+			},
+			mockEnvironmentVariablesRepositoryForAppSyncGet: mockEnvironmentVariablesRepositoryForAppSyncGet{
+				returns: []mockEnvironmentVariablesRepositoryForAppSyncGetReturn{
+					{
+						res: variables,
+						err: nil,
+					},
+				},
+			},
+			mockEnvironmentVariablesRepositoryForFSSave: mockEnvironmentVariablesRepositoryForFSSave{
+				returns: []mockEnvironmentVariablesRepositoryForFSSaveReturn{
+					{
+						res: variables,
+						err: nil,
+					},
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -1473,6 +1817,22 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				params: &PullInput{
 					APIID:                     "APIID",
 					DeleteExtraneousResources: true,
+				},
+			},
+			mockEnvironmentVariablesRepositoryForAppSyncGet: mockEnvironmentVariablesRepositoryForAppSyncGet{
+				returns: []mockEnvironmentVariablesRepositoryForAppSyncGetReturn{
+					{
+						res: variables,
+						err: nil,
+					},
+				},
+			},
+			mockEnvironmentVariablesRepositoryForFSSave: mockEnvironmentVariablesRepositoryForFSSave{
+				returns: []mockEnvironmentVariablesRepositoryForFSSaveReturn{
+					{
+						res: variables,
+						err: nil,
+					},
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -1617,6 +1977,22 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				params: &PullInput{
 					APIID:                     "APIID",
 					DeleteExtraneousResources: true,
+				},
+			},
+			mockEnvironmentVariablesRepositoryForAppSyncGet: mockEnvironmentVariablesRepositoryForAppSyncGet{
+				returns: []mockEnvironmentVariablesRepositoryForAppSyncGetReturn{
+					{
+						res: variables,
+						err: nil,
+					},
+				},
+			},
+			mockEnvironmentVariablesRepositoryForFSSave: mockEnvironmentVariablesRepositoryForFSSave{
+				returns: []mockEnvironmentVariablesRepositoryForFSSaveReturn{
+					{
+						res: variables,
+						err: nil,
+					},
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -1766,6 +2142,22 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				params: &PullInput{
 					APIID:                     "APIID",
 					DeleteExtraneousResources: true,
+				},
+			},
+			mockEnvironmentVariablesRepositoryForAppSyncGet: mockEnvironmentVariablesRepositoryForAppSyncGet{
+				returns: []mockEnvironmentVariablesRepositoryForAppSyncGetReturn{
+					{
+						res: variables,
+						err: nil,
+					},
+				},
+			},
+			mockEnvironmentVariablesRepositoryForFSSave: mockEnvironmentVariablesRepositoryForFSSave{
+				returns: []mockEnvironmentVariablesRepositoryForFSSaveReturn{
+					{
+						res: variables,
+						err: nil,
+					},
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -1927,6 +2319,22 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				params: &PullInput{
 					APIID:                     "APIID",
 					DeleteExtraneousResources: true,
+				},
+			},
+			mockEnvironmentVariablesRepositoryForAppSyncGet: mockEnvironmentVariablesRepositoryForAppSyncGet{
+				returns: []mockEnvironmentVariablesRepositoryForAppSyncGetReturn{
+					{
+						res: variables,
+						err: nil,
+					},
+				},
+			},
+			mockEnvironmentVariablesRepositoryForFSSave: mockEnvironmentVariablesRepositoryForFSSave{
+				returns: []mockEnvironmentVariablesRepositoryForFSSaveReturn{
+					{
+						res: variables,
+						err: nil,
+					},
 				},
 			},
 			mockSchemaRepositoryForAppSyncGet: mockSchemaRepositoryForAppSyncGet{
@@ -2107,6 +2515,8 @@ func Test_pullUseCase_Execute(t *testing.T) {
 			mockFunctionService := mock_service.NewMockFunctionService(ctrl)
 			mockResolverService := mock_service.NewMockResolverService(ctrl)
 			mockTrackerRepository := mock_repository.NewMockTrackerRepository(ctrl)
+			mockEnvironmentVariablesRepositoryForAppSync := mock_repository.NewMockEnvironmentVariablesRepository(ctrl)
+			mockEnvironmentVariablesRepositoryForFS := mock_repository.NewMockEnvironmentVariablesRepository(ctrl)
 			mockSchemaRepositoryForAppSync := mock_repository.NewMockSchemaRepository(ctrl)
 			mockSchemaRepositoryForFS := mock_repository.NewMockSchemaRepository(ctrl)
 			mockFunctionRepositoryForAppSync := mock_repository.NewMockFunctionRepository(ctrl)
@@ -2128,6 +2538,26 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				EXPECT().
 				Failed(ctx, gomock.Any()).
 				AnyTimes()
+
+			mockEnvironmentVariablesRepositoryForAppSync.
+				EXPECT().
+				Get(ctx, gomock.Any()).
+				DoAndReturn(func(ctx context.Context, apiID string) (model.EnvironmentVariables, error) {
+					r := tt.mockEnvironmentVariablesRepositoryForAppSyncGet.returns[tt.mockEnvironmentVariablesRepositoryForAppSyncGet.calls]
+					tt.mockEnvironmentVariablesRepositoryForAppSyncGet.calls++
+					return r.res, r.err
+				}).
+				Times(len(tt.mockEnvironmentVariablesRepositoryForAppSyncGet.returns))
+
+			mockEnvironmentVariablesRepositoryForFS.
+				EXPECT().
+				Save(ctx, gomock.Any(), gomock.Any()).
+				DoAndReturn(func(ctx context.Context, apiID string, variables model.EnvironmentVariables) (model.EnvironmentVariables, error) {
+					r := tt.mockEnvironmentVariablesRepositoryForFSSave.returns[tt.mockEnvironmentVariablesRepositoryForFSSave.calls]
+					tt.mockEnvironmentVariablesRepositoryForFSSave.calls++
+					return r.res, r.err
+				}).
+				Times(len(tt.mockEnvironmentVariablesRepositoryForFSSave.returns))
 
 			mockSchemaRepositoryForAppSync.
 				EXPECT().
@@ -2270,15 +2700,17 @@ func Test_pullUseCase_Execute(t *testing.T) {
 				MaxTimes(len(tt.mockResolverRepositoryForFSDelete.returns))
 
 			uc := &pullUseCase{
-				functionService:              mockFunctionService,
-				resolverService:              mockResolverService,
-				trackerRepository:            mockTrackerRepository,
-				schemaRepositoryForAppSync:   mockSchemaRepositoryForAppSync,
-				schemaRepositoryForFS:        mockSchemaRepositoryForFS,
-				functionRepositoryForAppSync: mockFunctionRepositoryForAppSync,
-				functionRepositoryForFS:      mockFunctionRepositoryForFS,
-				resolverRepositoryForAppSync: mockResolverRepositoryForAppSync,
-				resolverRepositoryForFS:      mockResolverRepositoryForFS,
+				functionService:                          mockFunctionService,
+				resolverService:                          mockResolverService,
+				trackerRepository:                        mockTrackerRepository,
+				environmentVariablesRepositoryForAppSync: mockEnvironmentVariablesRepositoryForAppSync,
+				environmentVariablesRepositoryForFS:      mockEnvironmentVariablesRepositoryForFS,
+				schemaRepositoryForAppSync:               mockSchemaRepositoryForAppSync,
+				schemaRepositoryForFS:                    mockSchemaRepositoryForFS,
+				functionRepositoryForAppSync:             mockFunctionRepositoryForAppSync,
+				functionRepositoryForFS:                  mockFunctionRepositoryForFS,
+				resolverRepositoryForAppSync:             mockResolverRepositoryForAppSync,
+				resolverRepositoryForFS:                  mockResolverRepositoryForFS,
 			}
 
 			// Act
