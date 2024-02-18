@@ -9,15 +9,7 @@ The syncup is a development workflow tool for syncing up with AWS AppSync.
 
 ## Installation
 
-### Manually
-
 Download the pre-compiled binaries from the [releases page](https://github.com/Aton-Kish/syncup/releases).
-
-### `go install`
-
-```shell
-go install github.com/Aton-Kish/syncup/cmd/syncup@latest
-```
 
 ## Guides
 

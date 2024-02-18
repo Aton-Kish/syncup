@@ -22,6 +22,7 @@ Directory structure:
 
 ```text
 <base-dir>
+├── env.json
 ├── schema.graphqls
 ├── resolvers
 │   └── <resolver-type-name>
@@ -37,6 +38,12 @@ Directory structure:
         ├── response.vtl # only if VTL runtime
         └── code.js      # only if JavaScript runtime
 ```
+
+### Environment variables format
+
+| Required    | File path  | Description                                                                                                                                                                                         |
+| ----------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| any runtime | `env.json` | Adhering to the AppSync [Environment Variables](https://github.com/aws/aws-sdk-go-v2/blob/be0accd6c6511b727d38cbe98489753e481d68b3/codegen/sdk-codegen/aws-models/appsync.json#L4357-L4390) format. |
 
 ### Schema format
 

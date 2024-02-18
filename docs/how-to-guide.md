@@ -8,7 +8,7 @@ Prerequisites:
 
 ## Dumping AWS AppSync GraphQL API
 
-This command retrieves the AppSync Schema, Resolvers, and Functions to your local.
+This command retrieves the AppSync Environment Variables, Schema, Resolvers, and Functions to your local.
 
 ```shell
 syncup pull --api-id aaaaaa123123123example123
@@ -17,6 +17,7 @@ syncup pull --api-id aaaaaa123123123example123
 output example:
 
 ```text
+v saved environment variables
 v saved schema
 v saved function MyFunction
 v saved all functions
@@ -57,6 +58,7 @@ file tree:
 │       └── listTodos
 │           ├── code.js
 │           └── metadata.json
+├── env.json
 └── schema.graphqls
 ```
 
@@ -71,6 +73,7 @@ syncup push --api-id aaaaaa123123123example123
 output example:
 
 ```text
+v pushed environment variables
 v pushed schema
 v pushed function MyFunction
 v pushed all functions
@@ -96,6 +99,7 @@ syncup push --api-id bbbbbb456456456example456
 output example:
 
 ```text
+v pushed environment variables
 v pushed schema
 v pushed function MyFunction
 v pushed all functions
