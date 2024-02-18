@@ -5,6 +5,7 @@
 //
 //	mockgen -source=pull.go -destination=./mock/mock_pull.go
 //
+
 // Package mock_usecase is a generated GoMock package.
 package mock_usecase
 

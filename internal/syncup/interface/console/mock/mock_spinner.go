@@ -5,6 +5,7 @@
 //
 //	mockgen -source=spinner.go -destination=./mock/mock_spinner.go
 //
+
 // Package mock_console is a generated GoMock package.
 package mock_console
 

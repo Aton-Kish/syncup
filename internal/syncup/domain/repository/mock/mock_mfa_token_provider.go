@@ -5,6 +5,7 @@
 //
 //	mockgen -source=mfa_token_provider.go -destination=./mock/mock_mfa_token_provider.go
 //
+
 // Package mock_repository is a generated GoMock package.
 package mock_repository
 
