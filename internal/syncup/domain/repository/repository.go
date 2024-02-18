@@ -47,6 +47,9 @@ type Repository interface {
 
 	MFATokenProviderRepository() MFATokenProviderRepository
 
+	EnvironmentVariablesRepositoryForAppSync() EnvironmentVariablesRepository
+	EnvironmentVariablesRepositoryForFS() EnvironmentVariablesRepository
+
 	SchemaRepositoryForAppSync() SchemaRepository
 	SchemaRepositoryForFS() SchemaRepository
 

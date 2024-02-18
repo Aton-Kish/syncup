@@ -165,6 +165,34 @@ func (mr *MockRepositoryMockRecorder) BaseDir(ctx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BaseDir", reflect.TypeOf((*MockRepository)(nil).BaseDir), ctx)
 }
 
+// EnvironmentVariablesRepositoryForAppSync mocks base method.
+func (m *MockRepository) EnvironmentVariablesRepositoryForAppSync() repository.EnvironmentVariablesRepository {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnvironmentVariablesRepositoryForAppSync")
+	ret0, _ := ret[0].(repository.EnvironmentVariablesRepository)
+	return ret0
+}
+
+// EnvironmentVariablesRepositoryForAppSync indicates an expected call of EnvironmentVariablesRepositoryForAppSync.
+func (mr *MockRepositoryMockRecorder) EnvironmentVariablesRepositoryForAppSync() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnvironmentVariablesRepositoryForAppSync", reflect.TypeOf((*MockRepository)(nil).EnvironmentVariablesRepositoryForAppSync))
+}
+
+// EnvironmentVariablesRepositoryForFS mocks base method.
+func (m *MockRepository) EnvironmentVariablesRepositoryForFS() repository.EnvironmentVariablesRepository {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnvironmentVariablesRepositoryForFS")
+	ret0, _ := ret[0].(repository.EnvironmentVariablesRepository)
+	return ret0
+}
+
+// EnvironmentVariablesRepositoryForFS indicates an expected call of EnvironmentVariablesRepositoryForFS.
+func (mr *MockRepositoryMockRecorder) EnvironmentVariablesRepositoryForFS() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnvironmentVariablesRepositoryForFS", reflect.TypeOf((*MockRepository)(nil).EnvironmentVariablesRepositoryForFS))
+}
+
 // FunctionRepositoryForAppSync mocks base method.
 func (m *MockRepository) FunctionRepositoryForAppSync() repository.FunctionRepository {
 	m.ctrl.T.Helper()

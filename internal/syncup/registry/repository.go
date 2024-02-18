@@ -47,6 +47,9 @@ type repo struct {
 
 	mfaTokenProviderRepository repository.MFATokenProviderRepository
 
+	environmentVariablesRepositoryForAppSync repository.EnvironmentVariablesRepository
+	environmentVariablesRepositoryForFS      repository.EnvironmentVariablesRepository
+
 	schemaRepositoryForAppSync repository.SchemaRepository
 	schemaRepositoryForFS      repository.SchemaRepository
 
@@ -76,6 +79,9 @@ func NewRepository() repository.Repository {
 
 	mfaTokenProviderRepository := console.NewMFATokenProviderRepository()
 
+	environmentVariablesRepositoryForAppSync := infrastructure.NewEnvironmentVariablesRepositoryForAppSync()
+	environmentVariablesRepositoryForFS := infrastructure.NewEnvironmentVariablesRepositoryForFS()
+
 	schemaRepositoryForAppSync := infrastructure.NewSchemaRepositoryForAppSync()
 	schemaRepositoryForFS := infrastructure.NewSchemaRepositoryForFS()
 
@@ -91,6 +97,9 @@ func NewRepository() repository.Repository {
 		trackerRepository: trackerRepository,
 
 		mfaTokenProviderRepository: mfaTokenProviderRepository,
+
+		environmentVariablesRepositoryForAppSync: environmentVariablesRepositoryForAppSync,
+		environmentVariablesRepositoryForFS:      environmentVariablesRepositoryForFS,
 
 		schemaRepositoryForAppSync: schemaRepositoryForAppSync,
 		schemaRepositoryForFS:      schemaRepositoryForFS,
@@ -108,6 +117,9 @@ func (r *repo) repositories() []any {
 		r.TrackerRepository(),
 
 		r.MFATokenProviderRepository(),
+
+		r.EnvironmentVariablesRepositoryForAppSync(),
+		r.EnvironmentVariablesRepositoryForFS(),
 
 		r.SchemaRepositoryForAppSync(),
 		r.SchemaRepositoryForFS(),
@@ -160,6 +172,14 @@ func (r *repo) TrackerRepository() repository.TrackerRepository {
 
 func (r *repo) MFATokenProviderRepository() repository.MFATokenProviderRepository {
 	return r.mfaTokenProviderRepository
+}
+
+func (r *repo) EnvironmentVariablesRepositoryForAppSync() repository.EnvironmentVariablesRepository {
+	return r.environmentVariablesRepositoryForAppSync
+}
+
+func (r *repo) EnvironmentVariablesRepositoryForFS() repository.EnvironmentVariablesRepository {
+	return r.environmentVariablesRepositoryForFS
 }
 
 func (r *repo) SchemaRepositoryForAppSync() repository.SchemaRepository {
