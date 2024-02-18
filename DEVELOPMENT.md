@@ -4,10 +4,10 @@
 
 Requirements:
 
-- [Go](https://go.dev/) (v1.21.1 or higher)
-- [Node.js](https://nodejs.org/) (v18.18.0 or higher)
-- [pnpm](https://pnpm.io/) (v8.8.0 or higher)
-- [Task](https://taskfile.dev/) (v3.30.1 or higher)
+- [Go](https://go.dev/) (v1.22.0 or higher)
+- [Node.js](https://nodejs.org/) (v20.11.1 or higher)
+- [pnpm](https://pnpm.io/) (v8.15.3 or higher)
+- [Task](https://taskfile.dev/) (v3.34.1 or higher)
 
 install dependencies:
 

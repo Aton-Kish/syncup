@@ -85,7 +85,7 @@ func Test_xcommand_GenerateReadme(t *testing.T) {
 <sub><sup>Last updated on ` + time.Now().Format("2006-01-02") + `</sup></sub>
 
 - [Use](Use.md) - Short
-- [Use SubUse](Use_SubUse.md) - SubShort
+- [Use SubUse](Use-SubUse.md) - SubShort
 `,
 				errIs: nil,
 			},
@@ -208,7 +208,7 @@ func Test_xcommand_GenerateReference(t *testing.T) {
 				dir: t.TempDir(),
 			},
 			expected: expected{
-				name: "RootUse_Use.md",
+				name: "RootUse-Use.md",
 				content: `## ` + "`RootUse Use`" + `
 
 <sub><sup>Last updated on ` + time.Now().Format("2006-01-02") + `</sup></sub>
@@ -247,7 +247,7 @@ Example
 ### See also
 
 - [RootUse](RootUse.md) - RootShort
-- [RootUse Use SubUse](RootUse_Use_SubUse.md) - SubShort
+- [RootUse Use SubUse](RootUse-Use-SubUse.md) - SubShort
 `,
 				errIs: nil,
 			},
@@ -377,8 +377,8 @@ func Test_xcommand_GenerateReferences(t *testing.T) {
 			},
 			expected: expected{
 				names: []string{
-					"RootUse_Use.md",
-					"RootUse_Use_SubUse.md",
+					"RootUse-Use.md",
+					"RootUse-Use-SubUse.md",
 				},
 				errIs: nil,
 			},

@@ -5,6 +5,7 @@
 //
 //	mockgen -source=survey.go -destination=./mock/mock_survey.go
 //
+
 // Package mock_console is a generated GoMock package.
 package mock_console
 

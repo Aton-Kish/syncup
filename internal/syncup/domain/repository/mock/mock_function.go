@@ -5,6 +5,7 @@
 //
 //	mockgen -source=function.go -destination=./mock/mock_function.go
 //
+
 // Package mock_repository is a generated GoMock package.
 package mock_repository
 

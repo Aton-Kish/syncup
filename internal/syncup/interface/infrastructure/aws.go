@@ -35,6 +35,9 @@ import (
 )
 
 type appsyncClient interface {
+	GetGraphqlApiEnvironmentVariables(ctx context.Context, params *appsync.GetGraphqlApiEnvironmentVariablesInput, optFns ...func(*appsync.Options)) (*appsync.GetGraphqlApiEnvironmentVariablesOutput, error)
+	PutGraphqlApiEnvironmentVariables(ctx context.Context, params *appsync.PutGraphqlApiEnvironmentVariablesInput, optFns ...func(*appsync.Options)) (*appsync.PutGraphqlApiEnvironmentVariablesOutput, error)
+
 	GetIntrospectionSchema(ctx context.Context, params *appsync.GetIntrospectionSchemaInput, optFns ...func(*appsync.Options)) (*appsync.GetIntrospectionSchemaOutput, error)
 	StartSchemaCreation(ctx context.Context, params *appsync.StartSchemaCreationInput, optFns ...func(*appsync.Options)) (*appsync.StartSchemaCreationOutput, error)
 	GetSchemaCreationStatus(ctx context.Context, params *appsync.GetSchemaCreationStatusInput, optFns ...func(*appsync.Options)) (*appsync.GetSchemaCreationStatusOutput, error)

@@ -47,33 +47,41 @@ type PushUseCase interface {
 }
 
 type pushUseCase struct {
-	functionService              service.FunctionService
-	resolverService              service.ResolverService
-	trackerRepository            repository.TrackerRepository
-	schemaRepositoryForAppSync   repository.SchemaRepository
-	schemaRepositoryForFS        repository.SchemaRepository
-	functionRepositoryForAppSync repository.FunctionRepository
-	functionRepositoryForFS      repository.FunctionRepository
-	resolverRepositoryForAppSync repository.ResolverRepository
-	resolverRepositoryForFS      repository.ResolverRepository
+	functionService                          service.FunctionService
+	resolverService                          service.ResolverService
+	trackerRepository                        repository.TrackerRepository
+	environmentVariablesRepositoryForAppSync repository.EnvironmentVariablesRepository
+	environmentVariablesRepositoryForFS      repository.EnvironmentVariablesRepository
+	schemaRepositoryForAppSync               repository.SchemaRepository
+	schemaRepositoryForFS                    repository.SchemaRepository
+	functionRepositoryForAppSync             repository.FunctionRepository
+	functionRepositoryForFS                  repository.FunctionRepository
+	resolverRepositoryForAppSync             repository.ResolverRepository
+	resolverRepositoryForFS                  repository.ResolverRepository
 }
 
 func NewPushUseCase(repo repository.Repository) PushUseCase {
 	return &pushUseCase{
-		functionService:              service.NewFunctionService(repo),
-		resolverService:              service.NewResolverService(repo),
-		trackerRepository:            repo.TrackerRepository(),
-		schemaRepositoryForAppSync:   repo.SchemaRepositoryForAppSync(),
-		schemaRepositoryForFS:        repo.SchemaRepositoryForFS(),
-		functionRepositoryForAppSync: repo.FunctionRepositoryForAppSync(),
-		functionRepositoryForFS:      repo.FunctionRepositoryForFS(),
-		resolverRepositoryForAppSync: repo.ResolverRepositoryForAppSync(),
-		resolverRepositoryForFS:      repo.ResolverRepositoryForFS(),
+		functionService:                          service.NewFunctionService(repo),
+		resolverService:                          service.NewResolverService(repo),
+		trackerRepository:                        repo.TrackerRepository(),
+		environmentVariablesRepositoryForAppSync: repo.EnvironmentVariablesRepositoryForAppSync(),
+		environmentVariablesRepositoryForFS:      repo.EnvironmentVariablesRepositoryForFS(),
+		schemaRepositoryForAppSync:               repo.SchemaRepositoryForAppSync(),
+		schemaRepositoryForFS:                    repo.SchemaRepositoryForFS(),
+		functionRepositoryForAppSync:             repo.FunctionRepositoryForAppSync(),
+		functionRepositoryForFS:                  repo.FunctionRepositoryForFS(),
+		resolverRepositoryForAppSync:             repo.ResolverRepositoryForAppSync(),
+		resolverRepositoryForFS:                  repo.ResolverRepositoryForFS(),
 	}
 }
 
 func (uc *pushUseCase) Execute(ctx context.Context, params *PushInput) (res *PushOutput, err error) {
 	defer wrap(&err)
+
+	if _, err := uc.pushEnvironmentVariables(ctx, params.APIID); err != nil {
+		return nil, err
+	}
 
 	if _, err := uc.pushSchema(ctx, params.APIID); err != nil {
 		return nil, err
@@ -100,6 +108,30 @@ func (uc *pushUseCase) Execute(ctx context.Context, params *PushInput) (res *Pus
 	}
 
 	return &PushOutput{}, nil
+}
+
+func (uc *pushUseCase) pushEnvironmentVariables(ctx context.Context, apiID string) (res model.EnvironmentVariables, err error) {
+	defer wrap(&err)
+
+	uc.trackerRepository.InProgress(ctx, "loading environment variables")
+
+	vs, err := uc.environmentVariablesRepositoryForFS.Get(ctx, apiID)
+	if err != nil {
+		uc.trackerRepository.Failed(ctx, "failed to load environment variables")
+		return nil, err
+	}
+
+	uc.trackerRepository.InProgress(ctx, "pushing environment variables")
+
+	varibales, err := uc.environmentVariablesRepositoryForAppSync.Save(ctx, apiID, vs)
+	if err != nil {
+		uc.trackerRepository.Failed(ctx, "failed to push environment variables")
+		return nil, err
+	}
+
+	uc.trackerRepository.Success(ctx, "pushed environment variables")
+
+	return varibales, nil
 }
 
 func (uc *pushUseCase) pushSchema(ctx context.Context, apiID string) (res *model.Schema, err error) {

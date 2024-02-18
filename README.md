@@ -10,19 +10,11 @@
 
 A development workflow tool for syncing up with AWS AppSync.
 
-By combining it with a version control system, you can version control the AppSync Schema, Resolvers, and Functions, allowing you to quickly restore versions.
+By combining it with a version control system, you can version control the AppSync Environment Variables, Schema, Resolvers, and Functions, allowing you to quickly restore versions.
 
 ## Installation
 
-### Manually
-
 Download the pre-compiled binaries from the [releases page](https://github.com/Aton-Kish/syncup/releases).
-
-### `go install`
-
-```shell
-go install github.com/Aton-Kish/syncup/cmd/syncup@latest
-```
 
 ## Usage
 

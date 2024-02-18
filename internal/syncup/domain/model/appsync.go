@@ -20,6 +20,8 @@
 
 package model
 
+type EnvironmentVariables map[string]string
+
 type Schema string
 
 type Function struct {
